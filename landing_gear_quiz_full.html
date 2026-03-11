@@ -1,0 +1,1135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Landing Gear – Course 7 Quiz</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #0d1b2a;
+    --steel: #1e3a5f;
+    --sky: #2a6496;
+    --accent: #e8a838;
+    --light: #f4f7fb;
+    --text: #1a2332;
+    --muted: #6b7c93;
+    --green: #1a8a4a;
+    --red: #c0392b;
+    --card: #ffffff;
+    --border: #d0dde8;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Barlow', sans-serif;
+    background: var(--light);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  header {
+    background: linear-gradient(135deg, var(--navy) 0%, var(--steel) 100%);
+    color: #fff;
+    padding: 2rem 1.5rem 1.5rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 200px; height: 200px;
+    border-radius: 50%;
+    background: rgba(232,168,56,0.12);
+  }
+  header::after {
+    content: '';
+    position: absolute;
+    bottom: -30px; left: -30px;
+    width: 150px; height: 150px;
+    border-radius: 50%;
+    background: rgba(42,100,150,0.2);
+  }
+  header h1 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 2.4rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    position: relative;
+  }
+  header h1 span { color: var(--accent); }
+  header p {
+    margin-top: 0.4rem;
+    font-size: 0.95rem;
+    opacity: 0.8;
+    position: relative;
+  }
+
+  .scorebar {
+    background: var(--navy);
+    color: #fff;
+    padding: 0.6rem 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.9rem;
+    font-weight: 600;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+  .scorebar span { color: var(--accent); }
+
+  .progress-wrap {
+    background: var(--steel);
+    height: 6px;
+  }
+  .progress-bar {
+    height: 6px;
+    background: var(--accent);
+    transition: width 0.4s ease;
+    width: 0%;
+  }
+
+  .container {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 1.5rem 1rem 3rem;
+  }
+
+  /* Start screen */
+  #start-screen {
+    text-align: center;
+    padding: 3rem 1rem;
+  }
+  #start-screen h2 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--steel);
+    margin-bottom: 0.8rem;
+    text-transform: uppercase;
+  }
+  #start-screen p {
+    color: var(--muted);
+    margin-bottom: 0.6rem;
+    font-size: 0.97rem;
+  }
+  .topic-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 0.75rem;
+    margin: 1.5rem 0 2rem;
+    text-align: left;
+  }
+  .topic-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--sky);
+    border-radius: 6px;
+    padding: 0.75rem 1rem;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--steel);
+  }
+  .topic-card span {
+    display: block;
+    font-weight: 400;
+    color: var(--muted);
+    font-size: 0.8rem;
+    margin-top: 0.2rem;
+  }
+
+  /* Question card */
+  .question-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.75rem 1.75rem 1.5rem;
+    box-shadow: 0 2px 12px rgba(13,27,42,0.07);
+    margin-bottom: 1rem;
+  }
+  .q-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+  }
+  .q-num {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--sky);
+  }
+  .q-topic {
+    font-size: 0.78rem;
+    font-weight: 600;
+    background: var(--light);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 0.2rem 0.7rem;
+    color: var(--muted);
+  }
+  .q-text {
+    font-size: 1.08rem;
+    font-weight: 600;
+    line-height: 1.55;
+    color: var(--text);
+    margin-bottom: 1.3rem;
+  }
+
+  .options { display: flex; flex-direction: column; gap: 0.6rem; }
+  .option-btn {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    background: var(--light);
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    padding: 0.85rem 1rem;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-family: 'Barlow', sans-serif;
+    font-weight: 500;
+    color: var(--text);
+    text-align: left;
+    transition: border-color 0.15s, background 0.15s;
+    width: 100%;
+  }
+  .option-btn:hover:not(:disabled) {
+    border-color: var(--sky);
+    background: #e8f1fa;
+  }
+  .option-btn .key {
+    flex-shrink: 0;
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    background: var(--border);
+    color: var(--steel);
+    font-weight: 700;
+    font-size: 0.82rem;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Barlow Condensed', sans-serif;
+    letter-spacing: 0;
+    transition: background 0.15s, color 0.15s;
+  }
+  .option-btn.correct {
+    border-color: var(--green);
+    background: #e8f8ee;
+  }
+  .option-btn.correct .key { background: var(--green); color: #fff; }
+  .option-btn.incorrect {
+    border-color: var(--red);
+    background: #fdf0ee;
+  }
+  .option-btn.incorrect .key { background: var(--red); color: #fff; }
+  .option-btn.reveal-correct {
+    border-color: var(--green);
+    background: #e8f8ee;
+    opacity: 0.85;
+  }
+  .option-btn.reveal-correct .key { background: var(--green); color: #fff; }
+  .option-btn:disabled { cursor: default; }
+
+  .feedback-box {
+    margin-top: 1rem;
+    padding: 0.85rem 1rem;
+    border-radius: 8px;
+    font-size: 0.92rem;
+    font-weight: 500;
+    line-height: 1.5;
+    display: none;
+  }
+  .feedback-box.correct {
+    background: #e8f8ee;
+    border: 1px solid #a5d6b5;
+    color: #155724;
+    display: block;
+  }
+  .feedback-box.incorrect {
+    background: #fdf0ee;
+    border: 1px solid #f5c6bc;
+    color: #7b1d1d;
+    display: block;
+  }
+
+  .nav-row {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 1.2rem;
+  }
+
+  .btn {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 0.65rem 1.8rem;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+  }
+  .btn:active { transform: scale(0.98); }
+  .btn-primary {
+    background: var(--accent);
+    color: var(--navy);
+  }
+  .btn-primary:hover { background: #f0b830; }
+  .btn-primary:disabled {
+    background: var(--border);
+    color: var(--muted);
+    cursor: default;
+  }
+  .btn-steel {
+    background: var(--steel);
+    color: #fff;
+  }
+  .btn-steel:hover { background: var(--sky); }
+  .btn-outline {
+    background: transparent;
+    border: 2px solid var(--steel);
+    color: var(--steel);
+  }
+  .btn-outline:hover { background: var(--light); }
+
+  /* Results */
+  #results-screen { text-align: center; padding: 2rem 0 1rem; }
+  .score-circle {
+    width: 130px; height: 130px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--navy), var(--steel));
+    margin: 0 auto 1.5rem;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    color: #fff;
+    box-shadow: 0 4px 20px rgba(13,27,42,0.25);
+  }
+  .score-circle .big { font-family: 'Barlow Condensed', sans-serif; font-size: 2.6rem; font-weight: 700; line-height: 1; color: var(--accent); }
+  .score-circle .small { font-size: 0.8rem; opacity: 0.8; }
+  #results-screen h2 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 1.8rem; font-weight: 700;
+    text-transform: uppercase; color: var(--steel);
+    margin-bottom: 0.5rem;
+  }
+  #results-screen p { color: var(--muted); margin-bottom: 0.4rem; }
+  .result-breakdown {
+    display: flex; justify-content: center; gap: 2rem;
+    margin: 1.5rem 0;
+    flex-wrap: wrap;
+  }
+  .rb-item {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.9rem 1.5rem;
+    font-weight: 700;
+    font-size: 0.92rem;
+  }
+  .rb-item .val { font-size: 1.8rem; font-family: 'Barlow Condensed', sans-serif; display: block; line-height: 1; }
+  .rb-item.g .val { color: var(--green); }
+  .rb-item.r .val { color: var(--red); }
+  .btn-row { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-top: 1.5rem; }
+
+  /* Review */
+  #review-screen { display: none; }
+  .review-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.2rem 1.5rem;
+    margin-bottom: 1rem;
+    border-left: 5px solid var(--border);
+  }
+  .review-card.correct { border-left-color: var(--green); }
+  .review-card.incorrect { border-left-color: var(--red); }
+  .review-q { font-size: 0.97rem; font-weight: 600; margin-bottom: 0.6rem; }
+  .review-meta { font-size: 0.82rem; color: var(--muted); margin-bottom: 0.5rem; }
+  .review-answer { font-size: 0.88rem; padding: 0.4rem 0; }
+  .review-answer .lbl { font-weight: 700; margin-right: 0.3rem; }
+  .correct-lbl { color: var(--green); }
+  .incorrect-lbl { color: var(--red); }
+
+  @media (max-width: 600px) {
+    header h1 { font-size: 1.7rem; }
+    .question-card { padding: 1.2rem 1rem 1rem; }
+    .q-text { font-size: 0.97rem; }
+  }
+
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Landing Gear &mdash; <span>Course 7</span></h1>
+  <p>AME Program &bull; Red River College Polytechnic &bull; 60 Questions</p>
+</header>
+
+<div class="scorebar" id="scorebar" style="display:none">
+  <div>Question <span id="sb-q">1</span> of <span id="sb-total">60</span></div>
+  <div>Score: <span id="sb-score">0</span> / <span id="sb-answered">0</span> answered</div>
+</div>
+<div class="progress-wrap" id="prog-wrap" style="display:none">
+  <div class="progress-bar" id="progress-bar"></div>
+</div>
+
+<div class="container">
+
+  <!-- START -->
+  <div id="start-screen">
+    <h2>Landing Gear Comprehensive Quiz</h2>
+    <p>60 randomized multiple-choice questions covering all major topics from Course 7.</p>
+    <p>Answers are shuffled each attempt. Select an answer, review the feedback, then advance.</p>
+    <div class="topic-grid">
+      <div class="topic-card">Types &amp; Configurations<span>Fixed, retractable, tricycle, tailwheel, tandem</span></div>
+      <div class="topic-card">Shock Absorption<span>Oleo struts, spring-oil, non-shock-absorbing types</span></div>
+      <div class="topic-card">Landing Gear Components<span>Trunnion, torque links, drag brace, squats switches</span></div>
+      <div class="topic-card">Oleo Servicing<span>Filling, seal replacement, valves, nitrogen charging</span></div>
+      <div class="topic-card">Shimmy Dampeners<span>Piston type, vane type, servicing</span></div>
+      <div class="topic-card">Floats &amp; Skis<span>Construction, installation, rigging, maintenance</span></div>
+      <div class="topic-card">Wheels<span>Construction, removal, inspection, NDT methods</span></div>
+      <div class="topic-card">Tires<span>Types, construction, defects, mounting, balancing</span></div>
+      <div class="topic-card">Brakes<span>Single disc, multiple disc, expander tube, anti-skid</span></div>
+    </div>
+    <button class="btn btn-steel" onclick="startQuiz()" style="font-size:1.1rem; padding:0.8rem 2.5rem;">Start Quiz</button>
+  </div>
+
+  <!-- QUIZ -->
+  <div id="quiz-screen" class="hidden">
+    <div class="question-card">
+      <div class="q-meta">
+        <div class="q-num" id="q-num">Question 1</div>
+        <div class="q-topic" id="q-topic">Topic</div>
+      </div>
+      <div class="q-text" id="q-text"></div>
+      <div class="options" id="options"></div>
+      <div class="feedback-box" id="feedback"></div>
+    </div>
+    <div class="nav-row">
+      <button class="btn btn-primary" id="next-btn" onclick="nextQuestion()" disabled>Next Question →</button>
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <div id="results-screen" class="hidden">
+    <div class="score-circle">
+      <div class="big" id="res-pct">0%</div>
+      <div class="small" id="res-frac">0 / 60</div>
+    </div>
+    <h2 id="res-heading">Results</h2>
+    <p id="res-comment"></p>
+    <div class="result-breakdown">
+      <div class="rb-item g"><span class="val" id="res-correct">0</span>Correct</div>
+      <div class="rb-item r"><span class="val" id="res-incorrect">0</span>Incorrect</div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-steel" onclick="showReview()">Review Answers</button>
+      <button class="btn btn-primary" onclick="restartQuiz()">Restart Quiz</button>
+    </div>
+  </div>
+
+  <!-- REVIEW -->
+  <div id="review-screen">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.2rem; flex-wrap:wrap; gap:0.5rem;">
+      <h2 style="font-family:'Barlow Condensed',sans-serif; font-size:1.5rem; font-weight:700; text-transform:uppercase; color:var(--steel);">Answer Review</h2>
+      <button class="btn btn-outline" onclick="backToResults()">← Back to Results</button>
+    </div>
+    <div id="review-list"></div>
+  </div>
+
+</div>
+
+<script>
+const ALL_QUESTIONS = [
+  // ─── TYPES & CONFIGURATIONS ───
+  {
+    topic: "Types & Configurations",
+    q: "Which of the following is NOT one of the four main types of landing gear used on aircraft?",
+    a: ["Wheels", "Skids", "Skis", "Pontoon struts"],
+    correct: 3,
+    explain: "The four types are: Wheels, Skids, Skis, and Floats/Pontoons. 'Pontoon struts' is not a recognized category."
+  },
+  {
+    topic: "Types & Configurations",
+    q: "In a conventional (tailwheel) landing gear configuration, where are the two main wheels located relative to the centre of gravity?",
+    a: ["Aft of the CG", "Forward of the CG", "Directly under the CG", "Centred on the fuselage"],
+    correct: 1,
+    explain: "Conventional gear has the two main wheels FORWARD of the aircraft centre of gravity, with a tail wheel at the rear."
+  },
+  {
+    topic: "Types & Configurations",
+    q: "What is a 'ground loop' and which landing gear configuration is most susceptible to it?",
+    a: ["A sudden pitch-up; tricycle gear", "An uncontrolled turning on the ground; conventional (tailwheel) gear", "A nose-over on landing; tricycle gear", "A main gear collapse; tandem gear"],
+    correct: 1,
+    explain: "A ground loop is an uncontrolled turning of the aircraft on the ground. Conventional (tailwheel) aircraft are more susceptible because the CG is aft of the main gear."
+  },
+  {
+    topic: "Types & Configurations",
+    q: "On most small tricycle-gear aircraft, what controls the nose wheel steering?",
+    a: ["A hydraulic actuator", "A direct mechanical connection to the rudder pedals", "A tiller bar on the instrument panel", "An electric motor driven by a separate switch"],
+    correct: 1,
+    explain: "On small aircraft the nose wheel is usually controlled by a mechanical connection between the rudder pedals and the nose gear."
+  },
+  {
+    topic: "Types & Configurations",
+    q: "The centerline (tandem) landing gear configuration is mainly found on which type of aircraft?",
+    a: ["Light single-engine trainers", "Large commercial transports", "Military aircraft such as the B-52 and Harrier", "Helicopters only"],
+    correct: 2,
+    explain: "The centerline/tandem configuration, where main wheels sit in-line under the fuselage, is primarily found on military aircraft like the B-52 and Harrier."
+  },
+  {
+    topic: "Types & Configurations",
+    q: "What is the primary advantage of fixed landing gear on a low-speed aircraft compared to retractable gear?",
+    a: ["Greater speed", "Increased range", "Less weight and complexity", "Improved visibility on approach"],
+    correct: 2,
+    explain: "For low-speed aircraft, the drag penalty of fixed gear is a better trade-off than the weight and complexity penalty of retractable gear."
+  },
+  {
+    topic: "Types & Configurations",
+    q: "What component allows retractable landing gear to pivot during extension and retraction?",
+    a: ["Drag link", "Trunnion fitting", "Torque link", "Overcenter link"],
+    correct: 1,
+    explain: "Retractable gear is attached to the airplane's structure using trunnion fittings, which allow the gear to pivot during the retraction and extension cycle."
+  },
+  {
+    topic: "Types & Configurations",
+    q: "Conventional-gear aircraft have a disadvantage during taxi, take-off, and landing. What is it?",
+    a: ["Excessive nose-wheel shimmy", "Poor forward visibility due to the raised nose attitude", "The main gear tends to collapse sideways", "The tail wheel steering is too sensitive"],
+    correct: 1,
+    explain: "Because of the raised nose attitude in conventional gear aircraft, forward visibility is poor during ground operations."
+  },
+  {
+    topic: "Types & Configurations",
+    q: "What purpose do wheel fairings (wheel pants / spats) serve on fixed landing gear?",
+    a: ["They reinforce the gear legs structurally", "They reduce parasite drag on the fixed gear", "They protect the tires from UV damage", "They enclose the brake caliper"],
+    correct: 1,
+    explain: "Gear legs and wheels are often enclosed in streamlined fairings (wheel pants or spats) specifically to reduce parasite drag."
+  },
+  {
+    topic: "Types & Configurations",
+    q: "What is the function of the nose wheel centering device on retractable gear aircraft?",
+    a: ["It steers the nose wheel during taxi", "It straightens the wheel after take-off to allow retraction without structural damage", "It locks the nose wheel in the down and locked position", "It activates the shimmy dampener during retraction"],
+    correct: 1,
+    explain: "The nose wheel centering device straightens the wheel after take-off (when the strut is extended) to prevent structural damage from retracting a turned wheel."
+  },
+
+  // ─── RETRACTABLE GEAR & EMERGENCY SYSTEMS ───
+  {
+    topic: "Retractable Gear",
+    q: "Which of the following is NOT listed as a means of operating a retractable landing gear emergency extension system?",
+    a: ["Stored gas (blow-down bottle)", "Free-fall system", "Electrical motor driven by a separate battery", "Hydraulic hand pump"],
+    correct: 2,
+    explain: "Emergency systems include stored gas (blow-down), free-fall, mechanical systems via chains or cable, and hydraulic hand pump. A separate electric motor battery is not listed."
+  },
+  {
+    topic: "Retractable Gear",
+    q: "What indicates to the pilot that the landing gear is unsafe or in transit?",
+    a: ["Three green lights on", "All gear position lights extinguished", "A red Gear Unsafe / In Transit light", "The gear warning horn sounding continuously"],
+    correct: 2,
+    explain: "The Gear Unsafe / In Transit light illuminates any time the landing gear position differs from the selector position."
+  },
+  {
+    topic: "Retractable Gear",
+    q: "When the landing gear lever is in the UP position and the gear is retracted and locked, what is the expected gear position light indication?",
+    a: ["Three green lights on", "One red light on", "All lights out", "Gear Unsafe light flashing"],
+    correct: 2,
+    explain: "When the gear lever is in the up position and the gear is up and locked, all the position lights will be out."
+  },
+  {
+    topic: "Retractable Gear",
+    q: "A gear warning horn is triggered if the gear is not down and any throttle is retarded. What additional conditions may also trigger this warning?",
+    a: ["High oil pressure and low airspeed", "Flap position and airspeed", "Landing light selection and flap position", "Prop RPM and engine temperature"],
+    correct: 1,
+    explain: "The warning system may also be triggered by flap position and airspeed in addition to throttle position."
+  },
+  {
+    topic: "Retractable Gear",
+    q: "What device prevents the landing gear from retracting when the aircraft is on the ground?",
+    a: ["Overcenter link", "Drag link", "Squat switch (safety switch)", "Trunnion fitting"],
+    correct: 2,
+    explain: "The squat switch senses oleo compression and prevents inadvertent gear retraction when the aircraft is weight-on-wheels (AOG)."
+  },
+
+  // ─── SHOCK ABSORPTION ───
+  {
+    topic: "Shock Absorption",
+    q: "What type of non-shock-absorbing landing gear is most commonly found on Cessna aircraft?",
+    a: ["Rigid steel gear", "Shock cord (bungee) gear", "Spring steel type", "Rubber puck stacks"],
+    correct: 2,
+    explain: "The most popular type of non-shock-absorbing gear is the spring steel type, commonly found on Cessna aircraft."
+  },
+  {
+    topic: "Shock Absorption",
+    q: "In the spring steel landing gear, how is the energy from landing managed?",
+    a: ["The fluid is forced through an orifice, converting kinetic energy to heat", "The steel strut accepts the load and returns it in a way that minimizes bouncing", "Nitrogen gas is compressed until it can support aircraft weight", "A coil spring and oil work together to absorb then release energy"],
+    correct: 1,
+    explain: "The spring steel strut (flat leaf or tubular) accepts the landing load and returns energy in a way that minimizes bouncing — it stores and releases, rather than dissipating, energy."
+  },
+  {
+    topic: "Shock Absorption",
+    q: "How does an oleo (air-oil) shock strut dissipate landing energy?",
+    a: ["By compressing a coil spring that slowly releases energy over the landing roll", "By forcing hydraulic fluid through a restriction, converting motion into heat", "By stretching rubber shock cords that gradually return energy", "By deflecting a spring steel strut that oscillates"],
+    correct: 1,
+    explain: "Impact energy is absorbed by forcing fluid through a restriction (metering pin/orifice). The movement of fluid and compression of gas generates heat which is radiated into the surrounding air — dissipating, not storing, the energy."
+  },
+  {
+    topic: "Shock Absorption",
+    q: "What is the purpose of torque links (torque knees) on an oleo strut?",
+    a: ["They retain nitrogen pressure in the strut", "They connect the cylinder to the piston, keep wheel alignment, and transmit steering inputs", "They attach the strut cylinder to the aircraft structure at the trunnion", "They act as the down-lock for the gear"],
+    correct: 1,
+    explain: "Torque links are A-frame members connecting the cylinder to the piston. They keep the wheels in correct alignment and transmit steering inputs to the nose wheel."
+  },
+  {
+    topic: "Shock Absorption",
+    q: "In a spring-oil shock strut, what provides the primary cushioning of the initial landing shock?",
+    a: ["A coil spring that compresses", "Nitrogen gas compressing in the upper chamber", "Oil forced from the lower to upper chamber through an orifice", "Rubber pucks compressing between structural members"],
+    correct: 2,
+    explain: "In a spring-oil strut, oil flows from the lower chamber to the upper chamber through an orifice on landing, providing the primary cushioning effect."
+  },
+  {
+    topic: "Shock Absorption",
+    q: "Why must rubber shock cords (bungee cords) used in some landing gear be replaced periodically?",
+    a: ["They permanently stretch beyond limits under normal use", "Rubber deteriorates over time, reducing effectiveness", "They become contaminated with hydraulic fluid", "Canadian regulations require replacement at every annual"],
+    correct: 1,
+    explain: "Shock cords must be replaced periodically because of rubber deterioration. The cords are color coded to indicate when they were manufactured."
+  },
+  {
+    topic: "Shock Absorption",
+    q: "What is a key safety warning before disassembling any oleo strut?",
+    a: ["Remove the torque links first to prevent wheel spin", "Always bleed off all internal nitrogen pressure before commencing disassembly", "Drain all hydraulic fluid from the aircraft system", "Jack the aircraft to full extension before opening the charging valve"],
+    correct: 1,
+    explain: "Always bleed off all internal nitrogen pressure before disassembly. Failure to do so may result in the piston being ejected at high speed when the retainer is removed."
+  },
+  {
+    topic: "Shock Absorption",
+    q: "Where is the axle mounted on a typical oleo strut?",
+    a: ["On the cylinder (upper housing)", "On the piston (lower, moving portion)", "On the gland nut assembly", "On the trunnion fitting"],
+    correct: 1,
+    explain: "The axle is mounted to the piston portion (lower, moving portion) of the oleo strut."
+  },
+
+  // ─── OLEO SERVICING ───
+  {
+    topic: "Oleo Servicing",
+    q: "What type of hydraulic fluid is most commonly used when refilling an oleo strut?",
+    a: ["Skydrol phosphate-ester fluid", "MIL-H-5606 hydraulic fluid", "MIL-PRF-83282 synthetic fluid", "Petroleum-based engine oil"],
+    correct: 1,
+    explain: "MIL-H-5606 hydraulic fluid is the most common, but always check the Maintenance Manual for the recommended fluid type before servicing."
+  },
+  {
+    topic: "Oleo Servicing",
+    q: "What must be measured to assess proper oleo strut servicing with the aircraft on a level surface under normal fuel loading?",
+    a: ["Nitrogen charging pressure using a certified gauge", "The length of piston tube (strut extension) exposed", "The hydraulic fluid temperature inside the strut", "The torque on the gland nut or snap ring"],
+    correct: 1,
+    explain: "The oleo strut piston tube extension (length of chrome piston exposed) is measured against the manufacturer's specifications to confirm proper servicing."
+  },
+  {
+    topic: "Oleo Servicing",
+    q: "During oleo strut refilling, why is the strut slowly extended and compressed several times with the air valve removed?",
+    a: ["To mix the oil and nitrogen evenly", "To remove all air from the oil", "To verify proper torque link alignment", "To seat the gland nut seal"],
+    correct: 1,
+    explain: "With the strut fully compressed and the air valve removed, extending and compressing the strut several times removes trapped air from the oil."
+  },
+  {
+    topic: "Oleo Servicing",
+    q: "What type of valve cap must be installed on an oleo strut charging valve once servicing is complete?",
+    a: ["Any available cap of the correct thread size", "A plastic dust cap", "A yellow brass cap", "A stainless steel safety cap"],
+    correct: 2,
+    explain: "The valve cap must be a yellow brass cap — do not use a plastic cap. Make it finger tight only."
+  },
+  {
+    topic: "Oleo Servicing",
+    q: "Regarding the AN 6287 high-pressure oleo charging valve, at what pressure must the swivel nut be tightened before removing the charge fitting?",
+    a: ["At any pressure above 500 PSI", "If pressure exceeds 1500 PSI (good habit at any pressure)", "At the full rated pressure of 3000 PSI only", "Only when the aircraft is on jacks"],
+    correct: 1,
+    explain: "For the AN 6287 valve, tighten the swivel nut before removing the charge fitting if pressure exceeds 1500 PSI — though it is a good habit at any pressure."
+  },
+  {
+    topic: "Oleo Servicing",
+    q: "What does a vent port on a Schrader-type oleo valve indicate when it begins venting nitrogen as you loosen the swivel nut?",
+    a: ["The valve is fully open and safe to remove", "The component still holds pressure — stop and discharge the pressure before proceeding", "The valve needs replacement before servicing can continue", "The nitrogen charge is depleted and the strut requires refilling"],
+    correct: 1,
+    explain: "A vent port venting nitrogen is a warning that the component still holds pressure. Stop and discharge the pressure before proceeding."
+  },
+  {
+    topic: "Oleo Servicing",
+    q: "What seals are used in the oleo strut piston assembly? (Select the most complete answer)",
+    a: ["O-rings and chevron (vee) seals with back-up rings and wipers", "Only O-rings and Teflon backup rings", "Neoprene cup seals and leather gaskets", "Metal C-seals and rubber lip seals"],
+    correct: 0,
+    explain: "Oleo strut seals include O-rings/packing (round or rectangular cross-section), chevron (vee cross-section) seals, and back-up rings (Teflon, steel, or brass)."
+  },
+
+  // ─── LANDING GEAR COMPONENTS ───
+  {
+    topic: "Landing Gear Components",
+    q: "What is the function of the drag link (drag brace)?",
+    a: ["Stabilizes the landing gear laterally and functions as a side load downlock", "Stabilizes the landing gear longitudinally and functions as a down-lock", "Connects the gear cylinder to the piston and maintains wheel alignment", "Attaches the gear to the trunnion bearings"],
+    correct: 1,
+    explain: "The drag link stabilizes the landing gear longitudinally. If the gear retracts forward or aft, it is hinged to allow retraction and also functions as a down-lock."
+  },
+  {
+    topic: "Landing Gear Components",
+    q: "What is the function of the overcenter link?",
+    a: ["It applies a pre-load to the torsion link to reduce shimmy", "It applies pressure to the centre pivot of a drag or side brace link to prevent gear collapse on the ground", "It centers the nose wheel before retraction", "It provides a mechanical backup for the down-lock microswitch"],
+    correct: 1,
+    explain: "The overcenter link applies pressure to the centre pivot point of a drag or side brace link, preventing it from pivoting (collapsing) except when retracting the gear. It is also called a down-lock."
+  },
+  {
+    topic: "Landing Gear Components",
+    q: "When is it generally considered safe to disconnect torque links for towing?",
+    a: ["When the aircraft maintenance manual specifically prohibits it", "When the torque links are fitted with a quick-release pip-pin (designed for that purpose)", "When the aircraft is on jacks and all nitrogen is bled off", "Torque links should never be disconnected for towing"],
+    correct: 1,
+    explain: "If torque links are fitted with a quick-disconnect pip-pin, they were designed to be disconnected for towing. If they are cotter-pinned or bolted, verify in the maintenance manual first."
+  },
+  {
+    topic: "Landing Gear Components",
+    q: "Which landing gear component senses oleo extension to determine if the aircraft is airborne or on the ground?",
+    a: ["The trunnion bearing", "The overcenter link", "The squat switch (safety switch)", "The gear position microswitch"],
+    correct: 2,
+    explain: "The squat switch (safety switch) is attached to the lower landing gear and senses the degree of oleo extension to determine if the aircraft is airborne or AOG."
+  },
+  {
+    topic: "Landing Gear Components",
+    q: "What are the normal landing gear indications with three green lights illuminated?",
+    a: ["Gear in transit or unsafe", "Gear retracted and locked", "Gear down and locked", "Gear doors open"],
+    correct: 2,
+    explain: "Three green lights indicate gear down and locked. Red lights indicate gear in transit or unsafe. No lights indicate gear retracted."
+  },
+
+  // ─── SHIMMY DAMPENER ───
+  {
+    topic: "Shimmy Dampener",
+    q: "What is the purpose of a shimmy dampener?",
+    a: ["To centre the nose wheel after take-off before retraction", "To reduce the tendency of the nose wheel to oscillate (shimmy) from side to side", "To limit nose wheel steering angle during high-speed taxi", "To absorb fore-and-aft shock loads on the nose gear"],
+    correct: 1,
+    explain: "The shimmy dampener is a hydraulic snubbing device that reduces the tendency of the nose wheel to oscillate (shimmy) from side to side."
+  },
+  {
+    topic: "Shimmy Dampener",
+    q: "How does a piston-type shimmy dampener resist nose wheel shimmy?",
+    a: ["By using a spring to return the wheel to centre after deflection", "By restricting the speed of piston movement through a fluid orifice", "By electrically braking the nose wheel steering actuator", "By tightening a friction disc against the steering collar"],
+    correct: 1,
+    explain: "The piston-type dampener contains a piston with an orifice. When the wheel shimmies it must force fluid from one side to the other through the orifice, resisting rapid movement."
+  },
+  {
+    topic: "Shimmy Dampener",
+    q: "How is the fluid level on a vane-type shimmy dampener typically checked?",
+    a: ["By a sight glass on the side of the housing", "By measuring the visible length of an indicator pin", "By removing the filler plug and visually inspecting", "By monitoring hydraulic system pressure differential"],
+    correct: 1,
+    explain: "On a vane-type dampener, the fluid level is usually checked by measuring the visible portion of an indicator pin."
+  },
+
+  // ─── FLOATS & SKIS ───
+  {
+    topic: "Floats & Skis",
+    q: "What common boat hull terminology applies to floats and hulls on seaplanes?",
+    a: ["Spar, rib, longeron, stringer", "Keel, chine, step, bow", "Bulkhead, frame, former, stringer", "Keelson, chine, sternpost, bead"],
+    correct: 1,
+    explain: "Common boating terms used for seaplane floats/hulls include: keel, chine, step, and bow."
+  },
+  {
+    topic: "Floats & Skis",
+    q: "What is the purpose of the 'step' on a seaplane float or hull?",
+    a: ["It acts as a structural bulkhead to support the spreader bars", "It is a deliberate break in the bottom hull to assist the aircraft in getting onto the step (planing) and breaking free of the water surface on takeoff", "It is a boarding step for passengers", "It is a drain point for water that accumulates in the float compartments"],
+    correct: 1,
+    explain: "The step is a purposeful break in the bottom of the float or hull that helps the aircraft get onto the plane (hydrodynamic planing) and break free of water suction during takeoff."
+  },
+  {
+    topic: "Floats & Skis",
+    q: "How long should a repaired float be filled with water and allowed to stand before being returned to service?",
+    a: ["6 hours", "12 hours", "At least 24 hours", "48 hours"],
+    correct: 2,
+    explain: "A float that has undergone repairs should be filled with water and allowed to stand at least 24 hours to check for leaks."
+  },
+  {
+    topic: "Floats & Skis",
+    q: "What are the three basic types of aircraft ski?",
+    a: ["Short, medium, and long", "Straight, fixed-penetration, and wheel ski", "Wooden, metal, and composite", "Fixed, free-castering, and retractable"],
+    correct: 1,
+    explain: "The three basic ski types are: Straight (replaces the wheel), Fixed-Penetration (mounts alongside the tire), and Wheel Ski (retractable, sharing the axle with the wheel)."
+  },
+  {
+    topic: "Floats & Skis",
+    q: "On a float-equipped aircraft, what is the purpose of the 'flying wires'?",
+    a: ["To support the aircraft weight through the floats in flight", "To 'box' the floats into a square (symmetrical) position relative to each other", "To carry control cables to the water rudders", "To reinforce the float attachment struts under compression loads"],
+    correct: 1,
+    explain: "Steel flying wires are used to box the floats, maintaining them in a square (symmetrical) position. Their lengths are adjusted to ensure symmetry."
+  },
+  {
+    topic: "Floats & Skis",
+    q: "What holds a ski in the correct flying position during flight?",
+    a: ["A hydraulic actuator", "A powerful bungee cord", "A spring-loaded detent pin", "The weight of the ski itself"],
+    correct: 1,
+    explain: "A powerful bungee cord holds the ski in the flying position during flight."
+  },
+  {
+    topic: "Floats & Skis",
+    q: "Why is lubrication especially critical on amphibious floats compared to standard landing gear?",
+    a: ["The water acts as a lubricant and washes away grease", "Frequent contact with water causes rapid corrosion at wheel bearings and pivot points", "Salt water causes electrolytic corrosion in the retraction actuators", "The heavier float structure requires more frequent bearing replacement"],
+    correct: 1,
+    explain: "Due to severe operating conditions (frequent water contact), lubrication is of utmost importance. Disassembly and cleaning of wheel bearings and pivot points may be required at frequent intervals."
+  },
+
+  // ─── WHEELS ───
+  {
+    topic: "Wheels",
+    q: "Almost all modern aircraft wheels are constructed as what type of unit?",
+    a: ["One-piece forged units with detachable flanges", "Two-piece units with two wheel halves bolted together", "Cast magnesium single-piece units with a split rim lock", "Welded aluminum units with a separate bead ring"],
+    correct: 1,
+    explain: "Almost all modern aircraft wheels are constructed as two-piece units — two wheel halves held together by bolts."
+  },
+  {
+    topic: "Wheels",
+    q: "What is a fusible plug on an aircraft wheel designed to do?",
+    a: ["Seal the O-ring groove in the wheel half", "Melt if the wheel overheats, releasing tire pressure to prevent a tire explosion", "Indicate when the wheel bolts have reached proper torque", "Act as a sacrificial anode to prevent wheel corrosion"],
+    correct: 1,
+    explain: "The fusible plug is designed to melt if the wheel overheats, releasing tire pressure to prevent a tire explosion from overheated brakes."
+  },
+  {
+    topic: "Wheels",
+    q: "Why is the bead seat area of an aircraft wheel particularly critical and difficult to inspect?",
+    a: ["It is submerged in lubricant and cannot be visually checked", "It is highly stressed by the inflated tire, and cracks can close so tightly that liquid penetrant cannot enter — only eddy current inspection works here", "The bead seat is covered by the brake disc and cannot be accessed without disassembly", "It is made of a different alloy from the wheel half and requires specialized MPI equipment"],
+    correct: 1,
+    explain: "The bead seat area is highly stressed. When the tire is dismounted, cracks may close so tightly that liquid penetrant cannot enter, requiring eddy current inspection."
+  },
+  {
+    topic: "Wheels",
+    q: "What is the recommended method for removing a tight bearing cup from a wheel half?",
+    a: ["Strike the bearing race with a brass drift and hammer in a criss-cross pattern", "Heat the wheel half to no more than 225°F and press the bearing out using an appropriately sized bushing", "Use a cold chisel to split the race and pry it out", "Apply liquid nitrogen to the wheel half and use a slide hammer"],
+    correct: 1,
+    explain: "Heat the wheel half to no more than 225°F for 30 minutes, then press the bearing out using an appropriately sized bushing and support. Do not hammer."
+  },
+  {
+    topic: "Wheels",
+    q: "What corrosion treatment is used on aluminum wheels after corrosion removal?",
+    a: ["Dow 19", "Alodine", "Zinc chromate primer only", "MIL-PRF-23377 epoxy primer"],
+    correct: 1,
+    explain: "Alodine is used on aluminum wheels. Dow 19 is used on magnesium wheels."
+  },
+  {
+    topic: "Wheels",
+    q: "Which NDT method is specifically used to inspect the bead seat area of aircraft wheels for cracks?",
+    a: ["Magnetic particle inspection (MPI)", "Liquid penetrant inspection (LPI)", "Ultrasonic inspection", "Eddy current inspection"],
+    correct: 3,
+    explain: "Eddy current inspection is specifically required for the bead seat area because cracks can close tightly when the tire is removed, preventing liquid penetrant from entering."
+  },
+  {
+    topic: "Wheels",
+    q: "When must the wheel half O-ring be replaced?",
+    a: ["Only when a tire leak is confirmed at the bead", "Whenever the wheel halves are separated", "At every 100-hour inspection regardless of condition", "Only when visible cracks or cuts are found"],
+    correct: 1,
+    explain: "The wheel half O-ring seal should be replaced whenever the wheel halves are separated — this is a standard maintenance practice."
+  },
+  {
+    topic: "Wheels",
+    q: "Why must the tire be completely deflated before removing the wheel from the aircraft?",
+    a: ["To reduce the weight of the wheel assembly for safe handling", "Because if the wheel half retainer bolts have failed, separating halves under pressure at axle nut removal could cause a serious accident", "To prevent nitrogen gas contamination in the wheel well", "To allow the bead to seat correctly when reinstalled"],
+    correct: 1,
+    explain: "If the wheel half retainer bolts have failed, a serious accident may result when the wheel halves separate as the axle nut is removed under tire pressure."
+  },
+
+  // ─── TIRES ───
+  {
+    topic: "Tires",
+    q: "How does the permitted sidewall deflection for aircraft tires compare to automobile tires?",
+    a: ["About the same — 12–14% for both", "Aircraft tires allow less — about 5–8%", "Aircraft tires allow much more — 32–35% vs 12–14% for cars", "Aircraft tires allow slightly more — 15–18%"],
+    correct: 2,
+    explain: "Automobile tires are allowed 12–14% sidewall deflection. Aircraft tires are designed to operate with sidewall deflections of 32–35% to handle tremendous landing impact loads."
+  },
+  {
+    topic: "Tires",
+    q: "What does the red balance mark (dot) on an aircraft tire sidewall indicate?",
+    a: ["The maximum weight capacity of the tire", "The light (weight) area of the tire, which must be aligned with the heavy spot / valve stem on the wheel", "The manufacturer's quality inspection point", "The tire must be rotated to this position for storage"],
+    correct: 1,
+    explain: "The red dot identifies the light (weight) area of the tire. It must be lined up with the heavy part of the wheel or tube, which is at the valve stem (marked with a yellow dot on tubes)."
+  },
+  {
+    topic: "Tires",
+    q: "What is the most important part of an aircraft tire, through which all tire loads are ultimately transferred?",
+    a: ["The tread", "The carcass", "The bead", "The sidewall"],
+    correct: 2,
+    explain: "The bead is the most important part of the tire. All loads on the tire are ultimately transferred to the bead."
+  },
+  {
+    topic: "Tires",
+    q: "What is the single greatest problem with aircraft tires?",
+    a: ["Ozone and UV degradation of the sidewall rubber", "Heat resulting from sidewall flexing during aircraft movement", "Hydroplaning on wet runways", "Flat-spotting due to braking"],
+    correct: 1,
+    explain: "The single greatest problem with aircraft tires is heat resulting from sidewall flexing during aircraft movement. This causes internal carcass damage and premature failure."
+  },
+  {
+    topic: "Tires",
+    q: "Why should aircraft tire inflation pressure always be checked when the tire is cold?",
+    a: ["Hot tires give an inaccurately low pressure reading", "Heat from operations increases tire pressure, so a cold-tire check is the baseline reference", "The pressure gauge is inaccurate at high temperatures", "Hot tires expand, making the pressure gauge connection unreliable"],
+    correct: 1,
+    explain: "Tire inflation pressure should always be checked when the tire is cold (ambient temp, 2–3 hours after flight) because operational heat increases pressure, and hot readings would be misleadingly high."
+  },
+  {
+    topic: "Tires",
+    q: "What tire defect is characterized by accelerated wear on the shoulders of the tire?",
+    a: ["Over-inflation", "Flat spotting", "Under-inflation", "Chevron cutting"],
+    correct: 2,
+    explain: "Under-inflation causes accelerated wear on the shoulders of the tire, increased sidewall flexing, and excessive heat build-up that can cause internal carcass damage."
+  },
+  {
+    topic: "Tires",
+    q: "Why should dry nitrogen rather than compressed air be used to inflate high-pressure aircraft tires?",
+    a: ["Nitrogen is heavier and provides more carcass support", "Air can lead to tire explosion due to a build-up of volatile gases and static electricity", "Nitrogen inflated tires maintain pressure better in cold weather", "Air contains moisture that corrodes the wheel half bore"],
+    correct: 1,
+    explain: "Using dry air to inflate high-pressure tires can lead to tire explosion due to the build-up of volatile gases and static electricity. Always use dry nitrogen."
+  },
+  {
+    topic: "Tires",
+    q: "When must a tire be immediately removed from service due to tread damage?",
+    a: ["When any tread groove shows any wear", "When a cut runs halfway or more across a rib or exposes cord material", "When any flat spot is visible", "When any sidewall weather checking is present"],
+    correct: 1,
+    explain: "Replace any tire with a cut that runs halfway or greater across a rib, or any cut deep enough to expose cord material."
+  },
+  {
+    topic: "Tires",
+    q: "What is the purpose of chine tires, and where are they used?",
+    a: ["They are extra-wide tires used on tail-dragger aircraft for soft-field operations", "Nose wheel tires designed to deflect water, slush, and gravel away from the engines", "High-speed tires used on jet aircraft for their improved hydroplaning resistance", "Low-pressure tires used on amphibious aircraft wheel-ski arrangements"],
+    correct: 1,
+    explain: "Chine tires are used in nose wheel applications to direct water, slush, and gravel away from the engines. Dual chine for single-wheel, single chine for dual-wheel applications."
+  },
+  {
+    topic: "Tires",
+    q: "How should aircraft tires be stored if storing them horizontally?",
+    a: ["Any number of tires can be stacked flat if a pallet is used", "Maximum 5 high for tires up to 40 inches in diameter; maximum 3 high for tires larger than 49 inches", "Always flat on their tread with spacers between each tire", "Never stored horizontally — always vertical in racks"],
+    correct: 1,
+    explain: "If stored horizontally: max 5 high for tires up to 40 inches; max 4 high for 40–49 inches; max 3 high for larger than 49 inches. Excessive stacking weight distorts tires."
+  },
+  {
+    topic: "Tires",
+    q: "Why is a roughly 10% pressure drop expected after initially inflating a new tire assembly?",
+    a: ["The O-ring seat leaks slightly until the bead fully seats", "Nylon ply tires stretch (tire stretch) in the first few hours after inflation, causing a natural pressure drop", "Initial nitrogen purity is lower and some oxygen diffuses out through the carcass", "The valve core requires a break-in period before sealing properly"],
+    correct: 1,
+    explain: "Nylon ply tires stretch after initial application of pressure, causing about a 5–10% pressure drop within the first 24 hours. Always adjust tire pressure after 12–24 hours."
+  },
+
+  // ─── BRAKES ───
+  {
+    topic: "Brakes",
+    q: "What physical process describes how aircraft brakes slow the aircraft?",
+    a: ["They create aerodynamic drag by extending spoiler panels under the wings", "They convert the aircraft's kinetic energy into heat energy through friction", "They use magnetic eddy currents to oppose wheel rotation", "They apply pneumatic pressure to the axle flange to slow wheel rotation"],
+    correct: 1,
+    explain: "Braking systems change the kinetic energy of the aircraft's motion into heat energy through friction between pads/linings and the disc or drum."
+  },
+  {
+    topic: "Brakes",
+    q: "On a floating disc (fixed caliper) single-disc brake, how is brake disc wear accommodated?",
+    a: ["The disc is replaced when thickness limits are reached", "The disc floats in slots or splines in the wheel hub, allowing it to move axially", "The caliper moves on guide pins attached to a carrier to maintain contact", "Automatic adjusters push the disc outward as it wears"],
+    correct: 1,
+    explain: "In a fixed caliper (floating disc) arrangement, the disc has drive keys or tabs engaging slots in the wheel hub and is allowed to float in those slots to compensate for wear."
+  },
+  {
+    topic: "Brakes",
+    q: "What are the two main types of brake lining material used on aircraft brakes?",
+    a: ["Ceramic and carbon fibre", "Organic and metallic (sintered)", "Rubber compound and Kevlar-reinforced", "Cast iron and carbon-ceramic"],
+    correct: 1,
+    explain: "Brake linings/pads are typically of two types: organic (uniform construction throughout) or metallic/sintered (sintered metal bonded to a metal backing plate)."
+  },
+  {
+    topic: "Brakes",
+    q: "How is brake wear typically monitored on a modern multiple-disc brake assembly?",
+    a: ["By checking hydraulic brake system pressure differential with brakes applied", "By measuring brake disc thickness against manufacturer's wear limits only", "By measurement or by checking wear indicator pins that must protrude a specified minimum amount", "By inspecting for heat discolouration on the brake housing"],
+    correct: 2,
+    explain: "Brake wear may be determined by measurement or by checking wear indicator pins that must protrude a specific minimum amount."
+  },
+  {
+    topic: "Brakes",
+    q: "On which type of aircraft are drum brakes primarily found?",
+    a: ["Modern light singles", "High-speed jet aircraft", "Older aircraft such as the DC-3", "Helicopters"],
+    correct: 2,
+    explain: "Drum brakes (similar in operation to automotive drum brakes but larger) are used on aircraft such as the DC-3."
+  },
+
+  // ─── WHEEL ALIGNMENT & BALANCING ───
+  {
+    topic: "Wheel Alignment & Balancing",
+    q: "What condition should prompt a check of main gear wheel alignment?",
+    a: ["Any time the aircraft is on jacks for any reason", "When one or more tires shows uneven wear, or when gear damage is suspected", "At every 100-hour inspection as a routine item", "Only after a main gear retraction cycle failure"],
+    correct: 1,
+    explain: "Alignment should be checked when one or more tires shows uneven wear or when the landing gear has been damaged. Checking alignment may not be a routine maintenance item."
+  },
+  {
+    topic: "Wheel Alignment & Balancing",
+    q: "Why might it be necessary to roll aircraft wheels onto greased plates during wheel alignment checks?",
+    a: ["To allow the brake disc to rotate freely during the check", "To remove any pre-load between the tire and ground so wheels are in their natural position", "To prevent tire flat-spotting during a prolonged alignment procedure", "To eliminate torque link bind when measuring toe angles"],
+    correct: 1,
+    explain: "Rolling the wheels onto greased plates removes the pre-load (scrub friction) between the tire and the ground, allowing wheels to settle into their natural position for an accurate alignment measurement."
+  },
+  {
+    topic: "Wheel Alignment & Balancing",
+    q: "During wheel balancing, what does the '6 o'clock' position indicate when the wheel is placed on the balance stand and rotated?",
+    a: ["The valve stem should be positioned here", "It is the light spot and balance weights should be placed here", "It is the heavy spot of the wheel assembly", "The tire red dot should align here"],
+    correct: 2,
+    explain: "If the wheel always stops at the same position, the 6 o'clock position is the heavy spot. Weights are then attached to counter the heavy spot."
+  },
+];
+
+// ── State ──
+let questions = [];
+let current = 0;
+let score = 0;
+let userAnswers = [];
+let answered = false;
+
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function startQuiz() {
+  // Shuffle questions, take all 60
+  questions = shuffle([...ALL_QUESTIONS]).map(q => {
+    // Shuffle answers, track where correct answer went
+    const options = q.a.map((text, i) => ({ text, isCorrect: i === q.correct }));
+    shuffle(options);
+    const newCorrect = options.findIndex(o => o.isCorrect);
+    return { ...q, shuffledOptions: options.map(o => o.text), correct: newCorrect };
+  });
+  current = 0;
+  score = 0;
+  userAnswers = [];
+
+  document.getElementById('start-screen').classList.add('hidden');
+  document.getElementById('results-screen').classList.add('hidden');
+  document.getElementById('review-screen').style.display = 'none';
+  document.getElementById('quiz-screen').classList.remove('hidden');
+  document.getElementById('scorebar').style.display = 'flex';
+  document.getElementById('prog-wrap').style.display = 'block';
+  document.getElementById('sb-total').textContent = questions.length;
+  renderQuestion();
+}
+
+function renderQuestion() {
+  answered = false;
+  const q = questions[current];
+  document.getElementById('q-num').textContent = `Question ${current + 1}`;
+  document.getElementById('q-topic').textContent = q.topic;
+  document.getElementById('q-text').textContent = q.q;
+  document.getElementById('feedback').className = 'feedback-box';
+  document.getElementById('feedback').textContent = '';
+  document.getElementById('next-btn').disabled = true;
+
+  const keys = ['A', 'B', 'C', 'D'];
+  const optDiv = document.getElementById('options');
+  optDiv.innerHTML = '';
+  q.shuffledOptions.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'option-btn';
+    btn.innerHTML = `<span class="key">${keys[i]}</span><span>${opt}</span>`;
+    btn.onclick = () => selectAnswer(i, btn);
+    optDiv.appendChild(btn);
+  });
+
+  // Scorebar
+  document.getElementById('sb-q').textContent = current + 1;
+  document.getElementById('sb-score').textContent = score;
+  document.getElementById('sb-answered').textContent = current;
+  const pct = (current / questions.length) * 100;
+  document.getElementById('progress-bar').style.width = pct + '%';
+}
+
+function selectAnswer(idx, clickedBtn) {
+  if (answered) return;
+  answered = true;
+  const q = questions[current];
+  const isCorrect = idx === q.correct;
+  userAnswers.push({ question: q, selected: idx, correct: q.correct, isCorrect });
+
+  if (isCorrect) score++;
+
+  const btns = document.querySelectorAll('.option-btn');
+  btns.forEach(b => b.disabled = true);
+
+  if (isCorrect) {
+    clickedBtn.classList.add('correct');
+  } else {
+    clickedBtn.classList.add('incorrect');
+    btns[q.correct].classList.add('reveal-correct');
+  }
+
+  const fb = document.getElementById('feedback');
+  fb.className = 'feedback-box ' + (isCorrect ? 'correct' : 'incorrect');
+  fb.textContent = (isCorrect ? '✓ Correct! ' : '✗ Incorrect. ') + q.explain;
+
+  document.getElementById('next-btn').disabled = false;
+  document.getElementById('sb-score').textContent = score;
+  document.getElementById('sb-answered').textContent = current + 1;
+}
+
+function nextQuestion() {
+  if (!answered) return;
+  current++;
+  if (current >= questions.length) {
+    showResults();
+  } else {
+    renderQuestion();
+  }
+}
+
+function showResults() {
+  document.getElementById('quiz-screen').classList.add('hidden');
+  document.getElementById('scorebar').style.display = 'none';
+  document.getElementById('prog-wrap').style.display = 'none';
+  const pct = Math.round((score / questions.length) * 100);
+  document.getElementById('res-pct').textContent = pct + '%';
+  document.getElementById('res-frac').textContent = score + ' / ' + questions.length;
+  document.getElementById('res-correct').textContent = score;
+  document.getElementById('res-incorrect').textContent = questions.length - score;
+
+  let heading, comment;
+  if (pct >= 90) { heading = "Outstanding!"; comment = "Excellent mastery of landing gear systems."; }
+  else if (pct >= 75) { heading = "Well Done!"; comment = "Good understanding — review any incorrect answers."; }
+  else if (pct >= 60) { heading = "Passing Score"; comment = "A solid attempt. Revisit weaker topic areas before the exam."; }
+  else { heading = "Keep Studying"; comment = "Review the course material and try again. You've got this."; }
+
+  document.getElementById('res-heading').textContent = heading;
+  document.getElementById('res-comment').textContent = comment;
+  document.getElementById('results-screen').classList.remove('hidden');
+}
+
+function showReview() {
+  document.getElementById('results-screen').classList.add('hidden');
+  const rv = document.getElementById('review-screen');
+  rv.style.display = 'block';
+  const keys = ['A', 'B', 'C', 'D'];
+  let html = '';
+  userAnswers.forEach((ua, i) => {
+    const cls = ua.isCorrect ? 'correct' : 'incorrect';
+    html += `<div class="review-card ${cls}">
+      <div class="review-meta">Q${i+1} &bull; ${ua.question.topic} &bull; ${ua.isCorrect ? '✓ Correct' : '✗ Incorrect'}</div>
+      <div class="review-q">${ua.question.q}</div>
+      <div class="review-answer"><span class="lbl ${ua.isCorrect ? 'correct-lbl' : 'incorrect-lbl'}">Your answer (${keys[ua.selected]}):</span>${ua.question.shuffledOptions[ua.selected]}</div>
+      ${!ua.isCorrect ? `<div class="review-answer"><span class="lbl correct-lbl">Correct answer (${keys[ua.correct]}):</span>${ua.question.shuffledOptions[ua.correct]}</div>` : ''}
+      <div class="review-answer" style="color:var(--muted);font-size:0.85rem;margin-top:0.3rem;">${ua.question.explain}</div>
+    </div>`;
+  });
+  document.getElementById('review-list').innerHTML = html;
+}
+
+function backToResults() {
+  document.getElementById('review-screen').style.display = 'none';
+  document.getElementById('results-screen').classList.remove('hidden');
+}
+
+function restartQuiz() {
+  document.getElementById('results-screen').classList.add('hidden');
+  document.getElementById('start-screen').classList.remove('hidden');
+}
+</script>
+</body>
+</html>
