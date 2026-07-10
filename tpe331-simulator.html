@@ -108,9 +108,9 @@
   @keyframes annblink{50%{filter:brightness(.35);}}
 
   /* ============ PEDESTAL / LEVERS ============ */
-  .pedestal{display:flex;gap:14px;justify-content:center;}
+  .pedestal{display:flex;gap:9px;justify-content:center;}
   .quad{
-    position:relative;width:86px;height:300px;border-radius:8px;
+    position:relative;width:74px;height:300px;border-radius:8px;
     background:linear-gradient(90deg,#101114,#1c1e22 20%,#26282d 50%,#1c1e22 80%,#101114);
     border:1px solid #000;box-shadow:inset 0 2px 8px rgba(0,0,0,.7);
     touch-action:none;
@@ -128,7 +128,7 @@
   .quad .mark.left{right:auto;left:4px;text-align:left;}
   .quad .mark.left::before{left:auto;right:-13px;}
   .lever{
-    position:absolute;left:50%;width:58px;height:30px;transform:translate(-50%,-50%);
+    position:absolute;left:50%;width:50px;height:30px;transform:translate(-50%,-50%);
     cursor:grab;z-index:5;
   }
   .lever:active{cursor:grabbing;}
@@ -142,7 +142,10 @@
   }
   .lever-pwr .knob{background:linear-gradient(180deg,#3e4854,#232a33);}
   .lever-pwr .knob::after{color:#c8d2de;}
-  .lever-spd .knob{background:linear-gradient(180deg,#ff8f5e,#b8431c);}
+  .lever-prop .knob{background:linear-gradient(180deg,#6ea3e8,#2b5391);}
+  .lever-prop .knob::after{color:#dbe8fa;}
+  .lever-cond .knob{background:linear-gradient(180deg,#ff8f5e,#b8431c);}
+  .lever-cond .knob::after{color:#ffe4d8;}
   .quad-label{position:absolute;bottom:-19px;left:0;right:0;text-align:center;
     font-size:9px;letter-spacing:2px;color:#98a0ad;font-weight:700;}
   .quad-val{position:absolute;top:-19px;left:0;right:0;text-align:center;
@@ -264,11 +267,17 @@
           <div class="lever lever-pwr" id="levPwr"><div class="knob" data-l="PWR"></div></div>
           <div class="quad-label">POWER</div>
         </div>
-        <div class="quad" id="quadSpd">
-          <div class="quad-val" id="spdVal">LOW 71%</div>
+        <div class="quad" id="quadProp">
+          <div class="quad-val" id="propVal">FULL FWD</div>
           <div class="slot"></div>
-          <div class="lever lever-spd" id="levSpd"><div class="knob" data-l="RPM"></div></div>
-          <div class="quad-label">SPEED (RPM)</div>
+          <div class="lever lever-prop" id="levProp"><div class="knob" data-l="PROP"></div></div>
+          <div class="quad-label">PROP PITCH</div>
+        </div>
+        <div class="quad" id="quadCond">
+          <div class="quad-val" id="condVal">CUTOFF</div>
+          <div class="slot"></div>
+          <div class="lever lever-cond" id="levCond"><div class="knob" data-l="COND"></div></div>
+          <div class="quad-label">CONDITION</div>
         </div>
       </div>
     </div>
@@ -372,12 +381,16 @@ const sim = {
   locksEngaged:true, damaged:false, dead:false,
   battery:true, pump:false, ignOvrd:false, enrich:false,
   pl:10,                   // power lever 0-100 (0-8 REV, 8-30 GND/BETA, 30 FLT IDLE, 100 MAX)
-  sl:0,                    // speed lever 0-1 -> 71..100 %RPM
+  prop:100,                // prop pitch lever 0-100 (0 FEATHER detent, 15-100 -> 96..100 %RPM governor)
+  cond:0,                  // condition lever 0-100 (0 FUEL CUTOFF, 15 LOW 71%, 100 HIGH 97%)
   lightDelay:0, peakStartItt:0, startAttempts:0,
   env:{ oat:15, batt:1.0, rich:1.0, eff:1.0, hotFactor:1.0, residual:0 }
 };
 
-const rpmTarget = ()=> 71 + 29*sim.sl;
+const condRpm   = ()=> 71 + 26*Math.max(0,sim.cond-15)/85;   // underspeed governor setting
+const propRpm   = ()=> 96 +  4*Math.max(0,sim.prop-15)/85;   // propeller governor setting
+const feathered = ()=> sim.prop<8;
+const fuelAllowed = ()=> sim.cond>=8;                        // condition lever out of CUTOFF
 const airflow   = r => TUNE.airA + TUNE.airB*Math.pow(clamp(r,0,120)/100, TUNE.airExp);
 
 /* =====================================================================
@@ -519,11 +532,19 @@ const pwrLever = makeLever("quadPwr","levPwr",{init:10,detents:[10,30],
     const lbl = v<=4?"REVERSE": v<9?"BETA": v<12?"GND IDLE": v<31?(v<29?"TAXI / BETA":"FLT IDLE"): (v>97?"MAX PWR":Math.round(v)+"%");
     document.getElementById("pwrVal").textContent=lbl;
   }});
-const spdLever = makeLever("quadSpd","levSpd",{init:0,detents:[0,100],
-  marks:[{v:100,t:"HIGH 100%"},{v:0,t:"LOW 71%"}],
+const propLever = makeLever("quadProp","levProp",{init:100,detents:[0,15,100],
+  marks:[{v:100,t:"FULL FWD"},{v:15,t:"MIN 96%"},{v:0,t:"FEATHER",left:true}],
   onmove:v=>{
-    sim.sl=v/100;
-    document.getElementById("spdVal").textContent = v>96?"HIGH 100%": v<4?"LOW 71%": Math.round(71+29*v/100)+"%";
+    sim.prop=v;
+    document.getElementById("propVal").textContent =
+      v<8?"FEATHER": v>96?"100% RPM": (96+4*Math.max(0,v-15)/85).toFixed(1)+"% RPM";
+  }});
+const condLever = makeLever("quadCond","levCond",{init:0,detents:[0,15,100],
+  marks:[{v:100,t:"HIGH 97%"},{v:15,t:"LOW 71%"},{v:0,t:"CUTOFF",left:true}],
+  onmove:v=>{
+    sim.cond=v;
+    document.getElementById("condVal").textContent =
+      v<8?"CUTOFF": v>96?"HIGH 97%": v<20?"LOW 71%": Math.round(71+26*Math.max(0,v-15)/85)+"% RPM";
   }});
 
 /* =====================================================================
@@ -579,9 +600,24 @@ function step(dt){
   if(cranking){ s.crankTime+=dt; e.batt=Math.max(0.25, e.batt-dt*0.0018); }
   else if(s.genOn){ e.batt=Math.min(1.0, e.batt+dt*0.004); }
 
+  /* ----- condition lever fuel cutoff ----- */
+  if(!fuelAllowed()){
+    if(s.mode==="run"){
+      s.mode="wind"; s.lit=false; s.fuelIntro=false;
+      log("Condition lever to FUEL CUTOFF &mdash; fuel cut, engine spooling down","wn");
+    } else if(s.fuelIntro||s.lit){
+      s.fuelIntro=false; s.lit=false;
+      log("Condition lever to FUEL CUTOFF &mdash; start aborted, fuel cut","wn");
+    }
+  }
+
   /* ----- SIC start sequencing ----- */
-  if(cranking && s.rpm>=T.lightoffRpm && s.pump && !s.fuelIntro && !s.dead && !s.abortLatch){
+  if(cranking && s.rpm>=T.lightoffRpm && s.pump && fuelAllowed() && !s.fuelIntro && !s.dead && !s.abortLatch){
     s.fuelIntro=true; log("SIC: 10% RPM &mdash; fuel introduced, igniters energized","info");
+  }
+  if(cranking && s.rpm>=T.lightoffRpm && s.pump && !fuelAllowed() && !s._condHint){
+    s._condHint=true;
+    log("10% RPM but NO fuel &mdash; CONDITION lever is in FUEL CUTOFF. Move it to LOW.","wn");
   }
   s.ignActive = (cranking && s.rpm>=T.lightoffRpm && s.rpm<T.starterCut) || (s.ignOvrd && s.battery);
 
@@ -601,7 +637,7 @@ function step(dt){
   /* ----- fuel flow ----- */
   let ff=0;
   if(s.mode==="run"){
-    ff = T.ffIdle*lerp(0.72,1,s.sl) + s.tq*T.ffTq;
+    ff = T.ffIdle*lerp(0.72,1,clamp((s.rpm-71)/29,0,1)) + s.tq*T.ffTq;
   } else if(s.fuelIntro && s.lit!==null){
     ff = (T.ffStartA + T.ffStartB*s.rpm) * e.rich;
     if(s.enrich) ff += T.enrichFF;
@@ -629,19 +665,26 @@ function step(dt){
 
   /* ----- torques & RPM ----- */
   if(s.mode==="run"){
-    /* governed: fixed shaft holds speed-lever RPM; power lever commands torque */
-    const rt=rpmTarget();
+    /* governed, fixed shaft: underspeed governor (condition lever) holds RPM at low
+       power; as power rises the prop governor (prop lever) takes over up to its setting */
+    const base=condRpm();
+    let rt;
+    if(feathered() && !s.locksEngaged) rt = base-8;               // feathered on the ground: RPM sags
+    else rt = Math.max(base, Math.min(propRpm(), base + Math.max(0,s.tq-8)*1.2));
     s.rpm += (rt-s.rpm)*Math.min(1,dt/1.0);
     const plN=clamp((s.pl-30)/70,0,1);
     const coldF = 1 + Math.max(0,(15-e.oat))*0.009;
     const beta = s.pl<30 ? clamp((s.pl-4)/26,0.04,1)*0.16 : 0;  // beta-range blade pitch load
     let raw = s.pl>=30 ? 100*Math.pow(plN,1.15)*coldF*e.eff + 6 : (4+beta*100)*e.eff;
+    if(s.pl>=30) raw *= 100/clamp(rt,92,100);                     // same power at lower RPM = more torque
     if(s.locksEngaged) raw*=0.30;                                 // flat pitch on start locks
     if(s.damaged) raw*=0.45;
     const steady=Math.min(raw, T.tqLimiter);
     s.propGovLag += (raw-s.propGovLag)*Math.min(1,dt/0.85);       // prop governor response lag
     const overshoot = Math.max(0,(raw-s.propGovLag))*0.26;
-    const tgt = steady + overshoot;
+    // decelerating onto a lower governor setting: prop absorbs extra torque until RPM settles
+    const rpmMismatch = Math.max(0, s.rpm - rt) * 2.2 * clamp(raw/100,0,1.2);
+    const tgt = steady + overshoot + rpmMismatch;
     s.tq += (tgt-s.tq)*Math.min(1,dt/0.30);
     /* flameout check */
     if(!s.fuelIntro && !s._runFuel){ /* handled by stop() */ }
@@ -649,16 +692,16 @@ function step(dt){
     const battEff=0.45+0.55*e.batt;
     const stTq = cranking? T.starterK*e.batt*Math.max(0,1-s.rpm/(T.starterMax*battEff)) : 0;
     const tbTq = (s.lit && s.ff>5)? T.turbK*Math.pow(s.ff,0.9)*a*e.eff : 0;
-    const drag = T.dragK*Math.pow(s.rpm/100,T.dragExp)*(s.locksEngaged?T.lockPitch:1) + 1.2;
+    const drag = T.dragK*Math.pow(s.rpm/100,T.dragExp)*(s.locksEngaged?T.lockPitch:(feathered()?0.35:1)) + 1.2;
     const net=stTq+tbTq-drag;
     s.rpm=Math.max(0, s.rpm + net*dt/T.inertia);
     s.tq += (0-s.tq)*Math.min(1,dt/0.5);
     s.propGovLag=s.tq;
     /* governor catch -> running */
-    if(s.lit && s.rpm >= rpmTarget()-2.5){
+    if(s.lit && s.rpm >= condRpm()-2.5){
       s.mode="run"; s.genOn=true; s.startEng=false; s.soak=1.0;
-      log(`ENGINE RUNNING &mdash; governed at ${Math.round(rpmTarget())}% RPM. Start peak ITT ${Math.round(s.peakStartItt)}°C`,"ok");
-      if(s.peakStartItt<=770) coach("<b>Successful start.</b> Peak ITT "+Math.round(s.peakStartItt)+"&deg;C (limit 770&deg;C). Release the start locks (power lever briefly to REVERSE), then set SPEED lever HIGH for run-up.","",6);
+      log(`ENGINE RUNNING &mdash; governed at ${Math.round(condRpm())}% RPM. Start peak ITT ${Math.round(s.peakStartItt)}°C`,"ok");
+      if(s.peakStartItt<=770) coach("<b>Successful start.</b> Peak ITT "+Math.round(s.peakStartItt)+"&deg;C (limit 770&deg;C). Release the start locks (power lever briefly to REVERSE), then CONDITION lever HIGH and PROP levers full forward for run-up.","",6);
       else{
         log("HOT START COMPLETED &mdash; hot section damage likely. Engine down-rated.","dg");
         coach("<b>The engine started &mdash; but you cooked it.</b> Peak ITT was "+Math.round(s.peakStartItt)+"&deg;C, past the 770&deg;C start limit. Turbine blades and stators are heat-damaged; note the engine no longer makes full power. The start should have been <b>aborted</b>: STOP, then motor to cool.","danger",15);
@@ -746,23 +789,23 @@ const SCENARIOS={
   normal:{
     name:"NORMAL START",
     env:{oat:15,batt:1.0,rich:1.0,eff:1.0,hotFactor:1.0,residual:0},
-    coach:"<b>NORMAL BATTERY START.</b> Sequence: BATTERY ON &rarr; FUEL BOOST PUMP ON &rarr; SPEED lever LOW &rarr; power lever GND IDLE &rarr; press <b>ENG START</b>. The SIC introduces fuel + ignition automatically at 10% RPM, drops the starter at 60%. Watch ITT peak (limit <b>770&deg;C</b>) and don't linger in the 18&ndash;28% resonance band."
+    coach:"<b>NORMAL BATTERY START.</b> Sequence: BATTERY ON &rarr; FUEL BOOST PUMP ON &rarr; PROP levers FULL FORWARD (props are on the start locks) &rarr; <b>CONDITION lever LOW</b> (out of fuel cutoff) &rarr; power lever GND IDLE &rarr; press <b>ENG START</b>. The SIC introduces fuel + ignition automatically at 10% RPM, drops the starter at 60%. Watch ITT peak (limit <b>770&deg;C</b>) and don't linger in the 18&ndash;28% resonance band."
   },
   hot:{
     name:"HOT START",
     env:{oat:33,batt:0.60,rich:1.30,eff:1.0,hotFactor:1.14,residual:260},
-    coach:"<b>HOT START SETUP:</b> weak battery, hot day, residual ITT from a recent shutdown, and an over-rich FCU. Start normally &mdash; but watch the ITT needle: with low airflow the fuel/air ratio goes rich and ITT will <b>rocket toward 770&deg;C</b>. Recognize it EARLY and abort: <b>STOP</b> + keep motoring to cool. If you let it pass 923&deg;C you buy a turbine."
+    coach:"<b>HOT START SETUP:</b> weak battery, hot day, residual ITT from a recent shutdown, and an over-rich FCU. Set up a normal start (props forward, CONDITION lever LOW, then ENG START) &mdash; but watch the ITT needle: with low airflow the fuel/air ratio goes rich and ITT will <b>rocket toward 770&deg;C</b>. Recognize it EARLY and abort: <b>STOP</b> (or condition lever to CUTOFF) + keep motoring to cool. If you let it pass 923&deg;C you buy a turbine."
   },
   hung:{
     name:"HUNG START",
     env:{oat:15,batt:0.52,rich:0.90,eff:0.55,hotFactor:1.10,residual:0},
-    coach:"<b>HUNG START SETUP:</b> tired battery and poor engine efficiency (worn compressor / high density altitude). The engine will light off, then <b>RPM stagnates below idle</b> while ITT slowly climbs &mdash; fuel is burning but there isn't enough turbine power to accelerate. Recognize: RPM stuck, ITT creeping. Try <b>FUEL ENRICH</b> (watch ITT!) or abort with <b>STOP</b> and motor to cool."
+    coach:"<b>HUNG START SETUP:</b> tired battery and poor engine efficiency (worn compressor / high density altitude). Set up a normal start (props forward, CONDITION lever LOW, ENG START). The engine will light off, then <b>RPM stagnates below idle</b> while ITT slowly climbs &mdash; fuel is burning but there isn't enough turbine power to accelerate. Recognize: RPM stuck, ITT creeping. Try <b>FUEL ENRICH</b> early (watch ITT!) or abort with <b>STOP</b> and motor to cool."
   },
   overtorque:{
     name:"OVERTORQUE",
     env:{oat:-25,batt:1.0,rich:1.0,eff:1.0,hotFactor:1.0,residual:0},
     preset:"running",
-    coach:"<b>OVERTORQUE DEMO:</b> engine already running, locks released, OAT is <b>&minus;25&deg;C</b> &mdash; dense air means the engine can make well over 100% torque. Speed lever is HIGH. Now <b>slam the power lever full forward</b> and watch the torque needle overshoot past the red line before the limiter catches it. Then reset and try a <b>slow, smooth</b> advance to takeoff power watching the gauge &mdash; that's the correct technique."
+    coach:"<b>OVERTORQUE DEMO:</b> engine already running, locks released, OAT is <b>&minus;25&deg;C</b> &mdash; dense air means the engine can make well over 100% torque. Condition is HIGH, props full forward. Two ways to bust the limit: <b>1)</b> slam the power lever full forward and watch the needle overshoot the red line before the limiter catches it; <b>2)</b> at high power, <b>pull the PROP levers back toward 96%</b> &mdash; same power at lower RPM means more torque. Then reset and try a <b>slow, smooth</b> advance watching the gauge &mdash; that's the correct technique."
   },
   free:{
     name:"FREE PLAY",
@@ -792,18 +835,18 @@ function resetSim(){
     crankTime:0, soak:1.0, propGovLag:0, genOn:false,
     locksEngaged:true, damaged:false, dead:false, abortLatch:false,
     pump:false, ignOvrd:false, enrich:false, battery:true,
-    lightDelay:0, peakStartItt:0, _dieT:0, _revT:0, _dutyWarned:false, _lastRpm:undefined
+    lightDelay:0, peakStartItt:0, _dieT:0, _revT:0, _dutyWarned:false, _condHint:false, _lastRpm:undefined
   });
   sim.env={...sc.env};
   sim.itt = sc.env.residual>0 ? sc.env.residual : sc.env.oat;
   sim.oilT = sc.env.oat;
-  pwrLever.set(10); spdLever.set(0);
+  pwrLever.set(10); propLever.set(100); condLever.set(0);
   setToggle("swBatt",true); setToggle("swPump",false); setToggle("swIgn",false);
   if(sc.preset==="running"){
     sim.mode="run"; sim.lit=true; sim.fuelIntro=true; sim.genOn=true;
     sim.locksEngaged=false; sim.rpm=100; sim.itt=380; sim.oilT=72; sim.oilP=118;
     sim.pump=true; setToggle("swPump",true);
-    pwrLever.set(30); spdLever.set(100);
+    pwrLever.set(30); propLever.set(100); condLever.set(100);
   }
   // sync instructor sliders
   setInstr();
@@ -843,13 +886,17 @@ document.getElementById("btnStart").addEventListener("click",()=>{
 });
 document.getElementById("btnStop").addEventListener("click",()=>{
   const s=sim;
-  if(s.mode==="run"){
-    s.mode="wind"; s.lit=false; s.fuelIntro=false; s.abortLatch=true;
-    log("STOP &amp; FEATHER &mdash; fuel cut, prop feathering, engine spooling down","wn");
-  } else if(s.fuelIntro||s.lit){
-    s.fuelIntro=false; s.lit=false; s.abortLatch=true;
-    log("START ABORTED &mdash; fuel cut. Keep motoring to cool the hot section","wn");
-    coach("<b>Good abort.</b> Fuel is cut. Keep the starter engaged (press ENG START if it dropped out) and <b>motor until ITT is below ~200&deg;C</b> before attempting another start. Mind the starter duty cycle.","",8);
+  const wasRunning=s.mode==="run", wasStarting=s.fuelIntro||s.lit;
+  s.abortLatch=true;
+  condLever.set(0);   // condition lever to FUEL CUTOFF
+  propLever.set(0);   // prop levers to FEATHER
+  if(wasRunning){
+    s.mode="wind"; s.lit=false; s.fuelIntro=false;
+    log("STOP &amp; FEATHER &mdash; condition lever CUTOFF, props feathering, spooling down","wn");
+  } else if(wasStarting){
+    s.fuelIntro=false; s.lit=false;
+    log("START ABORTED &mdash; condition lever CUTOFF, fuel cut. Keep motoring to cool the hot section","wn");
+    coach("<b>Good abort.</b> Fuel is cut. Keep the starter engaged (press ENG START if it dropped out) and <b>motor until ITT is below ~200&deg;C</b>. Before the next attempt: PROP levers full forward, CONDITION lever LOW. Mind the starter duty cycle.","",8);
   } else log("Stop &amp; feather pressed &mdash; fuel already cut","info");
 });
 const enrichBtn=document.getElementById("btnEnrich");
@@ -1017,8 +1064,8 @@ setInterval(()=>{
 
 /* expose for testing */
 window.sim=sim; window.simStep=step; window.TUNE=TUNE;
-window.setPL=v=>pwrLever.set(v); window.setSL=v=>spdLever.set(v);
-window.uiRefs={pwrLever,spdLever,applyScenario,resetSim,setToggle};
+window.setPL=v=>pwrLever.set(v); window.setProp=v=>propLever.set(v); window.setCond=v=>condLever.set(v);
+window.uiRefs={pwrLever,propLever,condLever,applyScenario,resetSim,setToggle};
 
 /* boot */
 applyScenario("normal");
