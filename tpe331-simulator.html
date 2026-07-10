@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TPE331-12 Turboprop Engine Simulator</title>
+<style>
+  :root{
+    --panel:#23262b;
+    --panel-dark:#1a1c20;
+    --panel-edge:#0d0e10;
+    --face:#0b0c0e;
+    --white:#e8e6e0;
+    --amber:#ffb347;
+    --green:#39d353;
+    --red:#ff4545;
+    --cyan:#57c7ff;
+    --lcd:#ffb347;
+    --font:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;
+    --mono:"Consolas","Menlo","Courier New",ui-monospace,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+  html,body{background:#0a0b0d;color:var(--white);font-family:var(--font);}
+  body{min-height:100vh;padding:10px 14px 20px;}
+
+  /* ============ HEADER ============ */
+  header{
+    display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;
+    padding:10px 16px;margin-bottom:10px;
+    background:linear-gradient(180deg,#2b2e34,#1c1e22);
+    border:1px solid #000;border-radius:8px;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.07), 0 3px 8px rgba(0,0,0,.6);
+  }
+  header h1{font-size:17px;letter-spacing:2px;font-weight:600;color:#dfe3ea;}
+  header h1 small{display:block;font-size:10px;letter-spacing:3px;color:#8b93a1;font-weight:400;}
+  .hdr-right{margin-left:auto;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+  .oat-box{font-family:var(--mono);font-size:13px;color:var(--cyan);
+    background:#07131a;border:1px solid #123;border-radius:4px;padding:4px 10px;}
+  .btn{
+    cursor:pointer;user-select:none;font-family:var(--font);font-size:11px;letter-spacing:1px;
+    color:#cfd5de;background:linear-gradient(180deg,#3a3e46,#24272c);
+    border:1px solid #0c0d0f;border-radius:5px;padding:7px 12px;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.12), 0 2px 4px rgba(0,0,0,.5);
+  }
+  .btn:hover{background:linear-gradient(180deg,#454a53,#2b2e34);}
+  .btn:active{transform:translateY(1px);box-shadow:inset 0 2px 4px rgba(0,0,0,.5);}
+  .btn.on{color:#0d1108;background:linear-gradient(180deg,#67e07f,#2f9e46);border-color:#194f24;}
+
+  /* ============ SCENARIO TABS ============ */
+  .scenarios{display:flex;gap:6px;flex-wrap:wrap;}
+  .scen-btn{
+    cursor:pointer;font-size:11px;letter-spacing:.5px;padding:7px 11px;border-radius:5px;
+    color:#aab2bf;background:linear-gradient(180deg,#33363d,#212327);
+    border:1px solid #0b0c0e;box-shadow:inset 0 1px 0 rgba(255,255,255,.08);
+  }
+  .scen-btn:hover{color:#fff;}
+  .scen-btn.active{color:#101317;background:linear-gradient(180deg,#8ec9ff,#4d94d6);
+    border-color:#1c3a52;font-weight:600;}
+
+  /* ============ LAYOUT ============ */
+  .cockpit{
+    display:grid;grid-template-columns:minmax(430px,1.25fr) minmax(300px,.78fr) minmax(300px,.9fr);
+    gap:10px;align-items:stretch;
+  }
+  @media (max-width:1100px){ .cockpit{grid-template-columns:1fr 1fr;} .col-right{grid-column:1/-1;} }
+  @media (max-width:760px){ .cockpit{grid-template-columns:1fr;} }
+
+  .pane{
+    background:
+      radial-gradient(120% 100% at 50% 0%, #2c2f35 0%, #1e2024 55%, #17181c 100%);
+    border:1px solid #000;border-radius:10px;padding:12px;position:relative;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.06), 0 4px 14px rgba(0,0,0,.55);
+  }
+  .pane::before,.pane::after{ /* panel screws */
+    content:"";position:absolute;width:9px;height:9px;border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, #666, #222 70%);
+    box-shadow:inset 0 0 2px #000;
+  }
+  .pane::before{top:7px;left:7px;} .pane::after{top:7px;right:7px;}
+  .pane-title{
+    text-align:center;font-size:10px;letter-spacing:3px;color:#98a0ad;
+    border-bottom:1px solid #34383f;padding-bottom:6px;margin-bottom:10px;font-weight:600;
+  }
+
+  /* ============ GAUGES ============ */
+  .gauge-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+  .gauge-cell{display:flex;flex-direction:column;align-items:center;}
+  .gauge-cell svg{width:100%;height:auto;max-width:210px;}
+  .g-flash .g-glass{animation:gflash .5s steps(2) infinite;}
+  @keyframes gflash{50%{fill:rgba(255,40,40,.20);}}
+
+  /* ============ ANNUNCIATORS ============ */
+  .annuns{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:10px;}
+  .ann{
+    text-align:center;font-size:9.5px;font-weight:700;letter-spacing:.6px;line-height:1.15;
+    padding:7px 2px;border-radius:3px;color:#3d4046;
+    background:linear-gradient(180deg,#191b1e,#101113);
+    border:1px solid #000;box-shadow:inset 0 1px 2px rgba(0,0,0,.8);
+    transition:all .15s;
+  }
+  .ann.amber{color:#2b1c00;background:linear-gradient(180deg,#ffc95e,#e09a1f);
+    box-shadow:0 0 12px rgba(255,180,60,.55), inset 0 1px 0 rgba(255,255,255,.4);}
+  .ann.green{color:#00230a;background:linear-gradient(180deg,#5fe27b,#27a643);
+    box-shadow:0 0 12px rgba(70,220,110,.5), inset 0 1px 0 rgba(255,255,255,.4);}
+  .ann.red{color:#2a0000;background:linear-gradient(180deg,#ff6a5e,#d42313);
+    box-shadow:0 0 14px rgba(255,70,50,.6), inset 0 1px 0 rgba(255,255,255,.35);}
+  .ann.red.blink{animation:annblink .45s steps(2) infinite;}
+  @keyframes annblink{50%{filter:brightness(.35);}}
+
+  /* ============ PEDESTAL / LEVERS ============ */
+  .pedestal{display:flex;gap:14px;justify-content:center;}
+  .quad{
+    position:relative;width:86px;height:300px;border-radius:8px;
+    background:linear-gradient(90deg,#101114,#1c1e22 20%,#26282d 50%,#1c1e22 80%,#101114);
+    border:1px solid #000;box-shadow:inset 0 2px 8px rgba(0,0,0,.7);
+    touch-action:none;
+  }
+  .quad .slot{
+    position:absolute;left:50%;top:14px;bottom:14px;width:9px;transform:translateX(-50%);
+    background:linear-gradient(90deg,#000,#0e0f11 50%,#000);
+    border-radius:5px;box-shadow:inset 0 0 6px #000, 0 1px 0 rgba(255,255,255,.05);
+  }
+  .quad .mark{
+    position:absolute;right:4px;font-size:8px;letter-spacing:.4px;color:#8f97a4;
+    transform:translateY(-50%);text-align:right;line-height:1;pointer-events:none;
+  }
+  .quad .mark::before{content:"";position:absolute;left:-13px;top:50%;width:10px;height:1px;background:#5a5f68;}
+  .quad .mark.left{right:auto;left:4px;text-align:left;}
+  .quad .mark.left::before{left:auto;right:-13px;}
+  .lever{
+    position:absolute;left:50%;width:58px;height:30px;transform:translate(-50%,-50%);
+    cursor:grab;z-index:5;
+  }
+  .lever:active{cursor:grabbing;}
+  .lever .knob{
+    width:100%;height:100%;border-radius:7px;position:relative;
+    box-shadow:0 3px 6px rgba(0,0,0,.7), inset 0 2px 3px rgba(255,255,255,.35), inset 0 -3px 4px rgba(0,0,0,.5);
+  }
+  .lever .knob::after{
+    content:attr(data-l);position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    font-size:9px;font-weight:800;letter-spacing:1px;color:rgba(0,0,0,.65);
+  }
+  .lever-pwr .knob{background:linear-gradient(180deg,#3e4854,#232a33);}
+  .lever-pwr .knob::after{color:#c8d2de;}
+  .lever-spd .knob{background:linear-gradient(180deg,#ff8f5e,#b8431c);}
+  .quad-label{position:absolute;bottom:-19px;left:0;right:0;text-align:center;
+    font-size:9px;letter-spacing:2px;color:#98a0ad;font-weight:700;}
+  .quad-val{position:absolute;top:-19px;left:0;right:0;text-align:center;
+    font-family:var(--mono);font-size:11px;color:var(--cyan);}
+  .ped-wrap{padding:22px 0 26px;}
+
+  /* ============ SWITCH PANEL ============ */
+  .switches{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px;}
+  .sw{
+    display:flex;flex-direction:column;align-items:center;gap:5px;
+    padding:8px 4px;border-radius:6px;background:rgba(0,0,0,.25);
+    border:1px solid #101114;
+  }
+  .sw-label{font-size:8.5px;letter-spacing:.8px;color:#a7aebb;text-align:center;font-weight:700;line-height:1.2;}
+  .toggle{
+    width:26px;height:44px;border-radius:13px;position:relative;cursor:pointer;
+    background:linear-gradient(180deg,#0a0b0d,#16181b);
+    border:1px solid #000;box-shadow:inset 0 2px 5px rgba(0,0,0,.85);
+  }
+  .toggle .bat{
+    position:absolute;left:50%;top:24px;width:14px;height:17px;border-radius:4px;transform:translateX(-50%);
+    background:linear-gradient(180deg,#d8dde4,#8b929c);
+    box-shadow:0 2px 3px rgba(0,0,0,.7), inset 0 1px 1px rgba(255,255,255,.6);
+    transition:top .1s;
+  }
+  .toggle.on .bat{top:3px;background:linear-gradient(180deg,#eef2f6,#a7aeb8);}
+  .pushbtn{
+    width:46px;height:46px;border-radius:50%;cursor:pointer;position:relative;
+    border:3px solid #14161a;
+    background:radial-gradient(circle at 35% 30%, #4a505b, #23262c 70%);
+    box-shadow:0 3px 6px rgba(0,0,0,.7), inset 0 1px 2px rgba(255,255,255,.2);
+    display:flex;align-items:center;justify-content:center;
+    font-size:8px;font-weight:800;color:#c4cad4;letter-spacing:.5px;text-align:center;line-height:1.1;
+  }
+  .pushbtn:active{transform:translateY(1px);}
+  .pushbtn.red{background:radial-gradient(circle at 35% 30%, #e2574a, #8c1d13 75%);color:#ffe1dd;}
+  .pushbtn.armed{box-shadow:0 0 14px rgba(120,220,255,.6), inset 0 1px 2px rgba(255,255,255,.3);}
+  .pushbtn.lit-grn{box-shadow:0 0 14px rgba(80,230,120,.7);}
+
+  /* ============ COACH / LOG ============ */
+  .coach{
+    background:#0d1a10;border:1px solid #1d4227;border-radius:6px;
+    padding:10px 12px;font-size:12px;line-height:1.5;color:#bfe8c8;min-height:74px;margin-bottom:10px;
+  }
+  .coach b{color:#7df09b;}
+  .coach.warn{background:#1d1206;border-color:#6b4310;color:#ffd9a0;}
+  .coach.warn b{color:var(--amber);}
+  .coach.danger{background:#220a08;border-color:#7a2018;color:#ffc4bc;}
+  .coach.danger b{color:#ff7a6e;}
+  .log{
+    height:170px;overflow-y:auto;background:#050607;border:1px solid #17191d;border-radius:6px;
+    font-family:var(--mono);font-size:10.5px;line-height:1.55;padding:8px 10px;color:#9aa3b0;
+  }
+  .log .t{color:#4d5561;}
+  .log .ok{color:#4fd06a;} .log .wn{color:var(--amber);} .log .dg{color:#ff6a5e;} .log .info{color:#79c0ff;}
+  .exc-table{width:100%;border-collapse:collapse;font-size:10.5px;font-family:var(--mono);}
+  .exc-table th{color:#8b93a1;text-align:left;font-weight:600;border-bottom:1px solid #2c3038;padding:3px 6px;font-size:9.5px;letter-spacing:.5px;}
+  .exc-table td{padding:3px 6px;border-bottom:1px solid #17191d;color:#cfd5de;}
+  .exc-table td.dg{color:#ff6a5e;} .exc-table td.wn{color:var(--amber);}
+  .exc-empty{font-size:11px;color:#5c9e6d;padding:8px 4px;font-family:var(--mono);}
+
+  /* ============ INSTRUCTOR ============ */
+  .instr{display:none;margin-top:10px;border-top:1px dashed #34383f;padding-top:8px;}
+  .instr.show{display:block;}
+  .instr label{display:flex;align-items:center;gap:8px;font-size:10.5px;color:#a7aebb;margin:6px 0;}
+  .instr input[type=range]{flex:1;accent-color:#4d94d6;}
+  .instr .val{font-family:var(--mono);color:var(--cyan);width:56px;text-align:right;font-size:11px;}
+
+  /* ============ CHART ROW ============ */
+  .bottom{display:grid;grid-template-columns:1.6fr 1fr;gap:10px;margin-top:10px;}
+  @media (max-width:900px){.bottom{grid-template-columns:1fr;}}
+  #chart{width:100%;height:190px;background:#050607;border-radius:6px;border:1px solid #17191d;}
+  .legend{display:flex;gap:16px;font-size:10px;margin-top:5px;color:#98a0ad;flex-wrap:wrap;}
+  .legend i{display:inline-block;width:14px;height:3px;margin-right:5px;vertical-align:middle;border-radius:2px;}
+
+  footer{margin-top:12px;text-align:center;font-size:10px;color:#5a616d;line-height:1.6;}
+  ::-webkit-scrollbar{width:8px;} ::-webkit-scrollbar-thumb{background:#2e323a;border-radius:4px;}
+  ::-webkit-scrollbar-track{background:#0a0b0d;}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>TPE331&#8209;12 TURBOPROP ENGINE SIMULATOR
+    <small>HONEYWELL (GARRETT) FIXED-SHAFT &middot; MAINTENANCE &amp; PILOT TRAINING AID</small>
+  </h1>
+  <div class="scenarios" id="scenTabs"></div>
+  <div class="hdr-right">
+    <div class="oat-box">OAT <span id="oatRead">+15</span>&deg;C</div>
+    <div class="oat-box">BATT <span id="battRead">24.0</span>V</div>
+    <button class="btn" id="soundBtn">&#128264; SOUND</button>
+    <button class="btn" id="resetBtn">&#8635; RESET</button>
+  </div>
+</header>
+
+<div class="cockpit">
+
+  <!-- ==================== INSTRUMENTS ==================== -->
+  <section class="pane">
+    <div class="pane-title">ENGINE INSTRUMENTS</div>
+    <div class="gauge-grid">
+      <div class="gauge-cell" id="gTQ"></div>
+      <div class="gauge-cell" id="gITT"></div>
+      <div class="gauge-cell" id="gRPM"></div>
+      <div class="gauge-cell" id="gFF"></div>
+      <div class="gauge-cell" id="gOILP"></div>
+      <div class="gauge-cell" id="gOILT"></div>
+    </div>
+  </section>
+
+  <!-- ==================== PEDESTAL ==================== -->
+  <section class="pane">
+    <div class="pane-title">CONTROL PEDESTAL</div>
+    <div class="ped-wrap">
+      <div class="pedestal">
+        <div class="quad" id="quadPwr">
+          <div class="quad-val" id="pwrVal">GND IDLE</div>
+          <div class="slot"></div>
+          <div class="lever lever-pwr" id="levPwr"><div class="knob" data-l="PWR"></div></div>
+          <div class="quad-label">POWER</div>
+        </div>
+        <div class="quad" id="quadSpd">
+          <div class="quad-val" id="spdVal">LOW 71%</div>
+          <div class="slot"></div>
+          <div class="lever lever-spd" id="levSpd"><div class="knob" data-l="RPM"></div></div>
+          <div class="quad-label">SPEED (RPM)</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="switches">
+      <div class="sw"><div class="toggle" id="swBatt"><div class="bat"></div></div><div class="sw-label">BATTERY<br>MASTER</div></div>
+      <div class="sw"><div class="toggle" id="swPump"><div class="bat"></div></div><div class="sw-label">FUEL<br>BOOST PUMP</div></div>
+      <div class="sw"><div class="toggle" id="swIgn"><div class="bat"></div></div><div class="sw-label">IGN<br>OVERRIDE</div></div>
+      <div class="sw"><div class="pushbtn" id="btnStart">ENG<br>START</div><div class="sw-label">START / ABORT<br>CRANK</div></div>
+      <div class="sw"><div class="pushbtn red" id="btnStop">STOP</div><div class="sw-label">STOP &amp;<br>FEATHER</div></div>
+      <div class="sw"><div class="pushbtn" id="btnEnrich">FUEL<br>ENRICH</div><div class="sw-label">ENRICH<br>(HOLD)</div></div>
+    </div>
+
+    <div class="instr" id="instrPanel">
+      <div class="pane-title" style="border:none;margin-bottom:2px;">INSTRUCTOR STATION</div>
+      <label>OAT <input type="range" id="iOat" min="-40" max="45" value="15"><span class="val" id="iOatV">+15&deg;C</span></label>
+      <label>Battery health <input type="range" id="iBatt" min="30" max="100" value="100"><span class="val" id="iBattV">100%</span></label>
+      <label>FCU fuel schedule <input type="range" id="iRich" min="55" max="140" value="100"><span class="val" id="iRichV">100%</span></label>
+      <label>Engine efficiency <input type="range" id="iEff" min="40" max="100" value="100"><span class="val" id="iEffV">100%</span></label>
+    </div>
+  </section>
+
+  <!-- ==================== RIGHT: ANNUNCIATORS + COACH + LOG ==================== -->
+  <section class="pane col-right">
+    <div class="pane-title">ANNUNCIATOR PANEL</div>
+    <div class="annuns">
+      <div class="ann" id="anStart">ENG START</div>
+      <div class="ann" id="anIgn">IGNITION</div>
+      <div class="ann" id="anFuel">FUEL FLOW</div>
+      <div class="ann" id="anGen">GEN OFF</div>
+      <div class="ann" id="anOil">OIL PRESS</div>
+      <div class="ann" id="anLocks">START LOCKS</div>
+      <div class="ann" id="anItt">ITT LIMIT</div>
+      <div class="ann" id="anTq">TORQUE LIMIT</div>
+    </div>
+    <div class="pane-title">INSTRUCTOR NOTES</div>
+    <div class="coach" id="coach"></div>
+    <div class="pane-title">EVENT LOG</div>
+    <div class="log" id="log"></div>
+  </section>
+</div>
+
+<!-- ==================== BOTTOM ROW ==================== -->
+<div class="bottom">
+  <section class="pane">
+    <div class="pane-title">PARAMETER TRACE &mdash; LAST 90 SECONDS</div>
+    <canvas id="chart"></canvas>
+    <div class="legend">
+      <span><i style="background:#39d353"></i>RPM %</span>
+      <span><i style="background:#ffb347"></i>ITT &deg;C (&divide;10)</span>
+      <span><i style="background:#57c7ff"></i>TORQUE %</span>
+      <span style="color:#68707d">&mdash; &mdash; limit lines: ITT 770&deg;C start / 650&deg;C cont &middot; TQ 100%</span>
+    </div>
+  </section>
+  <section class="pane">
+    <div class="pane-title">EXCEEDANCE RECORDER</div>
+    <div id="excBox"><div class="exc-empty">NO EXCEEDANCES RECORDED</div></div>
+  </section>
+</div>
+
+<footer>
+  Training aid only &mdash; values represent typical Honeywell TPE331&#8209;12 series limits (ITT start max 770&deg;C &middot; max continuous 650&deg;C &middot;
+  torque 100% &middot; 100% RPM = 41,730 engine RPM &middot; fuel &amp; ignition at 10%, starter/ignition dropout 60% &middot; avoid stabilized 18&ndash;28% RPM).
+  Not for operational or maintenance use. Refer to the applicable Honeywell manuals and aircraft AFM.
+</footer>
+
+<script>
+"use strict";
+/* =====================================================================
+   TPE331-12 ENGINE SIMULATOR
+   Fixed-shaft turboprop model: starter/SIC sequencing, combustion &
+   ITT thermodynamics, prop drag with start locks, RPM governing,
+   torque limiter with slam overshoot, exceedance recording.
+===================================================================== */
+
+/* ---------------- tuning constants ---------------- */
+const TUNE = {
+  dt:0.05,
+  inertia:6.5,
+  starterK:30, starterMax:28,       // % RPM starter alone can motor (healthy battery)
+  lightoffRpm:10, starterCut:60,    // SIC speed switches
+  turbK:0.9, dragK:110, dragExp:2.2, lockPitch:0.55,
+  ffStartA:55, ffStartB:1.9,        // start fuel schedule (pph)
+  ffIdle:120, ffTq:5.1,             // governed fuel flow
+  enrichFF:42,
+  airA:0.10, airB:0.90, airExp:1.8, // pseudo airflow vs RPM
+  ittK:4.4, ittExp:0.75, tauLit:1.4, compK:60,
+  tqLimiter:99,                     // steady-state torque limiter
+  soakRate:0.008                    // heat-soak Tc growth while hung below idle
+};
+
+const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
+const lerp=(a,b,t)=>a+(b-a)*t;
+
+/* ---------------- simulation state ---------------- */
+const sim = {
+  t:0, rpm:0, itt:15, tq:0, ff:0, oilP:0, oilT:15, rpmRate:0,
+  mode:"off",              // off | crank | run | wind
+  lit:false, fuelIntro:false, startEng:false, ignActive:false,
+  crankTime:0, soak:1.0, propGovLag:0, genOn:false,
+  locksEngaged:true, damaged:false, dead:false,
+  battery:true, pump:false, ignOvrd:false, enrich:false,
+  pl:10,                   // power lever 0-100 (0-8 REV, 8-30 GND/BETA, 30 FLT IDLE, 100 MAX)
+  sl:0,                    // speed lever 0-1 -> 71..100 %RPM
+  lightDelay:0, peakStartItt:0, startAttempts:0,
+  env:{ oat:15, batt:1.0, rich:1.0, eff:1.0, hotFactor:1.0, residual:0 }
+};
+
+const rpmTarget = ()=> 71 + 29*sim.sl;
+const airflow   = r => TUNE.airA + TUNE.airB*Math.pow(clamp(r,0,120)/100, TUNE.airExp);
+
+/* =====================================================================
+   GAUGE FACTORY  (SVG, 270 degree sweep)
+===================================================================== */
+function polar(cx,cy,r,deg){const a=(deg-90)*Math.PI/180;return [cx+r*Math.cos(a), cy+r*Math.sin(a)];}
+function arcPath(cx,cy,r,d0,d1){
+  const [x0,y0]=polar(cx,cy,r,d0),[x1,y1]=polar(cx,cy,r,d1);
+  return `M ${x0.toFixed(2)} ${y0.toFixed(2)} A ${r} ${r} 0 ${(d1-d0)>180?1:0} 1 ${x1.toFixed(2)} ${y1.toFixed(2)}`;
+}
+function makeGauge(elId, spec){
+  const el=document.getElementById(elId);
+  const S=200,C=100,R=86, A0=-135,A1=135;
+  const v2d=v=>lerp(A0,A1,clamp((v-spec.min)/(spec.max-spec.min),0,1));
+  const ns="http://www.w3.org/2000/svg";
+  const svg=document.createElementNS(ns,"svg");
+  svg.setAttribute("viewBox",`0 0 ${S} ${S}`);
+  let inner="";
+  // bezel + face
+  inner+=`<defs>
+    <radialGradient id="bz${elId}" cx="35%" cy="28%"><stop offset="0%" stop-color="#585e68"/><stop offset="55%" stop-color="#25282d"/><stop offset="100%" stop-color="#0a0b0c"/></radialGradient>
+    <radialGradient id="fc${elId}" cx="50%" cy="42%"><stop offset="0%" stop-color="#131417"/><stop offset="100%" stop-color="#060708"/></radialGradient>
+  </defs>
+  <circle cx="${C}" cy="${C}" r="98" fill="url(#bz${elId})"/>
+  <circle cx="${C}" cy="${C}" r="91" fill="#000"/>
+  <circle cx="${C}" cy="${C}" r="89" fill="url(#fc${elId})"/>`;
+  // colour bands
+  (spec.bands||[]).forEach(b=>{
+    inner+=`<path d="${arcPath(C,C,R-4,v2d(b.from),v2d(b.to))}" fill="none" stroke="${b.color}" stroke-width="${b.w||5}" ${b.dash?`stroke-dasharray="${b.dash}"`:""}/>`;
+  });
+  // ticks
+  const range=spec.max-spec.min;
+  for(let v=spec.min; v<=spec.max+1e-9; v+=spec.minor){
+    const major = Math.abs(v/spec.major - Math.round(v/spec.major))<1e-6;
+    const d=v2d(v), r0=major?R-14:R-9;
+    const [x0,y0]=polar(C,C,r0,d),[x1,y1]=polar(C,C,R,d);
+    inner+=`<line x1="${x0.toFixed(1)}" y1="${y0.toFixed(1)}" x2="${x1.toFixed(1)}" y2="${y1.toFixed(1)}" stroke="#dcd9d0" stroke-width="${major?2.4:1.1}"/>`;
+    if(major){
+      const [lx,ly]=polar(C,C,R-25,d);
+      const lbl = spec.lblFn ? spec.lblFn(v) : v;
+      inner+=`<text x="${lx.toFixed(1)}" y="${(ly+4).toFixed(1)}" fill="#dcd9d0" font-size="12.5" font-family="Segoe UI,Arial" text-anchor="middle" font-weight="600">${lbl}</text>`;
+    }
+  }
+  // redlines
+  (spec.redlines||[]).forEach(v=>{
+    const d=v2d(v);
+    const [x0,y0]=polar(C,C,R-15,d),[x1,y1]=polar(C,C,R+2,d);
+    inner+=`<line x1="${x0}" y1="${y0}" x2="${x1}" y2="${y1}" stroke="#ff2e2e" stroke-width="4.5"/>`;
+  });
+  inner+=`<text x="${C}" y="66" fill="#b9c0cb" font-size="12.5" letter-spacing="2" text-anchor="middle" font-weight="700" font-family="Segoe UI,Arial">${spec.label}</text>
+  <text x="${C}" y="80" fill="#68707d" font-size="9" letter-spacing="1" text-anchor="middle" font-family="Segoe UI,Arial">${spec.unit}</text>`;
+  // digital readout
+  if(spec.digital!==false){
+    inner+=`<rect x="64" y="128" width="72" height="22" rx="3" fill="#050302" stroke="#241a08"/>
+    <text id="dg${elId}" x="${C}" y="144" fill="#ffb347" font-size="15" text-anchor="middle" font-family="Consolas,Menlo,monospace" font-weight="700">0</text>`;
+  }
+  // needle
+  inner+=`<g id="nd${elId}" transform="rotate(${A0} ${C} ${C})">
+    <polygon points="${C-3.2},${C+14} ${C+3.2},${C+14} ${C+1.4},${C-R+16} ${C-1.4},${C-R+16}" fill="#f5f2ea"/>
+    <polygon points="${C-1.2},${C-R+16} ${C+1.2},${C-R+16} ${C},${C-R+8}" fill="#ff8c1a"/>
+  </g>
+  <circle cx="${C}" cy="${C}" r="10" fill="#1c1e22" stroke="#000"/>
+  <circle cx="${C}" cy="${C}" r="4" fill="#4a505b"/>
+  <ellipse class="g-glass" cx="78" cy="60" rx="52" ry="30" fill="rgba(255,255,255,.045)"/>`;
+  svg.innerHTML=inner;
+  el.appendChild(svg);
+  const needle=svg.querySelector(`#nd${elId}`), dig=svg.querySelector(`#dg${elId}`);
+  let shown=spec.min;
+  return {
+    set(v){
+      shown+= (v-shown)*0.35;                       // needle smoothing
+      needle.setAttribute("transform",`rotate(${v2d(shown).toFixed(2)} ${C} ${C})`);
+      if(dig) dig.textContent = spec.fmt ? spec.fmt(v) : Math.round(v);
+    },
+    flash(on){ el.classList.toggle("g-flash",on); }
+  };
+}
+
+/* ---------------- build gauges ---------------- */
+const gTQ = makeGauge("gTQ",{label:"TORQUE",unit:"PERCENT",min:0,max:120,major:20,minor:5,
+  bands:[{from:0,to:100,color:"#2f9e46",w:5},{from:100,to:120,color:"#c22114",w:5}],redlines:[100],
+  fmt:v=>v.toFixed(1)});
+const gITT = makeGauge("gITT",{label:"ITT",unit:"°C ×100",min:0,max:1100,major:200,minor:50,
+  lblFn:v=>v/100,
+  bands:[{from:100,to:650,color:"#2f9e46",w:5},{from:650,to:770,color:"#d7a10e",w:5},{from:770,to:1100,color:"#c22114",w:5}],
+  redlines:[770], fmt:v=>Math.round(v)});
+const gRPM = makeGauge("gRPM",{label:"RPM",unit:"PERCENT",min:0,max:110,major:20,minor:5,
+  bands:[{from:18,to:28,color:"#d7a10e",w:5,dash:"4 3"},{from:71,to:100,color:"#2f9e46",w:5},{from:100,to:110,color:"#c22114",w:5}],
+  redlines:[100], fmt:v=>v.toFixed(1)});
+const gFF = makeGauge("gFF",{label:"FUEL FLOW",unit:"LB/HR ×100",min:0,max:800,major:200,minor:50,
+  lblFn:v=>v/100, bands:[{from:0,to:800,color:"#2f9e46",w:3}], fmt:v=>Math.round(v)});
+const gOILP = makeGauge("gOILP",{label:"OIL PRESS",unit:"PSI",min:0,max:160,major:40,minor:10,
+  bands:[{from:0,to:40,color:"#c22114",w:5},{from:40,to:70,color:"#d7a10e",w:5},{from:70,to:120,color:"#2f9e46",w:5},{from:120,to:160,color:"#c22114",w:5}],
+  redlines:[40,120], fmt:v=>Math.round(v)});
+const gOILT = makeGauge("gOILT",{label:"OIL TEMP",unit:"°C",min:-50,max:150,major:50,minor:10,
+  bands:[{from:55,to:110,color:"#2f9e46",w:5},{from:110,to:127,color:"#d7a10e",w:5},{from:127,to:150,color:"#c22114",w:5}],
+  redlines:[127], fmt:v=>Math.round(v)});
+
+/* =====================================================================
+   LEVERS
+===================================================================== */
+function makeLever(quadId, levId, opts){
+  const quad=document.getElementById(quadId), lev=document.getElementById(levId);
+  const pad=22; let val=opts.init, dragging=false;
+  function place(){
+    const h=quad.clientHeight-2*pad;
+    lev.style.top=(pad + (1-val/100)*h)+"px";
+    if(opts.onmove)opts.onmove(val);
+  }
+  function fromY(clientY){
+    const r=quad.getBoundingClientRect();
+    const h=r.height-2*pad;
+    let v=(1-(clientY-r.top-pad)/h)*100;
+    v=clamp(v,0,100);
+    if(opts.detents) for(const d of opts.detents){ if(Math.abs(v-d)<2.4) v=d; }
+    val=v; place();
+  }
+  quad.addEventListener("pointerdown",e=>{dragging=true;quad.setPointerCapture(e.pointerId);fromY(e.clientY);});
+  quad.addEventListener("pointermove",e=>{if(dragging)fromY(e.clientY);});
+  quad.addEventListener("pointerup",()=>dragging=false);
+  quad.addEventListener("pointercancel",()=>dragging=false);
+  (opts.marks||[]).forEach(m=>{
+    const d=document.createElement("div");
+    d.className="mark"+(m.left?" left":"");
+    d.style.top=`calc(${pad}px + ${(1-m.v/100)*100}% * (1 - ${2*pad}px/100%))`; // fallback below
+    d.textContent=m.t; quad.appendChild(d);
+    // simpler positioning:
+    requestAnimationFrame(()=>{ d.style.top=(pad+(1-m.v/100)*(quad.clientHeight-2*pad))+"px"; });
+  });
+  window.addEventListener("resize",place);
+  requestAnimationFrame(place);
+  return { get:()=>val, set:v=>{val=clamp(v,0,100);place();} };
+}
+
+const pwrLever = makeLever("quadPwr","levPwr",{init:10,detents:[10,30],
+  marks:[{v:100,t:"MAX"},{v:30,t:"FLT IDLE"},{v:10,t:"GND IDLE"},{v:0,t:"REV",left:true}],
+  onmove:v=>{
+    sim.pl=v;
+    const lbl = v<=4?"REVERSE": v<9?"BETA": v<12?"GND IDLE": v<31?(v<29?"TAXI / BETA":"FLT IDLE"): (v>97?"MAX PWR":Math.round(v)+"%");
+    document.getElementById("pwrVal").textContent=lbl;
+  }});
+const spdLever = makeLever("quadSpd","levSpd",{init:0,detents:[0,100],
+  marks:[{v:100,t:"HIGH 100%"},{v:0,t:"LOW 71%"}],
+  onmove:v=>{
+    sim.sl=v/100;
+    document.getElementById("spdVal").textContent = v>96?"HIGH 100%": v<4?"LOW 71%": Math.round(71+29*v/100)+"%";
+  }});
+
+/* =====================================================================
+   LOG / COACH / EXCEEDANCES
+===================================================================== */
+const logEl=document.getElementById("log");
+function log(msg, cls){
+  const d=document.createElement("div");
+  const mm=String(Math.floor(sim.t/60)).padStart(2,"0"), ss=(sim.t%60).toFixed(0).padStart(2,"0");
+  d.innerHTML=`<span class="t">${mm}:${ss}</span> <span class="${cls||""}">${msg}</span>`;
+  logEl.appendChild(d); logEl.scrollTop=logEl.scrollHeight;
+}
+const coachEl=document.getElementById("coach");
+let coachLock=0;
+function coach(html, tone, hold){
+  if(sim.t<coachLock && !hold) return;
+  if(hold) coachLock=sim.t+hold;
+  coachEl.innerHTML=html;
+  coachEl.className="coach"+(tone==="warn"?" warn":tone==="danger"?" danger":"");
+}
+
+const excBox=document.getElementById("excBox");
+const exceedances=[];
+const excActive={};   // key -> {peak,start}
+function excBegin(key,val){ if(!excActive[key]) excActive[key]={peak:val,start:sim.t}; else excActive[key].peak=Math.max(excActive[key].peak,val); }
+function excEnd(key,label,unit,action,cls){
+  const a=excActive[key]; if(!a)return; delete excActive[key];
+  const dur=sim.t-a.start;
+  if(dur<0.15)return;
+  exceedances.push({label,peak:a.peak,unit,dur,action,cls});
+  renderExc();
+  log(`EXCEEDANCE RECORDED &mdash; ${label}: peak ${a.peak.toFixed(0)}${unit} for ${dur.toFixed(1)}s`, "dg");
+}
+function renderExc(){
+  if(!exceedances.length){excBox.innerHTML='<div class="exc-empty">NO EXCEEDANCES RECORDED</div>';return;}
+  let h='<table class="exc-table"><tr><th>EVENT</th><th>PEAK</th><th>DURATION</th><th>MAINTENANCE ACTION</th></tr>';
+  exceedances.forEach(e=>{
+    h+=`<tr><td class="${e.cls}">${e.label}</td><td>${e.peak.toFixed(0)}${e.unit}</td><td>${e.dur.toFixed(1)} s</td><td>${e.action}</td></tr>`;
+  });
+  excBox.innerHTML=h+"</table>";
+}
+
+/* =====================================================================
+   ENGINE MODEL
+===================================================================== */
+function step(dt){
+  const s=sim, e=s.env, T=TUNE;
+  s.t+=dt;
+  const prevRpm=s.rpm;
+
+  /* ----- electrical ----- */
+  const cranking = s.startEng && s.battery && s.mode!=="run";
+  if(cranking){ s.crankTime+=dt; e.batt=Math.max(0.25, e.batt-dt*0.0018); }
+  else if(s.genOn){ e.batt=Math.min(1.0, e.batt+dt*0.004); }
+
+  /* ----- SIC start sequencing ----- */
+  if(cranking && s.rpm>=T.lightoffRpm && s.pump && !s.fuelIntro && !s.dead && !s.abortLatch){
+    s.fuelIntro=true; log("SIC: 10% RPM &mdash; fuel introduced, igniters energized","info");
+  }
+  s.ignActive = (cranking && s.rpm>=T.lightoffRpm && s.rpm<T.starterCut) || (s.ignOvrd && s.battery);
+
+  /* light-off */
+  if(s.fuelIntro && s.ignActive && !s.lit && !s.dead){
+    s.lightDelay+=dt;
+    if(s.lightDelay>1.1){ s.lit=true; s.peakStartItt=0; log("LIGHT-OFF &mdash; combustion established. Monitor ITT!","ok"); }
+  }
+  if(!s.fuelIntro) s.lightDelay=0;
+
+  /* starter cutout */
+  if(s.startEng && s.rpm>=T.starterCut && s.mode!=="run"){
+    s.startEng=false;
+    log("SIC: 60% RPM &mdash; starter and igniters de-energized","info");
+  }
+
+  /* ----- fuel flow ----- */
+  let ff=0;
+  if(s.mode==="run"){
+    ff = T.ffIdle*lerp(0.72,1,s.sl) + s.tq*T.ffTq;
+  } else if(s.fuelIntro && s.lit!==null){
+    ff = (T.ffStartA + T.ffStartB*s.rpm) * e.rich;
+    if(s.enrich) ff += T.enrichFF;
+  } else if(s.fuelIntro){
+    ff = (T.ffStartA + T.ffStartB*s.rpm) * e.rich;
+  }
+  if(!s.fuelIntro && s.mode!=="run") ff=0;
+  s.ff += (ff-s.ff)*Math.min(1,dt/0.3);
+
+  /* ----- combustion temperature ----- */
+  const a=airflow(s.rpm);
+  let Tc=e.oat;
+  if(s.lit && s.ff>5){
+    // heat soak builds only while RPM is genuinely stagnant below idle (hung)
+    if(s.mode!=="run" && s.rpm<55 && s.rpmRate<0.2) s.soak=Math.min(1.45, s.soak+T.soakRate*dt);
+    else s.soak=Math.max(1.0, s.soak-0.03*dt);
+    // enrichment improves atomization: only half its fuel shows up as temperature
+    const ffT = s.ff - (s.enrich? T.enrichFF*0.5 : 0);
+    Tc = e.oat + T.compK*Math.pow(s.rpm/100,1.5)
+       + T.ittK*Math.pow(Math.max(ffT,1)/a, T.ittExp)*e.hotFactor*s.soak;
+  }
+  const tau = s.lit? T.tauLit : (s.rpm>6? 5.5 : 45);
+  s.itt += (Tc - s.itt)*Math.min(1,dt/tau);
+  if(s.mode!=="run" && s.lit) s.peakStartItt=Math.max(s.peakStartItt,s.itt);
+
+  /* ----- torques & RPM ----- */
+  if(s.mode==="run"){
+    /* governed: fixed shaft holds speed-lever RPM; power lever commands torque */
+    const rt=rpmTarget();
+    s.rpm += (rt-s.rpm)*Math.min(1,dt/1.0);
+    const plN=clamp((s.pl-30)/70,0,1);
+    const coldF = 1 + Math.max(0,(15-e.oat))*0.009;
+    const beta = s.pl<30 ? clamp((s.pl-4)/26,0.04,1)*0.16 : 0;  // beta-range blade pitch load
+    let raw = s.pl>=30 ? 100*Math.pow(plN,1.15)*coldF*e.eff + 6 : (4+beta*100)*e.eff;
+    if(s.locksEngaged) raw*=0.30;                                 // flat pitch on start locks
+    if(s.damaged) raw*=0.45;
+    const steady=Math.min(raw, T.tqLimiter);
+    s.propGovLag += (raw-s.propGovLag)*Math.min(1,dt/0.85);       // prop governor response lag
+    const overshoot = Math.max(0,(raw-s.propGovLag))*0.26;
+    const tgt = steady + overshoot;
+    s.tq += (tgt-s.tq)*Math.min(1,dt/0.30);
+    /* flameout check */
+    if(!s.fuelIntro && !s._runFuel){ /* handled by stop() */ }
+  } else {
+    const battEff=0.45+0.55*e.batt;
+    const stTq = cranking? T.starterK*e.batt*Math.max(0,1-s.rpm/(T.starterMax*battEff)) : 0;
+    const tbTq = (s.lit && s.ff>5)? T.turbK*Math.pow(s.ff,0.9)*a*e.eff : 0;
+    const drag = T.dragK*Math.pow(s.rpm/100,T.dragExp)*(s.locksEngaged?T.lockPitch:1) + 1.2;
+    const net=stTq+tbTq-drag;
+    s.rpm=Math.max(0, s.rpm + net*dt/T.inertia);
+    s.tq += (0-s.tq)*Math.min(1,dt/0.5);
+    s.propGovLag=s.tq;
+    /* governor catch -> running */
+    if(s.lit && s.rpm >= rpmTarget()-2.5){
+      s.mode="run"; s.genOn=true; s.startEng=false; s.soak=1.0;
+      log(`ENGINE RUNNING &mdash; governed at ${Math.round(rpmTarget())}% RPM. Start peak ITT ${Math.round(s.peakStartItt)}°C`,"ok");
+      if(s.peakStartItt<=770) coach("<b>Successful start.</b> Peak ITT "+Math.round(s.peakStartItt)+"&deg;C (limit 770&deg;C). Release the start locks (power lever briefly to REVERSE), then set SPEED lever HIGH for run-up.","",6);
+      else{
+        log("HOT START COMPLETED &mdash; hot section damage likely. Engine down-rated.","dg");
+        coach("<b>The engine started &mdash; but you cooked it.</b> Peak ITT was "+Math.round(s.peakStartItt)+"&deg;C, past the 770&deg;C start limit. Turbine blades and stators are heat-damaged; note the engine no longer makes full power. The start should have been <b>aborted</b>: STOP, then motor to cool.","danger",15);
+      }
+    }
+  }
+  if(s.mode==="run"){ s.genOn = s.rpm>60; }
+
+  s.rpmRate = 0.85*s.rpmRate + 0.15*(s.rpm-prevRpm)/dt;
+
+  /* start locks release: power lever into reverse while running */
+  if(s.locksEngaged && s.mode==="run" && s.pl<=5){
+    s._revT=(s._revT||0)+dt;
+    if(s._revT>0.8){ s.locksEngaged=false; log("Start locks RELEASED (power lever reverse) &mdash; propeller governing normally","ok"); }
+  } else s._revT=0;
+
+  /* ----- flame / shutdown natural ----- */
+  if(s.lit && s.ff<5){ s.lit=false; log("Flameout &mdash; fuel flow lost","wn"); }
+  if(s.mode==="run" && (!s.battery&&!s.genOn)===true){ /* keep simple: no elec dependency in run */ }
+
+  /* ----- oil system ----- */
+  const oilPT = s.dead?0 : Math.min(120, s.rpm*1.65);
+  s.oilP += (oilPT-s.oilP)*Math.min(1,dt/1.2);
+  const oilTT = (s.mode==="run"||s.lit)? 58 + s.tq*0.38 + Math.max(0,e.oat)*0.25 : e.oat;
+  s.oilT += (oilTT-s.oilT)*Math.min(1,dt/40);
+
+  /* ----- exceedance monitoring ----- */
+  const startPhase = s.mode!=="run";
+  const ittLim = startPhase? 770 : 650;
+  if(s.itt>ittLim && !s.dead){
+    excBegin("itt",s.itt);
+  } else {
+    excEnd("itt", startPhase?"ITT START OVERTEMP":"ITT OVERTEMP", "°C",
+      "Record peak &amp; duration. Hot section inspection per Honeywell LMM — borescope combustor &amp; turbine.", "dg");
+  }
+  if(s.tq>101){ excBegin("tq",s.tq); }
+  else excEnd("tq","OVERTORQUE","%","Record peak &amp; duration. Inspect gearbox/torsion shaft per maintenance manual before further flight.","wn");
+
+  /* catastrophic overtemp */
+  if(s.itt>923 && !s.dead){
+    s._dieT=(s._dieT||0)+dt;
+    if(s._dieT>2){
+      s.dead=true; s.lit=false; s.fuelIntro=false; s.startEng=false; s.damaged=true;
+      if(s.mode==="run") s.mode="wind";
+      excEnd("itt","ITT START OVERTEMP","°C","TURBINE DESTROYED — engine removal & overhaul required.","dg");
+      log("&#9760; TURBINE FAILURE &mdash; ITT exceeded 923°C. Engine destroyed. Press RESET.","dg");
+      coach("<b>Engine destroyed.</b> ITT went beyond 923&deg;C &mdash; first-stage turbine wheel and stators have melted. In service this is a <b>multi-hundred-thousand-dollar</b> mistake. Abort earlier next time: <b>STOP &amp; FEATHER, keep motoring to cool.</b>","danger",30);
+    }
+  } else s._dieT=0;
+  if(s.itt>790 && startPhase && !s.dead && s.lit) s.damaged=true;
+
+  /* starter duty cycle */
+  if(cranking && s.crankTime>45 && !s._dutyWarned){ s._dutyWarned=true;
+    log("Starter duty-cycle limit approaching &mdash; release start, allow cooling","wn"); }
+  if(!cranking) { if(s.crankTime>0 && !s.startEng) s.crankTime=0; s._dutyWarned=false; }
+}
+
+/* =====================================================================
+   COACH LOGIC (contextual hints)
+===================================================================== */
+function coachTick(){
+  const s=sim;
+  if(s.dead) return;
+  if(s.mode!=="run" && s.lit){
+    if(s.itt>770) coach("<b>&#9888; ITT past the 770&deg;C start limit!</b> This is a HOT START. Press <b>STOP</b> to cut fuel, keep the starter engaged and <b>motor the engine</b> to blow cool air through the hot section.","danger",2);
+    else if(s.itt>700) coach("<b>ITT "+Math.round(s.itt)+"&deg;C and rising fast</b> &mdash; be ready to abort before it reaches the 770&deg;C start limit. Watch the trend, not just the number.","warn",2);
+    else if(s.rpm>15 && s.rpm<55 && s._lastRpm!==undefined && (s.rpm-s._lastRpm)<0.35 && !s.startEng)
+      coach("<b>RPM has stagnated at "+s.rpm.toFixed(0)+"% with the starter off</b> &mdash; classic HUNG START. ITT will keep creeping up. Abort: <b>STOP</b>, then motor to cool.","warn",2);
+    else if(s.rpm>15 && s.rpm<55 && s._lastRpm!==undefined && (s.rpm-s._lastRpm)<0.25)
+      coach("<b>Acceleration is very slow ("+s.rpm.toFixed(0)+"% RPM)</b> &mdash; if RPM stagnates below idle this is a <b>hung start</b>. Options: FUEL ENRICH (watch ITT!) or abort with STOP and investigate.","warn",2);
+  }
+  if(s.mode==="run"){
+    if(s.tq>100) coach("<b>&#9888; TORQUE "+s.tq.toFixed(1)+"% &mdash; OVER the 100% limit!</b> Ease the power lever back NOW. The exceedance recorder is logging peak and duration &mdash; maintenance inspection will be required.","danger",2);
+    else if(s.tq>94) coach("<b>Torque "+s.tq.toFixed(1)+"%</b> &mdash; approaching the limit. On cold days the engine can produce far more than 100%; advance the lever <b>slowly</b> and lead with your eyes on the gauge.","warn",2);
+    else if(s.itt>650) coach("<b>ITT above the 650&deg;C continuous limit</b> &mdash; reduce power.","warn",2);
+  }
+  s._lastRpm2=s._lastRpm; s._lastRpm=s.rpm;
+}
+setInterval(coachTick,900);
+
+/* =====================================================================
+   SCENARIOS
+===================================================================== */
+const SCENARIOS={
+  normal:{
+    name:"NORMAL START",
+    env:{oat:15,batt:1.0,rich:1.0,eff:1.0,hotFactor:1.0,residual:0},
+    coach:"<b>NORMAL BATTERY START.</b> Sequence: BATTERY ON &rarr; FUEL BOOST PUMP ON &rarr; SPEED lever LOW &rarr; power lever GND IDLE &rarr; press <b>ENG START</b>. The SIC introduces fuel + ignition automatically at 10% RPM, drops the starter at 60%. Watch ITT peak (limit <b>770&deg;C</b>) and don't linger in the 18&ndash;28% resonance band."
+  },
+  hot:{
+    name:"HOT START",
+    env:{oat:33,batt:0.60,rich:1.30,eff:1.0,hotFactor:1.14,residual:260},
+    coach:"<b>HOT START SETUP:</b> weak battery, hot day, residual ITT from a recent shutdown, and an over-rich FCU. Start normally &mdash; but watch the ITT needle: with low airflow the fuel/air ratio goes rich and ITT will <b>rocket toward 770&deg;C</b>. Recognize it EARLY and abort: <b>STOP</b> + keep motoring to cool. If you let it pass 923&deg;C you buy a turbine."
+  },
+  hung:{
+    name:"HUNG START",
+    env:{oat:15,batt:0.52,rich:0.90,eff:0.55,hotFactor:1.10,residual:0},
+    coach:"<b>HUNG START SETUP:</b> tired battery and poor engine efficiency (worn compressor / high density altitude). The engine will light off, then <b>RPM stagnates below idle</b> while ITT slowly climbs &mdash; fuel is burning but there isn't enough turbine power to accelerate. Recognize: RPM stuck, ITT creeping. Try <b>FUEL ENRICH</b> (watch ITT!) or abort with <b>STOP</b> and motor to cool."
+  },
+  overtorque:{
+    name:"OVERTORQUE",
+    env:{oat:-25,batt:1.0,rich:1.0,eff:1.0,hotFactor:1.0,residual:0},
+    preset:"running",
+    coach:"<b>OVERTORQUE DEMO:</b> engine already running, locks released, OAT is <b>&minus;25&deg;C</b> &mdash; dense air means the engine can make well over 100% torque. Speed lever is HIGH. Now <b>slam the power lever full forward</b> and watch the torque needle overshoot past the red line before the limiter catches it. Then reset and try a <b>slow, smooth</b> advance to takeoff power watching the gauge &mdash; that's the correct technique."
+  },
+  free:{
+    name:"FREE PLAY",
+    env:{oat:15,batt:1.0,rich:1.0,eff:1.0,hotFactor:1.0,residual:0},
+    instructor:true,
+    coach:"<b>FREE PLAY / INSTRUCTOR MODE.</b> Set OAT, battery health, FCU fuel schedule and engine efficiency with the sliders on the pedestal, then run any start or power scenario you like. Combine a weak battery with a rich FCU on a hot day and see what happens&hellip;"
+  }
+};
+let currentScen="normal";
+
+function applyScenario(key){
+  currentScen=key;
+  const sc=SCENARIOS[key];
+  document.querySelectorAll(".scen-btn").forEach(b=>b.classList.toggle("active",b.dataset.k===key));
+  resetSim();
+  document.getElementById("instrPanel").classList.toggle("show",!!sc.instructor);
+  coachLock=0;
+  coach(sc.coach,"",1);
+  log(`&mdash;&mdash; SCENARIO: ${sc.name} &mdash;&mdash;`,"info");
+}
+
+function resetSim(){
+  const sc=SCENARIOS[currentScen];
+  Object.assign(sim,{
+    t:sim.t, rpm:0, tq:0, ff:0, oilP:0, rpmRate:0,
+    mode:"off", lit:false, fuelIntro:false, startEng:false, ignActive:false,
+    crankTime:0, soak:1.0, propGovLag:0, genOn:false,
+    locksEngaged:true, damaged:false, dead:false, abortLatch:false,
+    pump:false, ignOvrd:false, enrich:false, battery:true,
+    lightDelay:0, peakStartItt:0, _dieT:0, _revT:0, _dutyWarned:false, _lastRpm:undefined
+  });
+  sim.env={...sc.env};
+  sim.itt = sc.env.residual>0 ? sc.env.residual : sc.env.oat;
+  sim.oilT = sc.env.oat;
+  pwrLever.set(10); spdLever.set(0);
+  setToggle("swBatt",true); setToggle("swPump",false); setToggle("swIgn",false);
+  if(sc.preset==="running"){
+    sim.mode="run"; sim.lit=true; sim.fuelIntro=true; sim.genOn=true;
+    sim.locksEngaged=false; sim.rpm=100; sim.itt=380; sim.oilT=72; sim.oilP=118;
+    sim.pump=true; setToggle("swPump",true);
+    pwrLever.set(30); spdLever.set(100);
+  }
+  // sync instructor sliders
+  setInstr();
+  chartData.length=0;
+}
+
+/* =====================================================================
+   CONTROLS WIRING
+===================================================================== */
+function setToggle(id,on){
+  const el=document.getElementById(id);
+  el.classList.toggle("on",on);
+}
+function bindToggle(id,fn){
+  const el=document.getElementById(id);
+  el.addEventListener("click",()=>{
+    const on=!el.classList.contains("on");
+    el.classList.toggle("on",on); fn(on);
+  });
+}
+bindToggle("swBatt",on=>{ sim.battery=on; log("Battery master "+(on?"ON":"OFF"), "info"); });
+bindToggle("swPump",on=>{ sim.pump=on; log("Fuel boost pump "+(on?"ON":"OFF"), "info"); });
+bindToggle("swIgn", on=>{ sim.ignOvrd=on; log("Ignition override "+(on?"ON":"OFF"), "info"); });
+
+document.getElementById("btnStart").addEventListener("click",()=>{
+  const s=sim;
+  if(s.mode==="run"){ log("Start switch &mdash; engine already running","wn"); return; }
+  if(!s.battery){ log("Start pressed &mdash; no electrical power (battery OFF)","wn"); return; }
+  if(s.startEng){
+    s.startEng=false; log("Starter DISENGAGED by crew","info");
+  } else {
+    s.startEng=true; s.startAttempts++; s.abortLatch=false;
+    if(!s.pump) log("STARTER ENGAGED &mdash; caution: boost pump is OFF, no fuel will be introduced","wn");
+    else log("STARTER ENGAGED &mdash; attempt #"+s.startAttempts,"ok");
+    if(s.dead){ log("Engine is destroyed &mdash; RESET to continue","dg"); }
+  }
+});
+document.getElementById("btnStop").addEventListener("click",()=>{
+  const s=sim;
+  if(s.mode==="run"){
+    s.mode="wind"; s.lit=false; s.fuelIntro=false; s.abortLatch=true;
+    log("STOP &amp; FEATHER &mdash; fuel cut, prop feathering, engine spooling down","wn");
+  } else if(s.fuelIntro||s.lit){
+    s.fuelIntro=false; s.lit=false; s.abortLatch=true;
+    log("START ABORTED &mdash; fuel cut. Keep motoring to cool the hot section","wn");
+    coach("<b>Good abort.</b> Fuel is cut. Keep the starter engaged (press ENG START if it dropped out) and <b>motor until ITT is below ~200&deg;C</b> before attempting another start. Mind the starter duty cycle.","",8);
+  } else log("Stop &amp; feather pressed &mdash; fuel already cut","info");
+});
+const enrichBtn=document.getElementById("btnEnrich");
+function enrichSet(on){ if(sim.enrich!==on){ sim.enrich=on; if(on)log("FUEL ENRICH pressed &mdash; extra fuel scheduled (watch ITT)","wn"); } enrichBtn.classList.toggle("armed",on); }
+enrichBtn.addEventListener("pointerdown",e=>{enrichBtn.setPointerCapture(e.pointerId);enrichSet(true);});
+enrichBtn.addEventListener("pointerup",()=>enrichSet(false));
+enrichBtn.addEventListener("pointercancel",()=>enrichSet(false));
+
+document.getElementById("resetBtn").addEventListener("click",()=>{ applyScenario(currentScen); });
+
+/* scenario tabs */
+const tabs=document.getElementById("scenTabs");
+Object.entries(SCENARIOS).forEach(([k,sc])=>{
+  const b=document.createElement("button");
+  b.className="scen-btn"; b.dataset.k=k; b.textContent=sc.name;
+  b.addEventListener("click",()=>applyScenario(k));
+  tabs.appendChild(b);
+});
+
+/* instructor sliders */
+function setInstr(){
+  const e=sim.env;
+  iOat.value=e.oat; iBatt.value=Math.round(e.batt*100); iRich.value=Math.round(e.rich*100); iEff.value=Math.round(e.eff*100);
+  instrLabels();
+}
+function instrLabels(){
+  iOatV.textContent=(iOat.value>0?"+":"")+iOat.value+"°C";
+  iBattV.textContent=iBatt.value+"%"; iRichV.textContent=iRich.value+"%"; iEffV.textContent=iEff.value+"%";
+}
+const iOat=document.getElementById("iOat"), iBatt=document.getElementById("iBatt"),
+      iRich=document.getElementById("iRich"), iEff=document.getElementById("iEff"),
+      iOatV=document.getElementById("iOatV"), iBattV=document.getElementById("iBattV"),
+      iRichV=document.getElementById("iRichV"), iEffV=document.getElementById("iEffV");
+[iOat,iBatt,iRich,iEff].forEach(sl=>sl.addEventListener("input",()=>{
+  sim.env.oat=+iOat.value; sim.env.batt=iBatt.value/100; sim.env.rich=iRich.value/100; sim.env.eff=iEff.value/100;
+  instrLabels();
+}));
+
+/* =====================================================================
+   STRIP CHART
+===================================================================== */
+const chart=document.getElementById("chart"), ctx=chart.getContext("2d");
+const chartData=[]; // {t,rpm,itt,tq}
+const WINDOW=90;
+function drawChart(){
+  const w=chart.clientWidth, h=chart.clientHeight;
+  if(chart.width!==w*devicePixelRatio){ chart.width=w*devicePixelRatio; chart.height=h*devicePixelRatio; }
+  ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
+  ctx.clearRect(0,0,w,h);
+  const padL=30,padR=8,padT=8,padB=16;
+  const iw=w-padL-padR, ih=h-padT-padB;
+  const yOf=v=>padT+ih*(1-clamp(v,0,120)/120);
+  // grid
+  ctx.strokeStyle="#181b20"; ctx.fillStyle="#5a616d"; ctx.font="9px Consolas,monospace"; ctx.lineWidth=1;
+  for(let v=0;v<=120;v+=20){
+    const y=yOf(v);
+    ctx.beginPath();ctx.moveTo(padL,y);ctx.lineTo(w-padR,y);ctx.stroke();
+    ctx.fillText(v,4,y+3);
+  }
+  // limit lines
+  const lim=(v,c)=>{ctx.strokeStyle=c;ctx.setLineDash([5,4]);ctx.beginPath();ctx.moveTo(padL,yOf(v));ctx.lineTo(w-padR,yOf(v));ctx.stroke();ctx.setLineDash([]);};
+  lim(100,"rgba(87,199,255,.45)"); lim(77,"rgba(255,80,60,.55)"); lim(65,"rgba(255,179,71,.35)");
+  if(!chartData.length)return;
+  const t1=chartData[chartData.length-1].t, t0=t1-WINDOW;
+  const xOf=t=>padL+iw*clamp((t-t0)/WINDOW,0,1);
+  const trace=(key,scale,color)=>{
+    ctx.strokeStyle=color;ctx.lineWidth=1.6;ctx.beginPath();
+    let started=false;
+    for(const p of chartData){
+      if(p.t<t0)continue;
+      const x=xOf(p.t),y=yOf(p[key]*scale);
+      started?ctx.lineTo(x,y):(ctx.moveTo(x,y),started=true);
+    }
+    ctx.stroke();
+  };
+  trace("rpm",1,"#39d353");
+  trace("itt",0.1,"#ffb347");
+  trace("tq",1,"#57c7ff");
+}
+
+/* =====================================================================
+   SOUND (WebAudio synthesized turbine)
+===================================================================== */
+let audio=null, audioOn=false;
+function buildAudio(){
+  const ac=new (window.AudioContext||window.webkitAudioContext)();
+  const master=ac.createGain(); master.gain.value=0; master.connect(ac.destination);
+  // whine
+  const o1=ac.createOscillator(); o1.type="sawtooth";
+  const o2=ac.createOscillator(); o2.type="sine";
+  const og=ac.createGain(); og.gain.value=0;
+  const bp=ac.createBiquadFilter(); bp.type="bandpass"; bp.Q.value=3;
+  o1.connect(og); o2.connect(og); og.connect(bp); bp.connect(master);
+  o1.start(); o2.start();
+  // air rush noise
+  const buf=ac.createBuffer(1,ac.sampleRate*2,ac.sampleRate);
+  const d=buf.getChannelData(0); for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;
+  const noise=ac.createBufferSource(); noise.buffer=buf; noise.loop=true;
+  const ng=ac.createGain(); ng.gain.value=0;
+  const hp=ac.createBiquadFilter(); hp.type="highpass"; hp.frequency.value=1200;
+  noise.connect(hp); hp.connect(ng); ng.connect(master); noise.start();
+  // combustion rumble
+  const noise2=ac.createBufferSource(); noise2.buffer=buf; noise2.loop=true;
+  const lg=ac.createGain(); lg.gain.value=0;
+  const lp=ac.createBiquadFilter(); lp.type="lowpass"; lp.frequency.value=140;
+  noise2.connect(lp); lp.connect(lg); lg.connect(master); noise2.start();
+  audio={ac,master,o1,o2,og,bp,ng,lg};
+}
+function audioTick(){
+  if(!audio||!audioOn)return;
+  const s=sim, r=s.rpm/100;
+  const f=55+s.rpm*13.5;
+  audio.o1.frequency.setTargetAtTime(f,audio.ac.currentTime,0.1);
+  audio.o2.frequency.setTargetAtTime(f*2.02,audio.ac.currentTime,0.1);
+  audio.bp.frequency.setTargetAtTime(300+s.rpm*22,audio.ac.currentTime,0.1);
+  audio.og.gain.setTargetAtTime(0.05*Math.pow(r,1.4),audio.ac.currentTime,0.15);
+  audio.ng.gain.setTargetAtTime(0.10*Math.pow(r,2),audio.ac.currentTime,0.15);
+  audio.lg.gain.setTargetAtTime(s.lit?0.10+0.10*(s.ff/650):0,audio.ac.currentTime,0.2);
+}
+document.getElementById("soundBtn").addEventListener("click",function(){
+  if(!audio)buildAudio();
+  audioOn=!audioOn;
+  audio.ac.resume();
+  audio.master.gain.setTargetAtTime(audioOn?0.8:0,audio.ac.currentTime,0.1);
+  this.classList.toggle("on",audioOn);
+  this.innerHTML=audioOn?"&#128266; SOUND":"&#128264; SOUND";
+});
+
+/* =====================================================================
+   UI UPDATE + MAIN LOOPS
+===================================================================== */
+function setAnn(id,cls,blink){
+  const el=document.getElementById(id);
+  el.className="ann"+(cls?" "+cls:"")+(blink?" blink":"");
+}
+function uiTick(){
+  const s=sim;
+  gTQ.set(s.tq); gITT.set(s.itt); gRPM.set(s.rpm); gFF.set(s.ff); gOILP.set(s.oilP); gOILT.set(s.oilT);
+  const startPhase=s.mode!=="run";
+  gITT.flash(s.itt>(startPhase?770:650));
+  gTQ.flash(s.tq>100);
+  setAnn("anStart", s.startEng?"amber":"");
+  setAnn("anIgn", s.ignActive?"amber":"");
+  setAnn("anFuel", (s.ff>5)?"green":"");
+  setAnn("anGen", s.genOn?"green":"amber");
+  document.getElementById("anGen").textContent=s.genOn?"GEN ON":"GEN OFF";
+  setAnn("anOil", (s.mode==="run"&&s.oilP<40)||(s.rpm>30&&s.oilP<20)?"red":(s.oilP>=40?"":""), false);
+  if(s.mode==="run"&&s.oilP<40) setAnn("anOil","red",true);
+  setAnn("anLocks", s.locksEngaged&&(s.mode==="run"||s.rpm>5)?"amber":"");
+  setAnn("anItt", s.itt>(startPhase?770:650)?"red":(s.itt>650&&startPhase?"amber":""), s.itt>(startPhase?770:650));
+  setAnn("anTq", s.tq>100?"red":(s.tq>94?"amber":""), s.tq>100);
+  document.getElementById("oatRead").textContent=(s.env.oat>0?"+":"")+Math.round(s.env.oat);
+  document.getElementById("battRead").textContent=(19+5.5*s.env.batt - (s.startEng&&s.mode!=="run"?3.5:0)).toFixed(1);
+  drawChart();
+  requestAnimationFrame(uiTick);
+}
+
+setInterval(()=>{
+  step(TUNE.dt);
+  if(!step._n)step._n=0;
+  if(++step._n%8===0) chartData.push({t:sim.t,rpm:sim.rpm,itt:sim.itt,tq:sim.tq});
+  while(chartData.length && chartData[0].t < sim.t-WINDOW-5) chartData.shift();
+  audioTick();
+},50);
+
+/* expose for testing */
+window.sim=sim; window.simStep=step; window.TUNE=TUNE;
+window.setPL=v=>pwrLever.set(v); window.setSL=v=>spdLever.set(v);
+window.uiRefs={pwrLever,spdLever,applyScenario,resetSim,setToggle};
+
+/* boot */
+applyScenario("normal");
+requestAnimationFrame(uiTick);
+log("Simulator initialized. Select a scenario above and follow the Instructor Notes.","info");
+</script>
+</body>
+</html>
