@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lawn Mower Magneto Ignition Simulator</title>
+<style>
+  :root{
+    --panel:#23262b;
+    --panel-dark:#1a1c20;
+    --panel-edge:#0d0e10;
+    --face:#0b0c0e;
+    --white:#e8e6e0;
+    --amber:#ffb347;
+    --green:#39d353;
+    --red:#ff4545;
+    --cyan:#57c7ff;
+    --copper:#d08a4a;
+    --font:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;
+    --mono:"Consolas","Menlo","Courier New",ui-monospace,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+  html,body{background:#0a0b0d;color:var(--white);font-family:var(--font);}
+  body{min-height:100vh;padding:10px 14px 20px;}
+
+  /* ============ HEADER ============ */
+  header{
+    display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;
+    padding:10px 16px;margin-bottom:10px;
+    background:linear-gradient(180deg,#2b2e34,#1c1e22);
+    border:1px solid #000;border-radius:8px;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.07), 0 3px 8px rgba(0,0,0,.6);
+  }
+  header h1{font-size:17px;letter-spacing:2px;font-weight:600;color:#dfe3ea;}
+  header h1 small{display:block;font-size:10px;letter-spacing:3px;color:#8b93a1;font-weight:400;}
+  .hdr-right{margin-left:auto;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+  .rpm-box{font-family:var(--mono);font-size:14px;color:var(--cyan);
+    background:#07131a;border:1px solid #123;border-radius:4px;padding:4px 12px;min-width:130px;text-align:center;}
+
+  .btn{
+    cursor:pointer;user-select:none;font-family:var(--font);font-size:11px;letter-spacing:1px;
+    color:#cfd5de;background:linear-gradient(180deg,#3a3e46,#24272c);
+    border:1px solid #0c0d0f;border-radius:5px;padding:7px 12px;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.12), 0 2px 4px rgba(0,0,0,.5);
+  }
+  .btn:hover{background:linear-gradient(180deg,#454a53,#2b2e34);}
+  .btn:active{transform:translateY(1px);box-shadow:inset 0 2px 4px rgba(0,0,0,.5);}
+  .btn.on{color:#0d1108;background:linear-gradient(180deg,#67e07f,#2f9e46);border-color:#194f24;}
+
+  /* ============ LAYOUT ============ */
+  .layout{
+    display:grid;grid-template-columns:minmax(480px,1.65fr) minmax(310px,.95fr);
+    gap:10px;align-items:start;
+  }
+  @media (max-width:980px){ .layout{grid-template-columns:1fr;} }
+
+  .pane{
+    background:radial-gradient(120% 100% at 50% 0%, #2c2f35 0%, #1e2024 55%, #17181c 100%);
+    border:1px solid #000;border-radius:10px;padding:12px;position:relative;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.06), 0 4px 14px rgba(0,0,0,.55);
+    margin-bottom:10px;
+  }
+  .pane::before,.pane::after{
+    content:"";position:absolute;width:9px;height:9px;border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, #666, #222 70%);
+    box-shadow:inset 0 0 2px #000;
+  }
+  .pane::before{top:7px;left:7px;} .pane::after{top:7px;right:7px;}
+  .pane-title{
+    text-align:center;font-size:10px;letter-spacing:3px;color:#98a0ad;
+    border-bottom:1px solid #34383f;padding-bottom:6px;margin-bottom:10px;font-weight:600;
+  }
+
+  /* ============ ENGINE SVG ============ */
+  .engine-wrap{background:#0d0e11;border:1px solid #000;border-radius:8px;
+    box-shadow:inset 0 0 30px rgba(0,0,0,.7);}
+  .engine-wrap svg{width:100%;height:auto;display:block;touch-action:none;}
+  .lbl{font-size:12px;fill:#8b93a1;letter-spacing:1px;font-family:var(--font);}
+  .lbl-b{font-size:12px;fill:#c3cad6;letter-spacing:1px;font-weight:600;font-family:var(--font);}
+  .lbl-s{font-size:10px;fill:#6d7480;letter-spacing:.5px;font-family:var(--font);}
+  #flywheelGrp{cursor:grab;}
+  #flywheelGrp.grabbing{cursor:grabbing;}
+
+  /* ============ SCOPE ============ */
+  .scope-wrap{background:#050607;border:1px solid #000;border-radius:6px;padding:6px;
+    box-shadow:inset 0 0 18px rgba(0,0,0,.8);}
+  canvas#scope{width:100%;height:130px;display:block;}
+  .scope-cap{display:flex;justify-content:space-between;font-family:var(--mono);
+    font-size:10px;color:#5f96b5;padding:4px 4px 0;}
+
+  /* ============ CONTROLS ============ */
+  .switch-block{display:flex;gap:14px;align-items:center;justify-content:center;margin-bottom:6px;}
+  .rocker{display:flex;flex-direction:column;width:130px;border:1px solid #000;border-radius:8px;
+    overflow:hidden;box-shadow:0 3px 8px rgba(0,0,0,.6);}
+  .rocker button{
+    cursor:pointer;border:none;font-family:var(--font);font-size:13px;font-weight:700;
+    letter-spacing:2px;padding:13px 0;color:#555c66;
+    background:linear-gradient(180deg,#26282d,#1a1c20);
+  }
+  .rocker button + button{border-top:1px solid #000;}
+  .rocker button.run-on{color:#04180a;background:linear-gradient(180deg,#67e07f,#2f9e46);}
+  .rocker button.stop-on{color:#2a0000;background:linear-gradient(180deg,#ff6a5e,#d42313);}
+  .switch-note{font-size:10.5px;color:#8b93a1;line-height:1.5;max-width:190px;}
+  .switch-note b{color:#c3cad6;}
+
+  .ctl-row{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;margin:10px 0;}
+  .pull-btn{
+    cursor:pointer;font-family:var(--font);font-weight:700;font-size:13px;letter-spacing:2px;
+    color:#1b1204;background:linear-gradient(180deg,#ffc95e,#e09a1f);
+    border:1px solid #5e3c00;border-radius:6px;padding:13px 26px;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.4), 0 3px 8px rgba(0,0,0,.6);
+  }
+  .pull-btn:active{transform:translateY(2px);}
+  .pull-btn:disabled{opacity:.45;cursor:default;}
+
+  .slider-row{display:flex;align-items:center;gap:10px;margin:8px 4px;}
+  .slider-row label{font-size:10px;letter-spacing:1.5px;color:#98a0ad;width:88px;}
+  .slider-row input[type=range]{flex:1;accent-color:var(--amber);}
+  .slider-row output{font-family:var(--mono);font-size:11px;color:var(--amber);width:70px;text-align:right;}
+
+  .speed-btns{display:flex;gap:6px;justify-content:center;}
+  .speed-btns .btn.sel{color:#101317;background:linear-gradient(180deg,#8ec9ff,#4d94d6);border-color:#1c3a52;font-weight:700;}
+
+  .hint{font-size:10px;color:#6d7480;text-align:center;margin-top:8px;letter-spacing:.5px;}
+
+  /* ============ READOUTS ============ */
+  .readouts{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  .ro{background:#0b0c0e;border:1px solid #000;border-radius:6px;padding:8px 10px;
+    box-shadow:inset 0 1px 4px rgba(0,0,0,.8);}
+  .ro .ro-l{font-size:9px;letter-spacing:1.5px;color:#6d7480;margin-bottom:4px;}
+  .ro .ro-v{font-family:var(--mono);font-size:17px;color:var(--amber);}
+  .ro .ro-v.grn{color:var(--green);} .ro .ro-v.red{color:var(--red);} .ro .ro-v.cyn{color:var(--cyan);}
+  .ro.wide{grid-column:1/-1;}
+  .ro .ro-v.small{font-size:12.5px;}
+
+  /* ============ STEPS ============ */
+  .steps{display:flex;flex-direction:column;gap:6px;}
+  .step{
+    display:flex;gap:10px;align-items:flex-start;padding:8px 10px;border-radius:6px;
+    background:#101113;border:1px solid #000;transition:all .12s;
+  }
+  .step .num{
+    flex:none;width:22px;height:22px;border-radius:50%;text-align:center;line-height:22px;
+    font-family:var(--mono);font-size:12px;color:#555c66;background:#1a1c20;border:1px solid #000;
+  }
+  .step .txt{font-size:11px;line-height:1.45;color:#7c8492;}
+  .step .txt b{color:#aab2bf;display:block;font-size:10.5px;letter-spacing:1.2px;margin-bottom:2px;}
+  .step.hot{background:#1b2417;border-color:#2f5121;}
+  .step.hot .num{color:#04180a;background:linear-gradient(180deg,#67e07f,#2f9e46);}
+  .step.hot .txt{color:#b9c4b3;} .step.hot .txt b{color:#8fe69f;}
+
+  /* ============ EXPLANATION ============ */
+  .explain{
+    background:#0b0c0e;border:1px solid #000;border-radius:6px;padding:10px 12px;
+    font-size:12px;line-height:1.55;color:#aab2bf;min-height:88px;
+    box-shadow:inset 0 1px 4px rgba(0,0,0,.8);
+  }
+  .explain b{color:#e8e6e0;}
+  .explain .grn{color:var(--green);} .explain .red{color:var(--red);} .explain .amb{color:var(--amber);}
+
+  footer{margin-top:6px;text-align:center;font-size:9.5px;color:#4a4f57;letter-spacing:1px;}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>SMALL ENGINE MAGNETO IGNITION<small>FLYWHEEL &bull; COIL &bull; KILL SWITCH &mdash; INTERACTIVE TRAINER</small></h1>
+  <div class="hdr-right">
+    <div class="rpm-box" id="hdrRpm">0 RPM</div>
+    <button class="btn" id="soundBtn">SOUND: OFF</button>
+    <button class="btn" id="resetBtn">RESET</button>
+  </div>
+</header>
+
+<div class="layout">
+
+  <!-- ================= LEFT COLUMN ================= -->
+  <div class="col-left">
+    <div class="pane">
+      <div class="pane-title">ENGINE &mdash; FLYWHEEL, MAGNETO COIL &amp; KILL CIRCUIT</div>
+      <div class="engine-wrap">
+      <svg id="engineSvg" viewBox="0 0 880 620" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <radialGradient id="fwFace" cx="42%" cy="38%" r="75%">
+            <stop offset="0%" stop-color="#3d4148"/><stop offset="60%" stop-color="#26282d"/>
+            <stop offset="100%" stop-color="#17181b"/>
+          </radialGradient>
+          <linearGradient id="steel" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#4a4e56"/><stop offset="50%" stop-color="#33363c"/>
+            <stop offset="100%" stop-color="#22242a"/>
+          </linearGradient>
+          <linearGradient id="copperG" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stop-color="#8a5426"/><stop offset="45%" stop-color="#d08a4a"/>
+            <stop offset="55%" stop-color="#e5a35f"/><stop offset="100%" stop-color="#8a5426"/>
+          </linearGradient>
+          <filter id="glow" x="-80%" y="-80%" width="260%" height="260%">
+            <feGaussianBlur stdDeviation="2.6" result="b"/>
+            <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+          <filter id="bigglow" x="-120%" y="-120%" width="340%" height="340%">
+            <feGaussianBlur stdDeviation="6" result="b"/>
+            <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+          <pattern id="hatch" width="8" height="8" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">
+            <rect width="8" height="8" fill="#1b1d21"/>
+            <line x1="0" y1="0" x2="0" y2="8" stroke="#26292f" stroke-width="2"/>
+          </pattern>
+        </defs>
+
+        <!-- ======= ENGINE BLOCK (right) with spark plug ======= -->
+        <rect x="600" y="190" width="256" height="72" rx="6" fill="url(#hatch)" stroke="#000"/>
+        <rect x="608" y="198" width="64" height="56" rx="4" fill="#08090b" stroke="#000"/>
+        <text class="lbl-s" x="686" y="218">CYLINDER HEAD</text>
+        <text class="lbl-s" x="686" y="232">= ENGINE GROUND</text>
+        <!-- block ground symbol -->
+        <line x1="800" y1="262" x2="800" y2="278" stroke="#6d7480" stroke-width="3"/>
+        <line x1="786" y1="278" x2="814" y2="278" stroke="#6d7480" stroke-width="3"/>
+        <line x1="791" y1="284" x2="809" y2="284" stroke="#6d7480" stroke-width="3"/>
+        <line x1="796" y1="290" x2="804" y2="290" stroke="#6d7480" stroke-width="3"/>
+
+        <!-- spark plug -->
+        <g id="plugGrp">
+          <circle cx="640" cy="96" r="7" fill="url(#steel)" stroke="#000"/>
+          <rect x="630" y="100" width="20" height="46" rx="6" fill="#ddd8ce" stroke="#8a8577"/>
+          <ellipse cx="640" cy="112" rx="11" ry="3.5" fill="none" stroke="#a8a294" stroke-width="2"/>
+          <ellipse cx="640" cy="124" rx="11" ry="3.5" fill="none" stroke="#a8a294" stroke-width="2"/>
+          <ellipse cx="640" cy="136" rx="11" ry="3.5" fill="none" stroke="#a8a294" stroke-width="2"/>
+          <rect x="620" y="146" width="40" height="18" rx="2" fill="url(#steel)" stroke="#000"/>
+          <rect x="628" y="164" width="24" height="34" fill="#3a3e46" stroke="#000"/>
+          <line x1="628" y1="172" x2="652" y2="172" stroke="#1c1e22" stroke-width="2"/>
+          <line x1="628" y1="180" x2="652" y2="180" stroke="#1c1e22" stroke-width="2"/>
+          <line x1="628" y1="188" x2="652" y2="188" stroke="#1c1e22" stroke-width="2"/>
+          <!-- centre electrode -->
+          <rect x="637" y="198" width="6" height="22" fill="#c9c4b8" stroke="#000" stroke-width=".5"/>
+          <!-- ground electrode -->
+          <path d="M655,198 L655,232 L643,232" fill="none" stroke="#c9c4b8" stroke-width="5" stroke-linecap="round"/>
+          <!-- spark -->
+          <g id="sparkGrp" opacity="0">
+            <circle cx="640" cy="225" r="13" fill="#57c7ff" opacity=".35" filter="url(#bigglow)"/>
+            <polyline id="sparkZig" points="640,220 635,223 645,226 640,230"
+              fill="none" stroke="#dff4ff" stroke-width="2.4" filter="url(#glow)"/>
+          </g>
+          <text class="lbl-b" x="672" y="120">SPARK PLUG</text>
+          <text class="lbl-s" x="672" y="135">gap &asymp; 0.030&Prime;</text>
+        </g>
+
+        <!-- ======= HIGH-TENSION LEAD coil -> plug ======= -->
+        <path id="htLead" d="M478,80 C545,52 600,54 636,90" fill="none" stroke="#1a1a1a" stroke-width="8" stroke-linecap="round"/>
+        <path d="M478,80 C545,52 600,54 636,90" fill="none" stroke="#3a3e46" stroke-width="2.4" stroke-linecap="round"/>
+        <path id="htPulse" d="M478,80 C545,52 600,54 636,90" fill="none" stroke="#8fdcff" stroke-width="3"
+          stroke-linecap="round" stroke-dasharray="14 22" opacity="0" filter="url(#glow)"/>
+        <text class="lbl-s" x="520" y="44">HIGH-TENSION LEAD (&asymp;15,000 V)</text>
+
+        <!-- ======= FLYWHEEL ======= -->
+        <g id="flywheelGrp">
+          <circle cx="400" cy="340" r="204" fill="#0f1013" stroke="#000" stroke-width="2"/>
+          <g id="flywheel" transform="rotate(0,400,340)">
+            <circle cx="400" cy="340" r="198" fill="url(#fwFace)" stroke="#000" stroke-width="2"/>
+            <circle cx="400" cy="340" r="184" fill="none" stroke="#111216" stroke-width="26"/>
+            <circle cx="400" cy="340" r="198" fill="none" stroke="#000" stroke-width="1.5"/>
+            <circle cx="400" cy="340" r="170" fill="none" stroke="#000" stroke-width="1.5"/>
+            <!-- fins -->
+            <g id="fins" fill="url(#steel)" stroke="#000" stroke-width="1">
+              <rect x="394" y="182" width="12" height="88" rx="4"/>
+              <rect x="394" y="182" width="12" height="88" rx="4" transform="rotate(30,400,340)"/>
+              <rect x="394" y="182" width="12" height="88" rx="4" transform="rotate(60,400,340)"/>
+              <rect x="394" y="182" width="12" height="88" rx="4" transform="rotate(90,400,340)"/>
+              <rect x="394" y="182" width="12" height="88" rx="4" transform="rotate(120,400,340)"/>
+              <rect x="394" y="182" width="12" height="88" rx="4" transform="rotate(150,400,340)"/>
+              <rect x="394" y="182" width="12" height="88" rx="4" transform="rotate(180,400,340)"/>
+              <rect x="394" y="182" width="12" height="88" rx="4" transform="rotate(210,400,340)"/>
+              <rect x="394" y="182" width="12" height="88" rx="4" transform="rotate(240,400,340)"/>
+              <rect x="394" y="182" width="12" height="88" rx="4" transform="rotate(270,400,340)"/>
+              <rect x="394" y="182" width="12" height="88" rx="4" transform="rotate(300,400,340)"/>
+              <rect x="394" y="182" width="12" height="88" rx="4" transform="rotate(330,400,340)"/>
+            </g>
+            <!-- MAGNET: N (leading, red) + S (trailing, blue) embedded in rim -->
+            <path d="M338.8,151.7 A198,198 0 0 1 400,142 L400,170 A170,170 0 0 0 347.5,178.3 Z"
+              fill="#c8443a" stroke="#000" stroke-width="1.5"/>
+            <path d="M400,142 A198,198 0 0 1 461.2,151.7 L452.5,178.3 A170,170 0 0 0 400,170 Z"
+              fill="#3f7fb5" stroke="#000" stroke-width="1.5"/>
+            <text x="371" y="167" font-size="15" font-weight="700" fill="#ffe1de" text-anchor="middle" font-family="Consolas,monospace">N</text>
+            <text x="429" y="167" font-size="15" font-weight="700" fill="#dbeeff" text-anchor="middle" font-family="Consolas,monospace">S</text>
+            <!-- hub -->
+            <circle cx="400" cy="340" r="48" fill="url(#steel)" stroke="#000" stroke-width="2"/>
+            <circle cx="400" cy="340" r="20" fill="#17181b" stroke="#000" stroke-width="2"/>
+            <path d="M400,326 l12,7 v14 l-12,7 -12,-7 v-14 z" fill="#4a4e56" stroke="#000"/>
+          </g>
+          <text class="lbl-b" x="400" y="420" text-anchor="middle">FLYWHEEL</text>
+          <text class="lbl-s" x="400" y="436" text-anchor="middle">permanent magnet cast into rim</text>
+          <text class="lbl-s" id="dragHint" x="400" y="472" text-anchor="middle" fill="#57c7ff">&#8635; drag me to hand-spin</text>
+        </g>
+
+        <!-- ======= FLUX LINES (magnet <-> coil legs) ======= -->
+        <g id="fluxGrp" opacity="0" pointer-events="none">
+          <path d="M339,140 C339,178 461,178 461,140" fill="none" stroke="#57c7ff" stroke-width="2" stroke-dasharray="6 5" filter="url(#glow)"/>
+          <path d="M352,138 C352,168 448,168 448,138" fill="none" stroke="#57c7ff" stroke-width="1.6" stroke-dasharray="5 5" opacity=".8"/>
+          <path d="M339,112 C300,60 500,60 461,112" fill="none" stroke="#57c7ff" stroke-width="1.4" stroke-dasharray="5 6" opacity=".55"/>
+        </g>
+
+        <!-- ======= MAGNETO COIL / ARMATURE (fixed, above rim) ======= -->
+        <g id="coilGrp">
+          <!-- laminated body -->
+          <rect x="322" y="58" width="156" height="54" rx="3" fill="url(#steel)" stroke="#000" stroke-width="1.5"/>
+          <line x1="322" y1="70" x2="478" y2="70" stroke="#1c1e22" stroke-width="1.4"/>
+          <line x1="322" y1="82" x2="478" y2="82" stroke="#1c1e22" stroke-width="1.4"/>
+          <line x1="322" y1="94" x2="478" y2="94" stroke="#1c1e22" stroke-width="1.4"/>
+          <line x1="322" y1="106" x2="478" y2="106" stroke="#1c1e22" stroke-width="1.4"/>
+          <!-- legs -->
+          <rect x="326" y="110" width="26" height="28" fill="url(#steel)" stroke="#000" stroke-width="1.5"/>
+          <rect x="448" y="110" width="26" height="28" fill="url(#steel)" stroke="#000" stroke-width="1.5"/>
+          <rect x="388" y="110" width="24" height="26" fill="url(#steel)" stroke="#000" stroke-width="1.5"/>
+          <!-- winding around centre leg -->
+          <g id="winding">
+            <rect x="370" y="86" width="60" height="52" rx="9" fill="url(#copperG)" stroke="#4a2a10" stroke-width="1.5"/>
+            <line x1="378" y1="88" x2="378" y2="136" stroke="#7a4a20" stroke-width="1.6"/>
+            <line x1="386" y1="87" x2="386" y2="137" stroke="#7a4a20" stroke-width="1.6"/>
+            <line x1="394" y1="86" x2="394" y2="138" stroke="#7a4a20" stroke-width="1.6"/>
+            <line x1="402" y1="86" x2="402" y2="138" stroke="#7a4a20" stroke-width="1.6"/>
+            <line x1="410" y1="86" x2="410" y2="138" stroke="#7a4a20" stroke-width="1.6"/>
+            <line x1="418" y1="87" x2="418" y2="137" stroke="#7a4a20" stroke-width="1.6"/>
+            <rect id="windGlow" x="370" y="86" width="60" height="52" rx="9" fill="none"
+              stroke="#ffd27a" stroke-width="2.5" opacity="0" filter="url(#glow)"/>
+          </g>
+          <!-- kill terminal -->
+          <circle cx="330" cy="66" r="5.5" fill="#c9c4b8" stroke="#000"/>
+          <text class="lbl-b" x="250" y="34">MAGNETO COIL (ARMATURE)</text>
+          <text class="lbl-s" x="250" y="49">primary: ~200 turns &bull; secondary: ~10,000 turns</text>
+          <!-- air gap callout -->
+          <text class="lbl-s" x="490" y="132">AIR GAP</text>
+          <line x1="487" y1="133" x2="464" y2="139" stroke="#6d7480" stroke-width="1"/>
+        </g>
+
+        <!-- ======= KILL WIRE + SWITCH + GROUND ======= -->
+        <path id="killWire" d="M330,66 C250,54 172,66 160,110 L160,172" fill="none" stroke="#151515" stroke-width="5" stroke-linecap="round"/>
+        <path d="M330,66 C250,54 172,66 160,110 L160,172" fill="none" stroke="#3a3e46" stroke-width="1.6" stroke-linecap="round"/>
+        <path id="killPulse" d="M330,66 C250,54 172,66 160,110 L160,172" fill="none" stroke="#ffe08a" stroke-width="3"
+          stroke-linecap="round" stroke-dasharray="9 14" opacity="0" filter="url(#glow)"/>
+        <text class="lbl-b" x="60" y="76">KILL WIRE</text>
+        <text class="lbl-s" x="60" y="91">from coil primary</text>
+
+        <!-- switch -->
+        <g id="switchGrp">
+          <rect x="112" y="172" width="96" height="96" rx="8" fill="url(#steel)" stroke="#000" stroke-width="1.5"/>
+          <text class="lbl-s" x="160" y="188" text-anchor="middle" fill="#c3cad6" font-weight="700" letter-spacing="1">ENGINE SWITCH</text>
+          <circle cx="160" cy="200" r="5" fill="#c9c4b8" stroke="#000"/>
+          <circle cx="160" cy="248" r="5" fill="#c9c4b8" stroke="#000"/>
+          <line id="switchBlade" x1="160" y1="200" x2="160" y2="248" stroke="#e8e6e0" stroke-width="4.5" stroke-linecap="round"/>
+          <text class="lbl-s" id="swStateLbl" x="222" y="226" fill="#ff8a80" font-weight="700">STOP (closed)</text>
+        </g>
+        <!-- switch to ground -->
+        <line x1="160" y1="248" x2="160" y2="292" stroke="#3a3e46" stroke-width="4"/>
+        <line id="gndPulse" x1="160" y1="248" x2="160" y2="292" stroke="#ffe08a" stroke-width="3"
+          stroke-dasharray="8 12" opacity="0" filter="url(#glow)"/>
+        <line x1="142" y1="292" x2="178" y2="292" stroke="#6d7480" stroke-width="3.4"/>
+        <line x1="149" y1="299" x2="171" y2="299" stroke="#6d7480" stroke-width="3.4"/>
+        <line x1="156" y1="306" x2="164" y2="306" stroke="#6d7480" stroke-width="3.4"/>
+        <text class="lbl-s" x="192" y="300">CHASSIS GROUND</text>
+
+        <!-- ======= SCHEMATIC INSET (bottom-left) ======= -->
+        <g id="schemGrp">
+          <rect x="20" y="380" width="286" height="222" rx="8" fill="#101216" stroke="#000" stroke-width="1.5"/>
+          <text class="lbl-s" x="163" y="400" text-anchor="middle" fill="#98a0ad" letter-spacing="2" font-weight="700">KILL CIRCUIT &mdash; SCHEMATIC</text>
+          <!-- primary winding symbol -->
+          <path d="M78,432 v8 a8,8 0 0 1 0,16 a8,8 0 0 1 0,16 a8,8 0 0 1 0,16 a8,8 0 0 1 0,16 v8"
+            fill="none" stroke="#d08a4a" stroke-width="3"/>
+          <text class="lbl-s" x="40" y="470" writing-mode="tb" letter-spacing="2">PRIMARY</text>
+          <!-- top wire to switch pivot -->
+          <line x1="78" y1="432" x2="238" y2="432" stroke="#aab2bf" stroke-width="2.4"/>
+          <circle cx="238" cy="432" r="4" fill="#e8e6e0"/>
+          <!-- switch blade (schematic) -->
+          <line id="schBlade" x1="238" y1="432" x2="238" y2="482" stroke="#e8e6e0" stroke-width="3" stroke-linecap="round"/>
+          <circle cx="238" cy="482" r="4" fill="#e8e6e0"/>
+          <line x1="238" y1="482" x2="238" y2="512" stroke="#aab2bf" stroke-width="2.4"/>
+          <line x1="222" y1="512" x2="254" y2="512" stroke="#6d7480" stroke-width="3"/>
+          <line x1="228" y1="519" x2="248" y2="519" stroke="#6d7480" stroke-width="3"/>
+          <line x1="234" y1="526" x2="242" y2="526" stroke="#6d7480" stroke-width="3"/>
+          <!-- primary bottom to ground -->
+          <line x1="78" y1="512" x2="78" y2="530" stroke="#aab2bf" stroke-width="2.4"/>
+          <line x1="62" y1="530" x2="94" y2="530" stroke="#6d7480" stroke-width="3"/>
+          <line x1="68" y1="537" x2="88" y2="537" stroke="#6d7480" stroke-width="3"/>
+          <line x1="74" y1="544" x2="82" y2="544" stroke="#6d7480" stroke-width="3"/>
+          <!-- shorted-loop current animation -->
+          <path id="schLoop" d="M78,432 L238,432 L238,512 M78,512 L78,432" fill="none"
+            stroke="#ffe08a" stroke-width="2.4" stroke-dasharray="7 11" opacity="0" filter="url(#glow)"/>
+          <text id="schCaption" class="lbl-s" x="163" y="572" text-anchor="middle" fill="#ff8a80" font-weight="700">CLOSED &rarr; primary shorted &rarr; NO SPARK</text>
+          <text class="lbl-s" x="130" y="424" text-anchor="middle">kill wire</text>
+        </g>
+
+        <!-- pass-too-slow flash -->
+        <text id="tooSlow" x="400" y="520" text-anchor="middle" font-size="15" font-weight="700"
+          fill="#ffb347" opacity="0" letter-spacing="2" font-family="Consolas,monospace">MAGNET PASS TOO SLOW &mdash; VOLTAGE TOO LOW FOR SPARK</text>
+      </svg>
+      </div>
+    </div>
+
+    <div class="pane">
+      <div class="pane-title">PRIMARY COIL VOLTAGE &mdash; OSCILLOSCOPE</div>
+      <div class="scope-wrap">
+        <canvas id="scope" width="760" height="130"></canvas>
+        <div class="scope-cap"><span id="scopeState">PRIMARY OPEN &mdash; COIL CAN FIRE</span><span>one pulse per flywheel revolution &rarr;</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= RIGHT COLUMN ================= -->
+  <div class="col-right">
+    <div class="pane">
+      <div class="pane-title">CONTROLS</div>
+      <div class="switch-block">
+        <div class="rocker">
+          <button id="btnRun">RUN</button>
+          <button id="btnStop" class="stop-on">STOP</button>
+        </div>
+        <div class="switch-note" id="switchNote">
+          <b>STOP:</b> switch is <b>closed</b> &mdash; it connects the coil primary to ground, shorting it out. No spark is possible.
+        </div>
+      </div>
+      <div class="ctl-row">
+        <button class="pull-btn" id="pullBtn">&#8618; PULL STARTER ROPE</button>
+      </div>
+      <div class="slider-row">
+        <label>THROTTLE</label>
+        <input type="range" id="throttle" min="1800" max="3600" value="2800" step="50">
+        <output id="throttleOut">2800 rpm</output>
+      </div>
+      <div class="slider-row">
+        <label>SIM SPEED</label>
+        <div class="speed-btns" style="flex:1">
+          <button class="btn sel" data-speed="1">1&times;</button>
+          <button class="btn" data-speed="0.25">&frac14;&times;</button>
+          <button class="btn" data-speed="0.0625">1/16&times;</button>
+          <button class="btn" data-speed="0.015625">1/64&times;</button>
+        </div>
+      </div>
+      <div class="hint">Engine stopped? You can also <b>drag the flywheel</b> to hand-spin it and watch the coil react. Use 1/16&times; to see each magnet pass.</div>
+    </div>
+
+    <div class="pane">
+      <div class="pane-title">READOUTS</div>
+      <div class="readouts">
+        <div class="ro"><div class="ro-l">ENGINE SPEED</div><div class="ro-v" id="roRpm">0 rpm</div></div>
+        <div class="ro"><div class="ro-l">SPARKS FIRED</div><div class="ro-v cyn" id="roSparks">0</div></div>
+        <div class="ro wide"><div class="ro-l">COIL PRIMARY CIRCUIT</div><div class="ro-v red small" id="roPrimary">GROUNDED (shorted by switch) &mdash; no spark possible</div></div>
+        <div class="ro wide"><div class="ro-l">SECONDARY OUTPUT AT PLUG</div><div class="ro-v small" id="roSecondary">0 V</div></div>
+      </div>
+    </div>
+
+    <div class="pane">
+      <div class="pane-title">HOW A SPARK IS MADE &mdash; EVERY REVOLUTION</div>
+      <div class="steps">
+        <div class="step" id="step1"><div class="num">1</div><div class="txt"><b>MAGNET SWEEPS PAST THE COIL</b>The permanent magnet in the flywheel rim passes the laminated legs of the coil armature, pushing a magnetic field through the iron core.</div></div>
+        <div class="step" id="step2"><div class="num">2</div><div class="txt"><b>CHANGING FIELD INDUCES CURRENT</b>The fast-changing magnetic flux induces a current in the primary winding (a few hundred turns). Faster flywheel = stronger pulse.</div></div>
+        <div class="step" id="step3"><div class="num">3</div><div class="txt"><b>PRIMARY IS CUT &mdash; FIELD COLLAPSES</b>At the ideal moment the ignition module interrupts the primary current. The field collapses instantly through the secondary's ~10,000 turns, multiplying the voltage to roughly 15,000 V.</div></div>
+        <div class="step" id="step4"><div class="num">4</div><div class="txt"><b>SPARK JUMPS THE PLUG GAP</b>The high voltage arcs across the spark-plug gap to the grounded engine block, igniting the fuel-air mixture &mdash; which spins the flywheel to the next pass.</div></div>
+      </div>
+    </div>
+
+    <div class="pane">
+      <div class="pane-title">WHAT IS HAPPENING NOW</div>
+      <div class="explain" id="explain"></div>
+    </div>
+  </div>
+</div>
+
+<footer>TRAINING AID &bull; TYPICAL SINGLE-CYLINDER MAGNETO IGNITION (BRIGGS &amp; STRATTON / TECUMSEH STYLE) &bull; NOT FOR MAINTENANCE USE</footer>
+
+<script>
+(function(){
+  "use strict";
+  const TAU = Math.PI*2;
+
+  /* ---------- state ---------- */
+  const S = {
+    theta: 0.6,          // flywheel angle, rad (0 = magnet aligned with coil)
+    rpm: 0,
+    running: false,
+    switchRun: false,    // false = STOP (grounded), true = RUN (ground removed)
+    target: 2800,
+    speed: 1,            // sim-speed multiplier
+    pullT: -1,           // >=0 while starter pull in progress
+    sparkT: 0, killT: 0, tooSlowT: 0,
+    sparks: 0,
+    lastRev: Math.floor((0.6 - 0.35)/TAU),
+    dash: 0,
+    sound: false,
+    drag: null,
+    dragRpm: 0
+  };
+  const SIGMA = 0.30;          // pulse width (rad)
+  const FIRE_MIN_RPM = 250;    // below this the magneto can't make enough voltage
+
+  /* ---------- dom ---------- */
+  const $ = id => document.getElementById(id);
+  const flywheel=$("flywheel"), fluxGrp=$("fluxGrp"), windGlow=$("windGlow"),
+    sparkGrp=$("sparkGrp"), sparkZig=$("sparkZig"), htPulse=$("htPulse"),
+    killPulse=$("killPulse"), gndPulse=$("gndPulse"), schLoop=$("schLoop"),
+    switchBlade=$("switchBlade"), schBlade=$("schBlade"), swStateLbl=$("swStateLbl"), switchNote=$("switchNote"),
+    schCaption=$("schCaption"), tooSlow=$("tooSlow"), dragHint=$("dragHint"),
+    hdrRpm=$("hdrRpm"), roRpm=$("roRpm"), roSparks=$("roSparks"),
+    roPrimary=$("roPrimary"), roSecondary=$("roSecondary"),
+    scopeState=$("scopeState"), explain=$("explain"),
+    btnRun=$("btnRun"), btnStop=$("btnStop"), pullBtn=$("pullBtn"),
+    throttle=$("throttle"), throttleOut=$("throttleOut"),
+    soundBtn=$("soundBtn"), resetBtn=$("resetBtn"),
+    scope=$("scope"), sctx=scope.getContext("2d"),
+    svg=$("engineSvg"), fwGrp=$("flywheelGrp");
+  const steps=[$("step1"),$("step2"),$("step3"),$("step4")];
+
+  /* ---------- scope buffer ---------- */
+  const NSAMP = 380;
+  const samples = new Float32Array(NSAMP);
+
+  /* ---------- sound ---------- */
+  let actx=null;
+  function blip(){
+    if(!S.sound) return;
+    if(!actx) actx = new (window.AudioContext||window.webkitAudioContext)();
+    const t=actx.currentTime, o=actx.createOscillator(), g=actx.createGain();
+    o.type="square"; o.frequency.setValueAtTime(85,t);
+    o.frequency.exponentialRampToValueAtTime(45,t+0.05);
+    g.gain.setValueAtTime(0.10,t); g.gain.exponentialRampToValueAtTime(0.001,t+0.06);
+    o.connect(g); g.connect(actx.destination); o.start(t); o.stop(t+0.07);
+  }
+
+  /* ---------- helpers ---------- */
+  function wrapPi(a){ a=((a%TAU)+TAU)%TAU; return a>Math.PI ? a-TAU : a; }
+
+  function primaryVolts(){
+    // gaussian-derivative pulse as magnet passes coil (0 rad), scaled by speed
+    const d = wrapPi(S.theta);
+    const w = S.rpm*TAU/60;
+    return (d/(SIGMA*SIGMA)) * Math.exp(-d*d/(2*SIGMA*SIGMA)) * w * 0.004;
+  }
+
+  /* ---------- switch ---------- */
+  function setSwitch(run){
+    S.switchRun = run;
+    btnRun.classList.toggle("run-on", run);
+    btnStop.classList.toggle("stop-on", !run);
+    if(run){
+      switchBlade.setAttribute("x2","196"); switchBlade.setAttribute("y2","220");
+      schBlade.setAttribute("x2","270");    schBlade.setAttribute("y2","452");
+      swStateLbl.textContent="RUN (open)"; swStateLbl.setAttribute("fill","#8fe69f");
+      schCaption.textContent="OPEN → ground removed → COIL CAN FIRE";
+      schCaption.setAttribute("fill","#8fe69f");
+      switchNote.innerHTML="<b>RUN:</b> switch is <b>open</b> &mdash; the ground on the coil primary is removed, so the magneto can build voltage and fire the plug.";
+    }else{
+      switchBlade.setAttribute("x2","160"); switchBlade.setAttribute("y2","248");
+      schBlade.setAttribute("x2","238");    schBlade.setAttribute("y2","482");
+      swStateLbl.textContent="STOP (closed)"; swStateLbl.setAttribute("fill","#ff8a80");
+      schCaption.textContent="CLOSED → primary shorted → NO SPARK";
+      schCaption.setAttribute("fill","#ff8a80");
+      switchNote.innerHTML="<b>STOP:</b> switch is <b>closed</b> &mdash; it connects the coil primary to ground, shorting it out. No spark is possible.";
+      S.running = false;
+    }
+  }
+  btnRun.addEventListener("click",()=>setSwitch(true));
+  btnStop.addEventListener("click",()=>setSwitch(false));
+
+  /* ---------- controls ---------- */
+  pullBtn.addEventListener("click",()=>{ if(S.pullT<0){ S.pullT=0; } });
+  throttle.addEventListener("input",()=>{
+    S.target=+throttle.value; throttleOut.textContent=S.target+" rpm";
+  });
+  document.querySelectorAll(".speed-btns .btn").forEach(b=>{
+    b.addEventListener("click",()=>{
+      document.querySelectorAll(".speed-btns .btn").forEach(x=>x.classList.remove("sel"));
+      b.classList.add("sel"); S.speed=+b.dataset.speed;
+    });
+  });
+  soundBtn.addEventListener("click",()=>{
+    S.sound=!S.sound;
+    soundBtn.textContent="SOUND: "+(S.sound?"ON":"OFF");
+    soundBtn.classList.toggle("on",S.sound);
+  });
+  resetBtn.addEventListener("click",()=>{
+    S.rpm=0; S.running=false; S.sparks=0; S.theta=0.6;
+    S.lastRev=Math.floor((S.theta-0.35)/TAU);
+    samples.fill(0); setSwitch(false);
+  });
+
+  /* ---------- flywheel drag (hand-spin) ---------- */
+  function svgPoint(evt){
+    const pt=svg.createSVGPoint();
+    pt.x=evt.clientX; pt.y=evt.clientY;
+    return pt.matrixTransform(svg.getScreenCTM().inverse());
+  }
+  fwGrp.addEventListener("pointerdown",e=>{
+    if(S.running) return;
+    const p=svgPoint(e);
+    const r=Math.hypot(p.x-400,p.y-340);
+    if(r>212) return;
+    fwGrp.setPointerCapture(e.pointerId);
+    fwGrp.classList.add("grabbing");
+    S.drag={a:Math.atan2(p.y-340,p.x-400), t:performance.now()};
+    S.dragRpm=0;
+    e.preventDefault();
+  });
+  fwGrp.addEventListener("pointermove",e=>{
+    if(!S.drag) return;
+    const p=svgPoint(e), now=performance.now();
+    const a=Math.atan2(p.y-340,p.x-400);
+    let da=wrapPi(a-S.drag.a);
+    const dt=Math.max(1,now-S.drag.t)/1000;
+    S.theta+=da;
+    const inst=(da/dt)*60/TAU;
+    S.dragRpm=S.dragRpm*0.75+inst*0.25;
+    S.rpm=Math.abs(S.dragRpm);
+    S.drag={a:a,t:now};
+  });
+  function endDrag(e){
+    if(!S.drag) return;
+    S.drag=null; fwGrp.classList.remove("grabbing");
+  }
+  fwGrp.addEventListener("pointerup",endDrag);
+  fwGrp.addEventListener("pointercancel",endDrag);
+
+  /* ---------- spark event ---------- */
+  function fireSpark(){
+    S.sparks++; S.sparkT=1; blip();
+    // randomize the zig a little
+    const x=640;
+    sparkZig.setAttribute("points",
+      `${x},220 ${x-4-Math.random()*4},${222+Math.random()*2} ${x+3+Math.random()*5},${225+Math.random()*2} ${x},230`);
+    steps[2].classList.add("hot"); steps[3].classList.add("hot");
+    if(S.stepT3) clearTimeout(S.stepT3);
+    S.stepT3=setTimeout(()=>{steps[2].classList.remove("hot");steps[3].classList.remove("hot");},
+      Math.min(1400, 260/S.speed));
+  }
+
+  /* ---------- explanation ---------- */
+  let lastMsg="";
+  function updateExplain(){
+    let msg;
+    if(!S.switchRun){
+      if(S.rpm>40){
+        msg="<b>Switch is at <span class='red'>STOP</span> — the kill wire is grounded.</b> The magnet is still sweeping past the coil, but the closed switch shorts the primary winding straight to the engine chassis. The induced energy just circulates in the shorted loop (watch the schematic, lower-left) and never builds the field needed for a high-voltage spark. <span class='amb'>No spark → no combustion → the engine coasts to a stop.</span>";
+      }else{
+        msg="<b>Switch is at <span class='red'>STOP</span>.</b> The switch contact is <b>closed</b>, connecting the coil primary to ground through the kill wire. Even if you spin the flywheel, the shorted primary cannot fire the plug. Flip the switch to <b>RUN</b> to remove the ground, then pull the starter.";
+      }
+    }else{
+      if(S.running){
+        msg="<b>Engine <span class='grn'>RUNNING</span> — switch at RUN, ground removed.</b> Once per revolution the flywheel magnet sweeps the coil: field builds, the module cuts the primary, and ≈15,000 V jumps the plug gap. Each power stroke keeps the flywheel spinning to the next pass — completely self-powered, no battery. Flip to <b>STOP</b> and watch the grounded primary kill the spark.";
+      }else if(S.rpm>40){
+        msg="<b>Switch at <span class='grn'>RUN</span> — flywheel turning.</b> The kill-switch contact is <b>open</b>, so the primary is free to build voltage. If the magnet passes the coil fast enough (&gt;"+FIRE_MIN_RPM+" rpm), the plug fires and the engine starts.";
+      }else{
+        msg="<b>Switch at <span class='grn'>RUN</span> — ready to start.</b> The switch contact is <b>open</b>: the ground on the coil primary has been removed, so the magneto is armed. <span class='amb'>Pull the starter rope</span> (or drag the flywheel briskly) to sweep the magnet past the coil and make the first spark.";
+      }
+    }
+    if(msg!==lastMsg){ explain.innerHTML=msg; lastMsg=msg; }
+  }
+
+  /* ---------- scope ---------- */
+  function drawScope(){
+    const W=scope.width, H=scope.height, mid=H/2;
+    sctx.fillStyle="#050607"; sctx.fillRect(0,0,W,H);
+    sctx.strokeStyle="#12202a"; sctx.lineWidth=1;
+    for(let x=0;x<W;x+=38){ sctx.beginPath(); sctx.moveTo(x,0); sctx.lineTo(x,H); sctx.stroke(); }
+    for(let y=mid%26;y<H;y+=26){ sctx.beginPath(); sctx.moveTo(0,y); sctx.lineTo(W,y); sctx.stroke(); }
+    sctx.strokeStyle="#1e3a4a"; sctx.beginPath(); sctx.moveTo(0,mid); sctx.lineTo(W,mid); sctx.stroke();
+    sctx.strokeStyle = S.switchRun ? "#ffb347" : "#ff6a5e";
+    sctx.lineWidth=1.8; sctx.beginPath();
+    for(let i=0;i<NSAMP;i++){
+      const x=i*(W/NSAMP);
+      const y=mid - Math.max(-mid+4, Math.min(mid-4, samples[i]*20));
+      i?sctx.lineTo(x,y):sctx.moveTo(x,y);
+    }
+    sctx.stroke();
+  }
+
+  /* ---------- main loop ---------- */
+  let prev=performance.now();
+  function frame(now){
+    let rdt=Math.min(0.05,(now-prev)/1000); prev=now;
+    const dt=rdt*S.speed;
+
+    /* starter pull: ramps rpm up over ~0.7 s (real time, unscaled feel) */
+    if(S.pullT>=0){
+      S.pullT+=rdt;
+      const k=S.pullT/0.7;
+      if(k>=1){ S.pullT=-1; }
+      else if(!S.running){ S.rpm=Math.max(S.rpm, 560*Math.sin(k*Math.PI*0.5)); }
+    }
+    pullBtn.disabled = S.running;
+
+    /* engine dynamics */
+    if(S.running){
+      S.rpm += (S.target-S.rpm)*Math.min(1,dt*2.2);
+    }else if(!S.drag && S.pullT<0){
+      S.rpm = Math.max(0, S.rpm-(S.rpm*0.55+30)*dt);
+    }
+
+    /* rotation */
+    if(!S.drag) S.theta += S.rpm*TAU/60*dt;
+
+    /* magnet pass detection: fires slightly after alignment (0.35 rad ~ "just past") */
+    const rev=Math.floor((S.theta-0.35)/TAU);
+    if(rev>S.lastRev){
+      S.lastRev=rev;
+      if(S.rpm>=FIRE_MIN_RPM){
+        if(S.switchRun){
+          fireSpark();
+          if(!S.running){ S.running=true; }
+        }else{
+          S.killT=1;
+        }
+      }else if(S.rpm>40){
+        S.tooSlowT=1;
+      }
+    }else if(rev<S.lastRev){ S.lastRev=rev; } // hand-spun backwards
+
+    /* electrical quantities */
+    const v=primaryVolts();
+    const vShown = S.switchRun ? v : v*0.06;   // shorted primary: voltage collapses
+    samples.copyWithin(0,1); samples[NSAMP-1]=vShown;
+
+    const d=Math.abs(wrapPi(S.theta));
+    const flux=Math.exp(-d*d/(2*0.42*0.42));
+
+    /* visuals */
+    flywheel.setAttribute("transform",`rotate(${(S.theta*180/Math.PI)%360},400,340)`);
+    fluxGrp.setAttribute("opacity",(flux*0.95).toFixed(3));
+    windGlow.setAttribute("opacity",Math.min(1,Math.abs(v)*0.5).toFixed(3));
+
+    S.dash-=rdt*90;
+    if(S.sparkT>0){
+      S.sparkT-=rdt/0.12;
+      sparkGrp.setAttribute("opacity",Math.max(0,S.sparkT).toFixed(2));
+      htPulse.setAttribute("opacity",Math.max(0,S.sparkT*0.9).toFixed(2));
+      htPulse.setAttribute("stroke-dashoffset",S.dash.toFixed(1));
+    }else{ sparkGrp.setAttribute("opacity",0); htPulse.setAttribute("opacity",0); }
+
+    /* kill-circuit current: continuous while grounded & voltage present */
+    const killAct = !S.switchRun ? Math.min(1,Math.abs(v)*0.6) : (S.killT>0?S.killT:0);
+    if(S.killT>0) S.killT-=rdt/0.3;
+    killPulse.setAttribute("opacity",killAct.toFixed(2));
+    gndPulse.setAttribute("opacity",killAct.toFixed(2));
+    schLoop.setAttribute("opacity",killAct.toFixed(2));
+    killPulse.setAttribute("stroke-dashoffset",S.dash.toFixed(1));
+    gndPulse.setAttribute("stroke-dashoffset",S.dash.toFixed(1));
+    schLoop.setAttribute("stroke-dashoffset",S.dash.toFixed(1));
+
+    if(S.tooSlowT>0){ S.tooSlowT-=rdt/1.4; tooSlow.setAttribute("opacity",Math.max(0,S.tooSlowT).toFixed(2)); }
+    else tooSlow.setAttribute("opacity",0);
+
+    dragHint.setAttribute("opacity", (S.rpm<20 && !S.running) ? 1 : 0);
+
+    /* steps 1 & 2 highlight with magnet proximity */
+    steps[0].classList.toggle("hot", flux>0.25);
+    steps[1].classList.toggle("hot", Math.abs(v)>0.35);
+
+    /* readouts */
+    const rpmTxt=Math.round(S.rpm);
+    hdrRpm.textContent=rpmTxt+" RPM";
+    roRpm.textContent=rpmTxt+" rpm";
+    roSparks.textContent=S.sparks;
+    if(S.switchRun){
+      roPrimary.textContent="OPEN — ground removed, coil armed";
+      roPrimary.className="ro-v grn small";
+      scopeState.textContent="PRIMARY OPEN — COIL CAN FIRE";
+    }else{
+      roPrimary.textContent="GROUNDED (shorted by switch) — no spark possible";
+      roPrimary.className="ro-v red small";
+      scopeState.textContent="PRIMARY GROUNDED — PULSES SHORTED OUT";
+    }
+    roSecondary.textContent = S.sparkT>0 ? "≈15,000 V — SPARK!" : (S.switchRun&&S.rpm>=FIRE_MIN_RPM ? "charging each pass…" : "0 V");
+    roSecondary.className = "ro-v small"+(S.sparkT>0?" cyn":"");
+
+    updateExplain();
+    drawScope();
+    requestAnimationFrame(frame);
+  }
+
+  setSwitch(false);
+  updateExplain();
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
