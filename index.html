@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Ookpik Aviation — Off-Strip Air Service, Baker Lake, Nunavut</title>
-<meta name="description" content="Ookpik Aviation is the only locally owned and operated air service in Baker Lake, Nunavut. Our two turbine DHC-3 Super Otters go where the competition cannot — off-strip operations across the eastern Arctic." />
+<title>Ookpik Aviation — Mining &amp; Exploration Air Support, Baker Lake, Nunavut</title>
+<meta name="description" content="Off-strip air support for mining and exploration companies across the eastern Arctic — drill crews, camp supply, fuel caching, caribou surveys and charter work. Two turbine DHC-3 Super Otters based in Baker Lake, Nunavut." />
 <link rel="icon" type="image/png" href="ookpik-owl-white.png" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -165,6 +165,18 @@
 
   /* CAPABILITIES */
   .caps { background: var(--ink-2); }
+  .cap-feature {
+    display: grid; grid-template-columns: 1.05fr 0.95fr; align-items: stretch;
+    border-radius: 20px; overflow: hidden; border: 1px solid rgba(92,200,255,0.28);
+    background: linear-gradient(160deg, rgba(92,200,255,0.10), rgba(255,255,255,0.02));
+    box-shadow: var(--shadow); margin-bottom: 26px;
+  }
+  .cap-feature .body { padding: clamp(28px, 4vw, 46px); }
+  .cap-feature h3 { font-size: clamp(1.5rem, 2.8vw, 2.1rem); }
+  .cap-feature .body > p { color: #c4d4e0; margin-top: 14px; }
+  .cap-feature img { width: 100%; height: 100%; min-height: 320px; object-fit: cover; }
+  .feature-list { display: grid; grid-template-columns: 1fr 1fr; gap: 0 26px; margin-top: 14px; }
+  .feature-list li { font-size: 0.93rem; padding: 10px 0; }
   .caps-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
   .cap-card {
     background: linear-gradient(165deg, rgba(255,255,255,0.05), rgba(255,255,255,0.01));
@@ -192,6 +204,17 @@
   .clist .ck { flex: none; width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font-size: 0.8rem; font-weight: 700; margin-top: 1px; }
   .ck.yes { background: rgba(124,245,196,0.18); color: var(--aurora); }
   .ck.x { background: rgba(255,255,255,0.07); color: var(--muted); }
+
+  /* TRUST */
+  .trust { background: var(--ink-2); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 38px 0; }
+  .trust-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; }
+  .trust-item { display: flex; gap: 14px; align-items: flex-start; }
+  .trust-item .ic {
+    flex: none; width: 42px; height: 42px; border-radius: 12px; display: grid; place-items: center;
+    background: rgba(92,200,255,0.12); color: var(--ice);
+  }
+  .trust-item .t { color: var(--snow); font-weight: 600; font-size: 0.97rem; }
+  .trust-item .d { color: var(--muted); font-size: 0.85rem; margin-top: 2px; }
 
   /* GALLERY */
   .gallery { background: var(--ink-2); }
@@ -280,6 +303,11 @@
     .about-media img { height: 380px; }
     .specs { grid-template-columns: 1fr; }
     .caps-grid { grid-template-columns: 1fr; }
+    .cap-feature { grid-template-columns: 1fr; }
+    .cap-feature img { order: -1; min-height: 240px; max-height: 320px; }
+    .feature-list { grid-template-columns: 1fr; }
+    .trust-grid { grid-template-columns: 1fr; gap: 18px; }
+    .fleet-grid { grid-template-columns: 1fr; }
     .compare-wrap { grid-template-columns: 1fr; }
     .grid-masonry { columns: 2; }
     .quote-card { grid-template-columns: 1fr; }
@@ -308,8 +336,8 @@
     </a>
     <nav class="nav-links">
       <a href="#about">About</a>
+      <a href="#capabilities">What We Do</a>
       <a href="#otter">The Super Otter</a>
-      <a href="#capabilities">Capabilities</a>
       <a href="#gallery">Gallery</a>
       <a href="#location">Location</a>
       <a href="#quote" class="btn btn-primary nav-cta">Request a Quote</a>
@@ -328,7 +356,7 @@
   <div class="wrap hero-inner">
     <span class="eyebrow">The only locally owned air service in Baker Lake</span>
     <h1>Beyond comparison for<br><span class="grad">off-strip air service.</span></h1>
-    <p class="lead">Three decades of knowledge flying the eastern Arctic. Our two turbine DHC-3 Super Otters land where no one else can — putting your crew, camp and cargo exactly where you need them.</p>
+    <p class="lead">Drill crews, camps, fuel and cargo — delivered off-strip across the Kivalliq and central Arctic. Mining and exploration companies have trusted our two turbine DHC-3 Super Otters for three decades to land where no one else can.</p>
     <div class="hero-actions">
       <a href="#quote" class="btn btn-primary">Request a Quote
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
@@ -342,10 +370,10 @@
 <!-- STATS -->
 <section class="stats">
   <div class="wrap stats-grid">
-    <div class="stat reveal"><div class="num">30<span>+</span></div><div class="lbl">Years of Arctic experience</div></div>
+    <div class="stat reveal"><div class="num">2</div><div class="lbl">Turbine DHC-3 Super Otters</div></div>
+    <div class="stat reveal"><div class="num">3,000<span>lbs</span></div><div class="lbl">Useful load — pax, cargo or both</div></div>
     <div class="stat reveal"><div class="num">200<span>ft</span></div><div class="lbl">Minimum takeoff distance</div></div>
-    <div class="stat reveal"><div class="num">95<span>%</span></div><div class="lbl">Landed within 4&nbsp;km of target</div></div>
-    <div class="stat reveal"><div class="num">1000<span>hp</span></div><div class="lbl">Honeywell turbine power</div></div>
+    <div class="stat reveal"><div class="num">30<span>+</span></div><div class="lbl">Years of Arctic experience</div></div>
   </div>
 </section>
 
@@ -357,13 +385,75 @@
       <h2>Born from the necessity of moving people into roadless Nunavut.</h2>
       <p>Ookpik Aviation is locally owned and operated, drawing on more than three decades of knowledge and experience to do air transport jobs our competition simply cannot.</p>
       <p>Unlike the western Arctic, where lakes allow float planes, the eastern Arctic above the tree line has long been reachable only by ski plane in winter or helicopter in summer. Our Super Otters changed that — opening huge new areas for exploration, tourism, search-and-rescue and government work at a fraction of the cost.</p>
-      <div style="margin-top:30px"><a href="#capabilities" class="btn btn-ghost">What we make possible</a></div>
+      <div style="margin-top:30px"><a href="#capabilities" class="btn btn-ghost">See what we do</a></div>
     </div>
     <div class="about-media reveal">
       <img src="img-blue_1.jpg" alt="Aerial view of an Arctic lake near Baker Lake" />
       <div class="about-badge">
         <div class="big">Baker Lake</div>
         <div class="sm">Nunavut · Eastern Arctic base of operations</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CAPABILITIES -->
+<section class="section-pad caps" id="capabilities">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow">What we do</span>
+      <h2>Built around mining and exploration.</h2>
+      <p>Most of our flying supports mineral exploration across the Kivalliq — and the same aircraft, crews and experience serve government, research, search-and-rescue and adventure tourism clients.</p>
+    </div>
+
+    <div class="cap-feature reveal">
+      <div class="body">
+        <span class="eyebrow">Our core work</span>
+        <h3>Mining &amp; Mineral Exploration</h3>
+        <p>Off-strip support is what our Super Otters were built for. We put drill crews, camps and fuel exactly where the geology is — opening large new areas at a cost per pound far below helicopter service, with no expensive drummed fuel on the return trip.</p>
+        <ul class="clist feature-list">
+          <li><span class="ck yes">&#10003;</span> Drill moves &amp; crew rotations</li>
+          <li><span class="ck yes">&#10003;</span> Camp establishment in 400 ft of tundra</li>
+          <li><span class="ck yes">&#10003;</span> Daily camp resupply &amp; expediting</li>
+          <li><span class="ck yes">&#10003;</span> Fuel caching at remote sites</li>
+          <li><span class="ck yes">&#10003;</span> Sampling, staking &amp; survey crews</li>
+          <li><span class="ck yes">&#10003;</span> Bulky loads through the Yukon cargo door</li>
+        </ul>
+        <div style="margin-top:26px"><a href="#quote" class="btn btn-primary">Plan your season with us</a></div>
+      </div>
+      <img src="img-so_02.jpg" alt="Ookpik Super Otter servicing a remote exploration camp" loading="lazy" />
+    </div>
+
+    <div class="caps-grid">
+      <div class="cap-card reveal">
+        <div class="ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg></div>
+        <h4>Caribou Surveys &amp; Wildlife Research</h4>
+        <p>Low-level survey and research support for federal and territorial agencies — with up to six hours of endurance in survey configuration.</p>
+      </div>
+      <div class="cap-card reveal">
+        <div class="ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2-3H8L6 7H3Z"/><circle cx="12" cy="13" r="3"/></svg></div>
+        <h4>Adventure Tourism &amp; Canoe Charters</h4>
+        <p>Pick-ups and drop-offs for canoe expeditions on remote Arctic rivers, plus scenic flights over Canada's rarely seen north.</p>
+      </div>
+      <div class="cap-card reveal">
+        <div class="ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12h6M12 9v6"/><circle cx="12" cy="12" r="9"/></svg></div>
+        <h4>Search &amp; Rescue Support</h4>
+        <p>STOL access into terrain other aircraft can't reach, when speed and precision matter most.</p>
+      </div>
+      <div class="cap-card reveal">
+        <div class="ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-3"/><path d="M9 9v.01M9 12v.01M9 15v.01"/></svg></div>
+        <h4>Government &amp; Agency Work</h4>
+        <p>Experienced working with federal and territorial agencies, and handling local business requirements across the territory.</p>
+      </div>
+      <div class="cap-card reveal">
+        <div class="ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.7l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.7l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5M12 22V12"/></svg></div>
+        <h4>Camp Supply &amp; Expediting</h4>
+        <p>Set up a camp in 400 feet of level tundra and service it daily — moving larger, bulkier items through our enlarged cargo door.</p>
+      </div>
+      <div class="cap-card reveal">
+        <div class="ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M2 12h4M18 12h4M5 5l2.5 2.5M16.5 16.5 19 19M19 5l-2.5 2.5M7.5 16.5 5 19"/><circle cx="12" cy="12" r="3"/></svg></div>
+        <h4>Additional Aircraft on Request</h4>
+        <p>We can bring in additional rotary or fixed-wing aircraft as required to best serve the needs of your project.</p>
       </div>
     </div>
   </div>
@@ -416,49 +506,6 @@
   </div>
 </section>
 
-<!-- CAPABILITIES -->
-<section class="section-pad caps" id="capabilities">
-  <div class="wrap">
-    <div class="section-head reveal">
-      <span class="eyebrow">What we make possible</span>
-      <h2>Whatever the job, we have the tools and experience to do it right.</h2>
-      <p>From establishing remote drill camps to daily resupply, Ookpik Aviation and our affiliates offer a wide range of expediting, supply and transport services.</p>
-    </div>
-    <div class="caps-grid">
-      <div class="cap-card reveal">
-        <div class="ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m14 12-8.5 8.5a2.12 2.12 0 0 1-3-3L11 9"/><path d="M15 13 9 7l4-4 6 6-4 4Z"/><path d="m18 9 .5-.5"/></svg></div>
-        <h4>Mining &amp; Mineral Exploration</h4>
-        <p>Drilling, sampling and fuel caching. Suddenly large new areas open up at a cost per pound far below helicopter service.</p>
-      </div>
-      <div class="cap-card reveal">
-        <div class="ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2-3H8L6 7H3Z"/><circle cx="12" cy="13" r="3"/></svg></div>
-        <h4>Scenic &amp; Tourism Flights</h4>
-        <p>Panoramic views of Canada's amazing north — remote and rarely seen landscapes, flown by professionals who know the terrain.</p>
-      </div>
-      <div class="cap-card reveal">
-        <div class="ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12h6M12 9v6"/><circle cx="12" cy="12" r="9"/></svg></div>
-        <h4>Search &amp; Rescue Support</h4>
-        <p>STOL access into terrain other aircraft can't reach, when speed and precision matter most.</p>
-      </div>
-      <div class="cap-card reveal">
-        <div class="ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-3"/><path d="M9 9v.01M9 12v.01M9 15v.01"/></svg></div>
-        <h4>Government &amp; Agency Work</h4>
-        <p>Experienced working with federal and territorial agencies, and handling local business requirements across the territory.</p>
-      </div>
-      <div class="cap-card reveal">
-        <div class="ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.7l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.7l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5M12 22V12"/></svg></div>
-        <h4>Camp Supply &amp; Expediting</h4>
-        <p>Set up a camp in 400 feet of level tundra and service it daily — moving larger, bulkier items through our enlarged cargo door.</p>
-      </div>
-      <div class="cap-card reveal">
-        <div class="ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M2 12h4M18 12h4M5 5l2.5 2.5M16.5 16.5 19 19M19 5l-2.5 2.5M7.5 16.5 5 19"/><circle cx="12" cy="12" r="3"/></svg></div>
-        <h4>Additional Aircraft on Request</h4>
-        <p>We can bring in additional rotary or fixed-wing aircraft as required to best serve the needs of your project.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
 <!-- COMPARISON -->
 <section class="section-pad compare">
   <div class="wrap">
@@ -494,6 +541,24 @@
   </div>
 </section>
 
+<!-- TRUST -->
+<section class="trust">
+  <div class="wrap trust-grid">
+    <div class="trust-item reveal">
+      <span class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/><path d="m9 12 2 2 4-4"/></svg></span>
+      <div><div class="t">Transport Canada certified</div><div class="d">Commercial air operator flying under Canadian Aviation Regulations</div></div>
+    </div>
+    <div class="trust-item reveal">
+      <span class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></span>
+      <div><div class="t">Maintained in-house</div><div class="d">Fleet maintained under our Transport Canada approved AMO 60-09</div></div>
+    </div>
+    <div class="trust-item reveal">
+      <span class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
+      <div><div class="t">Experienced Arctic crews</div><div class="d">Decades on type, flying the eastern Arctic year-round</div></div>
+    </div>
+  </div>
+</section>
+
 <!-- GALLERY -->
 <section class="section-pad gallery" id="gallery">
   <div class="wrap">
@@ -508,7 +573,6 @@
       <figure class="reveal"><img src="img_02.jpg" alt="Super Otter C-FPEN in flight over the tundra"></figure>
       <figure class="reveal"><img src="img-lakes_1.jpg" alt="Arctic lakes from the air"></figure>
       <figure class="reveal"><img src="img-so_01.jpg" alt="Super Otter parked on a remote off-strip landing"></figure>
-      <figure class="reveal"><img src="img-so_02.jpg" alt="Super Otter servicing a remote exploration camp"></figure>
       <figure class="reveal"><img src="img-of_02.jpg" alt="Super Otter at sunset on the ice"></figure>
     </div>
   </div>
@@ -597,8 +661,8 @@
       <div class="foot-col">
         <h5>Explore</h5>
         <a href="#about">About</a>
+        <a href="#capabilities">What We Do</a>
         <a href="#otter">The Super Otter</a>
-        <a href="#capabilities">Capabilities</a>
         <a href="#gallery">Gallery</a>
         <a href="#location">Location</a>
         <a href="#quote">Request a Quote</a>
