@@ -181,8 +181,8 @@
         <text class="lbl-s" x="171" y="70" text-anchor="middle">IGN SWITCH</text>
 
         <!-- base wires (dark) -->
-        <path d="M132,106 H148 M194,106 H224 M288,106 H318" fill="none" stroke="#2c2f35" stroke-width="3"/>
-        <path d="M346,106 H446 V128 M446,168 V250 M440,250 H580 M480,184 V250"
+        <path d="M132,106 H148 M194,106 H224 M288,106 H312 M312,106 V98 H332 M366,98 H384 V116" fill="none" stroke="#2c2f35" stroke-width="3"/>
+        <path d="M347,143 V150 H428 V128 H446 M446,168 V250 M440,250 H580 M480,184 V250"
           fill="none" stroke="#2c2f35" stroke-width="3"/>
         <path d="M480,96 V88 H500 M532,88 H560 V148 M560,120 H575 M560,120 H520 V140 M520,200 V250"
           fill="none" stroke="#2c2f35" stroke-width="3"/>
@@ -201,20 +201,32 @@
         <line x1="277" y1="99" x2="277" y2="113" stroke="#8b93a1" stroke-width="2"/>
         <text class="lbl-s" x="256" y="136" text-anchor="middle">RF FILTER</text>
 
-        <!-- vibrator -->
-        <rect x="318" y="92" width="24" height="48" rx="3" fill="url(#steel)" stroke="#000"/>
-        <line x1="322" y1="100" x2="338" y2="100" stroke="#1c1e22" stroke-width="1.5"/>
-        <line x1="322" y1="108" x2="338" y2="108" stroke="#1c1e22" stroke-width="1.5"/>
-        <line x1="322" y1="116" x2="338" y2="116" stroke="#1c1e22" stroke-width="1.5"/>
-        <line x1="322" y1="124" x2="338" y2="124" stroke="#1c1e22" stroke-width="1.5"/>
-        <g id="vibArm" transform="rotate(0,352,92)">
-          <line x1="352" y1="92" x2="352" y2="138" stroke="#c9c4b8" stroke-width="3" stroke-linecap="round"/>
-          <circle cx="352" cy="130" r="3.4" fill="#e8e6e0" stroke="#000" stroke-width=".6"/>
+        <!-- vibrator: electromagnet + spring arm + contacts (self-interrupting switch) -->
+        <rect x="332" y="84" width="34" height="30" rx="4" fill="#1c1e22" stroke="#000"/>
+        <g stroke="#d08a4a" stroke-width="2.2" fill="none">
+          <line x1="337" y1="86" x2="337" y2="112"/><line x1="343" y1="86" x2="343" y2="112"/>
+          <line x1="349" y1="86" x2="349" y2="112"/><line x1="355" y1="86" x2="355" y2="112"/>
+          <line x1="361" y1="86" x2="361" y2="112"/>
         </g>
-        <circle cx="362" cy="130" r="3.4" fill="#e8e6e0" stroke="#000" stroke-width=".6"/>
-        <circle id="vibSpark" cx="357" cy="130" r="5" fill="#ffd27a" opacity="0" filter="url(#glow)"/>
-        <text class="lbl-s" x="352" y="158" text-anchor="middle">VIBRATOR</text>
-        <text class="lbl-s" x="352" y="170" text-anchor="middle">(chopper contacts)</text>
+        <rect x="344" y="112" width="10" height="10" fill="url(#steel)" stroke="#000"/>
+        <rect id="coilGlow" x="330" y="82" width="38" height="42" rx="5" fill="none" stroke="#ffd27a" stroke-width="2" opacity="0" filter="url(#glow)"/>
+        <g id="fieldArcs" opacity="0" stroke="#57c7ff" stroke-width="1.3" fill="none">
+          <path d="M341,123 Q349,131 357,123"/>
+          <path d="M337,125 Q349,137 361,125"/>
+        </g>
+        <text class="lbl-s" x="326" y="80" text-anchor="end">electromagnet</text>
+        <!-- spring-steel arm, anchored right, moving contact on its tip -->
+        <rect x="400" y="116" width="14" height="16" rx="2" fill="url(#steel)" stroke="#000"/>
+        <text class="lbl-s" x="420" y="112">spring arm</text>
+        <g id="vibStrip" transform="rotate(0,406,124)">
+          <line x1="406" y1="128" x2="342" y2="132" stroke="#c9c4b8" stroke-width="3" stroke-linecap="round"/>
+          <circle cx="347" cy="132" r="3.2" fill="#e8e6e0" stroke="#000" stroke-width=".6"/>
+        </g>
+        <!-- fixed contact -->
+        <circle cx="347" cy="139" r="3.2" fill="#e8e6e0" stroke="#000" stroke-width=".6"/>
+        <circle id="vibArc" cx="347" cy="135" r="6" fill="#ffd27a" opacity="0" filter="url(#glow)"/>
+        <text class="lbl-s" x="352" y="164" text-anchor="middle">VIBRATOR (CHOPPER)</text>
+        <text class="lbl-s" id="vibState" x="352" y="177" text-anchor="middle" fill="#8fe69f"></text>
 
         <!-- transformer -->
         <rect x="456" y="118" width="8" height="58" fill="url(#steel)" stroke="#000"/>
@@ -328,7 +340,7 @@
         <text class="lbl-s" x="812" y="452" text-anchor="middle">return via engine ground</text>
 
         <!-- ======= CURRENT OVERLAYS ======= -->
-        <path id="lowFlow" d="M132,106 H148 M194,106 H224 M288,106 H318 M346,106 H446 V128 M446,168 V250 M446,250 H505"
+        <path id="lowFlow" d="M132,106 H148 M194,106 H224 M288,106 H312 M312,106 V98 H332 M366,98 H384 V116 M347,143 V150 H428 V128 H446 M446,168 V250 M446,250 H505"
           fill="none" stroke="#ffd27a" stroke-width="2.6" stroke-linecap="round" stroke-dasharray="7 11" opacity="0" filter="url(#glow)"/>
         <path id="hvFlow" d="M480,96 V88 H500 M532,88 H560 V148 M560,214 V250 L480,250 L480,184"
           fill="none" stroke="#57c7ff" stroke-width="2.8" stroke-linecap="round" stroke-dasharray="6 9" opacity="0" filter="url(#glow)"/>
@@ -343,7 +355,7 @@
           <rect class="hit" data-comp="bus" x="18" y="78" width="118" height="56" rx="6"/>
           <rect class="hit" data-comp="ignswitch" x="142" y="76" width="58" height="42" rx="6"/>
           <rect class="hit" data-comp="filter" x="220" y="82" width="72" height="58" rx="6"/>
-          <rect class="hit" data-comp="vibrator" x="312" y="86" width="62" height="88" rx="6"/>
+          <rect class="hit" data-comp="vibrator" x="300" y="78" width="122" height="104" rx="6"/>
           <rect class="hit" data-comp="transformer" x="436" y="90" width="60" height="126" rx="6"/>
           <rect class="hit" data-comp="rectifier" x="498" y="72" width="30" height="54" rx="6"/>
           <rect class="hit" data-comp="bleed" x="498" y="130" width="34" height="106" rx="6"/>
@@ -427,7 +439,7 @@
     <div class="pane">
       <div class="pane-title">HOW THE VOLTAGE IS BUILT UP &mdash; EVERY SPARK</div>
       <div class="steps">
-        <div class="step" id="st1"><div class="num">1</div><div class="txt"><b>28V IS CHOPPED INTO PULSES</b>DC can't pass through a transformer, so the vibrator contacts open and close rapidly, switching the 28 V supply on and off through the primary winding.</div></div>
+        <div class="step" id="st1"><div class="num">1</div><div class="txt"><b>28V IS CHOPPED INTO PULSES</b>DC can't pass through a transformer, so the vibrator interrupts itself: current magnetises its electromagnet &rarr; the magnet pulls the spring arm and the contacts break the circuit &rarr; with current cut the magnet lets go &rarr; the spring snaps the contacts shut and it all repeats &mdash; a buzzer chopping the 28 V supply.</div></div>
         <div class="step" id="st2"><div class="num">2</div><div class="txt"><b>EACH INTERRUPTION IS STEPPED UP</b>Every time the contacts open, the primary's magnetic field collapses through the secondary's thousands of turns &mdash; each pulse becomes a burst of &asymp;2,000+ volts.</div></div>
         <div class="step" id="st3"><div class="num">3</div><div class="txt"><b>THE RECTIFIER STACKS THE PULSES</b>The one-way rectifier lets each burst push more charge into the storage capacitor but never back out. Pulse by pulse, the voltage climbs &mdash; the staircase on the scope.</div></div>
         <div class="step" id="st4"><div class="num">4</div><div class="txt"><b>THE SPARK GAP BREAKS OVER</b>At &asymp;2,500 V the sealed spark gap ionises &mdash; a voltage-operated switch with no moving parts &mdash; and connects the loaded capacitor straight to the igniter lead.</div></div>
@@ -456,11 +468,12 @@
     sparks:0, lastSparkAt:0, rate:0,
     speed:1, sound:false, simTime:0
   };
-  const BREAKOVER=2500, CAP_F=3e-6, VIB_HZ=22;
+  const BREAKOVER=2500, CAP_F=3e-6, VIB_HZ=16;
 
   /* ---------- dom ---------- */
   const $=id=>document.getElementById(id);
-  const ignBlade=$("ignBlade"), vibArm=$("vibArm"), vibSpark=$("vibSpark"),
+  const ignBlade=$("ignBlade"), vibStrip=$("vibStrip"), vibArc=$("vibArc"),
+    coilGlow=$("coilGlow"), fieldArcs=$("fieldArcs"), vibState=$("vibState"),
     xfmrGlow=$("xfmrGlow"), capFill=$("capFill"), capVlbl=$("capVlbl"),
     gapArc=$("gapArc"), pelletGlow=$("pelletGlow"), igFlash=$("igFlash"),
     fuelSpray=$("fuelSpray"), flameGrp=$("flameGrp"),
@@ -611,17 +624,22 @@
     const dt=rdt*S.speed;
     S.simTime+=dt;
 
-    /* vibrator + charging */
-    let closed=false;
+    /* vibrator + charging.
+       Cycle: contacts closed -> current magnetises the coil -> coil pulls the
+       spring arm up -> contacts break (arc, primary field collapse = charge
+       pulse) -> current gone, magnet releases -> spring returns arm -> closed. */
+    let armAngle=0, closed=false;
     if(charging()&&S.sparkT<=0){
       const before=S.vibPhase;
       S.vibPhase+=VIB_HZ*dt;
-      closed=(S.vibPhase%1)<0.5;
-      // one charge quantum each time the contacts OPEN (primary field collapse)
-      const openEdges=Math.floor(S.vibPhase)-Math.floor(before);
+      const p=S.vibPhase%1;
+      armAngle = p<0.3?0 : p<0.5? -6*(p-0.3)/0.2 : p<0.8? -6*(1-(p-0.5)/0.3) : 0;
+      closed = armAngle>-2;
+      // one charge quantum each time the contacts break (primary field collapse)
+      const openEdges=Math.floor(S.vibPhase-0.4)-Math.floor(before-0.4);
       for(let i=0;i<Math.min(openEdges,4);i++){
-        S.capV+=Math.max(40,240*(1-S.capV/3200));
-        S.pulseGlowT=1;
+        S.capV+=Math.max(40,300*(1-S.capV/3300));
+        S.pulseGlowT=1; S.vibArcT=1;
       }
     }
 
@@ -652,13 +670,19 @@
 
     /* ---------- visuals ---------- */
     dashOff-=rdt*70;
-    vibArm.setAttribute("transform",`rotate(${charging()&&S.sparkT<=0?(closed?4:-7):-7},352,92)`);
-    vibSpark.setAttribute("opacity",charging()&&S.sparkT<=0&&!closed?0.8:0);
+    const vibCurrent=charging()&&S.sparkT<=0&&closed;
+    vibStrip.setAttribute("transform",`rotate(${armAngle.toFixed(2)},406,124)`);
+    coilGlow.setAttribute("opacity",vibCurrent?0.9:0);
+    fieldArcs.setAttribute("opacity",vibCurrent?0.85:0);
+    if(S.vibArcT>0){S.vibArcT-=dt/0.12;}
+    vibArc.setAttribute("opacity",Math.max(0,S.vibArcT||0).toFixed(2));
+    const vs=!charging()?"":(vibCurrent?"contacts CLOSED → coil magnetising, pulling arm ↑":"contacts OPEN → current cut → spring returns arm ↓");
+    if(vs!==S.vibStateTxt){vibState.textContent=vs;S.vibStateTxt=vs;}
     if(S.pulseGlowT>0){S.pulseGlowT-=dt/0.14;}
     xfmrGlow.setAttribute("opacity",Math.max(0,S.pulseGlowT*0.9).toFixed(2));
     hvFlow.setAttribute("opacity",Math.max(0,S.pulseGlowT).toFixed(2));
     hvFlow.setAttribute("stroke-dashoffset",dashOff.toFixed(1));
-    lowFlow.setAttribute("opacity",charging()&&S.sparkT<=0?(closed?0.95:0.35):0);
+    lowFlow.setAttribute("opacity",vibCurrent?0.95:0);
     lowFlow.setAttribute("stroke-dashoffset",dashOff.toFixed(1));
     bleedFlow.setAttribute("opacity",!charging()&&S.capV>60?0.8:0);
     bleedFlow.setAttribute("stroke-dashoffset",dashOff.toFixed(1));
