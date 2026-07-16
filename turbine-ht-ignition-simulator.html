@@ -423,8 +423,11 @@
           <button class="btn" data-speed="0.0625">1/16&times;</button>
         </div>
       </div>
+      <div class="ctl-row">
+        <button class="btn" id="sparkSlowBtn">&#128034; SPARK SLOW-MO: OFF</button>
+      </div>
       <div class="hint">Startup: <b>BUS ON &rarr; IGNITION ON</b> &mdash; watch the AC slosh back and forth in the wires, the capacitor stair-step up, and the <b>two-phase discharge</b>: trigger spike, then main energy. <b>&rarr; FUEL ON</b> &rarr; light-off.<br>
-      Use <b>1/16&times;</b> and watch the trigger transformer caption during a spark.</div>
+      <b>SPARK SLOW-MO</b> is made for teaching: charging runs at normal speed, but every discharge stretches to &asymp;12&nbsp;seconds &mdash; plenty of time to narrate the control gap, the trigger primary surge, the 25&nbsp;kV spike, and the main discharge, step by step.</div>
     </div>
 
     <div class="pane">
@@ -472,7 +475,7 @@
     sparkT:0,
     sparks:0, lastSparkAt:0, rate:0,
     speed:1, sound:false, simTime:0,
-    acDash:0, fwdDash:0
+    acDash:0, fwdDash:0, sparkSlow:false
   };
   const BREAKOVER=2500, CAP_F=3e-6, AC_HZ=8;
 
@@ -489,7 +492,7 @@
     capWarn=$("capWarn"), warnbar=$("warnbar"),
     hdrKV=$("hdrKV"), roV=$("roV"), roJ=$("roJ"), roRate=$("roRate"), roCount=$("roCount"),
     roTrig=$("roTrig"), roExc=$("roExc"), roComb=$("roComb"),
-    busBtn=$("busBtn"), ignSwBtn=$("ignSwBtn"), fuelBtn=$("fuelBtn"),
+    busBtn=$("busBtn"), ignSwBtn=$("ignSwBtn"), fuelBtn=$("fuelBtn"), sparkSlowBtn=$("sparkSlowBtn"),
     soundBtn=$("soundBtn"), resetBtn=$("resetBtn"),
     scopeState=$("scopeState"), explain=$("explain"),
     scope=$("scope"), sctx=scope.getContext("2d");
@@ -533,6 +536,11 @@
       document.querySelectorAll(".speed-btns .btn").forEach(x=>x.classList.remove("sel"));
       b.classList.add("sel"); S.speed=+b.dataset.speed;
     });
+  });
+  sparkSlowBtn.addEventListener("click",()=>{
+    S.sparkSlow=!S.sparkSlow;
+    sparkSlowBtn.innerHTML="&#128034; SPARK SLOW-MO: "+(S.sparkSlow?"ON":"OFF");
+    sparkSlowBtn.classList.toggle("on",S.sparkSlow);
   });
   soundBtn.addEventListener("click",()=>{
     S.sound=!S.sound; soundBtn.textContent="SOUND: "+(S.sound?"ON":"OFF");
@@ -656,10 +664,13 @@
       if(S.fuelOn) S.lit=true;
     }
     if(S.sparkT>0){
-      S.sparkT-=dt/0.3;
+      // SPARK SLOW-MO: the discharge plays out over ~12 real seconds
+      // regardless of sim speed, so each phase can be narrated
+      const sdt=S.sparkSlow?rdt/40:dt;
+      S.sparkT-=sdt/0.3;
       // small drain during the trigger phase, then the bulk pours out through
       // the secondary while the ionised gap conducts (phase B)
-      S.capV=Math.max(0,S.capV-BREAKOVER*dt/(S.sparkT>0.65?0.9:0.13));
+      S.capV=Math.max(0,S.capV-BREAKOVER*sdt/(S.sparkT>0.65?0.9:0.13));
       if(S.sparkT<=0){S.sparkT=0;S.capV=0;}
     }
 
