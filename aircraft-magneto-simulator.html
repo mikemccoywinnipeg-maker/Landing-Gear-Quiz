@@ -408,6 +408,7 @@
         <li><b>The P-lead is the only "off switch."</b> It runs from each magneto's <b>p</b>rimary winding to the ignition switch. To kill a mag, the switch <b>connects its P-lead to ground</b>, shorting the primary so no high voltage can build &mdash; the same trick as the mower kill switch.</li>
         <li><b>The key positions ground different P-leads:</b> <b>OFF</b> = both grounded &bull; <b>R</b> = LEFT mag grounded (running on right) &bull; <b>L</b> = RIGHT mag grounded (running on left) &bull; <b>BOTH</b> = neither grounded &bull; <b>START</b> = right mag grounded while the starter cranks (the left mag's impulse coupling makes the starting spark).</li>
         <li><b>A broken P-lead = a HOT MAG.</b> If the wire breaks, the switch can't ground that mag &mdash; it stays live even with the key OFF and out. One hand-swing of the propeller can fire a cylinder. This is why the mag check matters and why you always treat a prop as live.</li>
+        <li><b>This is why you shut down with the MIXTURE, not the key.</b> Pulling the mixture to idle cut-off starves the engine of fuel &mdash; it stops every time, hot mag or not. The key going OFF merely grounds P-leads, and a broken P-lead ignores it. Spark you can't always remove; fuel you can.</li>
       </ul>
     </div>
   </div>
@@ -429,6 +430,11 @@
         <input type="range" id="throttle" min="650" max="2500" value="1000" step="10">
         <output id="throttleOut">1000 rpm</output>
       </div>
+      <div class="slider-row">
+        <label>MIXTURE</label>
+        <input type="range" id="mixture" min="0" max="100" value="100" step="1" style="accent-color:var(--red)">
+        <output id="mixtureOut" style="color:var(--red)">RICH</output>
+      </div>
       <div class="ctl-row">
         <button class="btn" id="faultPlead">FAULT: BREAK LEFT P-LEAD</button>
         <button class="btn" id="faultFoul">FAULT: FOUL A PLUG (LEFT MAG, CYL 3)</button>
@@ -437,7 +443,8 @@
         <button class="btn" id="handProp">&#8635; HAND-TURN THE PROP</button>
       </div>
       <div class="hint">Try it: start the engine, throttle to <b>1800</b>, then do the run-up mag check below.<br>
-      Then break the left P-lead, switch <b>OFF</b>&hellip; and see why mechanics respect propellers.</div>
+      Then break the left P-lead, switch <b>OFF</b>&hellip; the engine keeps running! Now shut it down the only way left:<br>
+      <b>mixture &rarr; IDLE CUT-OFF</b> &mdash; the way every real shutdown is done.</div>
     </div>
 
     <div class="pane">
@@ -498,7 +505,7 @@
   const S = {
     pos:"OFF",              // OFF | R | L | BOTH | START
     rpm:0, crank:0,         // crank angle, deg
-    throttle:1000,
+    throttle:1000, mixture:100,
     startHeld:false, startT:0,
     pleadLBroken:false, foulL3:false,
     hand:-1,                // >=0 while hand-turning prop
@@ -524,6 +531,7 @@
     dropLel=$("dropL"), dropRel=$("dropR"), dropDiff=$("dropDiff"),
     roMagL=$("roMagL"), roMagR=$("roMagR"), verdict=$("verdict"),
     explain=$("explain"), throttleIn=$("throttle"), throttleOut=$("throttleOut"),
+    mixtureIn=$("mixture"), mixtureOut=$("mixtureOut"),
     soundBtn=$("soundBtn"), resetBtn=$("resetBtn"),
     faultPlead=$("faultPlead"), faultFoul=$("faultFoul"), handProp=$("handProp"),
     resetCheck=$("resetCheck");
@@ -582,14 +590,16 @@
   function groundedR(){ return S.pos==="OFF"||S.pos==="L"||S.pos==="START"; }
   function hotL(){ return !groundedL(); }
   function hotR(){ return !groundedR(); }
-  // engine can sustain combustion: impulse coupling on LEFT mag lets it fire at cranking speed
+  // engine can sustain combustion: needs spark (a hot mag) AND fuel (mixture out of idle cut-off);
+  // impulse coupling on the LEFT mag lets it fire at cranking speed
   function combustion(){
+    if(S.mixture<=12) return false;          // idle cut-off: no fuel, spark is irrelevant
     if(!(hotL()||hotR())) return false;
     if(S.rpm>=350) return true;
     return hotL() && S.rpm>=140 && (S.startHeld||S.hand>=0||S.kickT>0);
   }
   function targetRpm(){
-    const base=S.throttle;
+    const base=S.throttle*(S.mixture<35?0.85:1); // very lean: down on power and rough
     const l=hotL(), r=hotR();
     if(l&&r) return base - (S.foulL3? base*0.012 : 0);
     if(r)    return base - base*0.045;                          // right alone: normal single-mag drop
@@ -620,6 +630,12 @@
   throttleIn.addEventListener("input",()=>{
     S.throttle=+throttleIn.value; throttleOut.textContent=S.throttle+" rpm";
   });
+  function mixLabel(){
+    if(S.mixture<=12){mixtureOut.textContent="IDLE CUT-OFF";mixtureOut.style.color="#ff4545";}
+    else if(S.mixture<35){mixtureOut.textContent="LEAN "+S.mixture+"%";mixtureOut.style.color="#ffb347";}
+    else{mixtureOut.textContent=S.mixture>=90?"RICH":S.mixture+"%";mixtureOut.style.color="#ff6a5e";}
+  }
+  mixtureIn.addEventListener("input",()=>{ S.mixture=+mixtureIn.value; mixLabel(); });
   faultPlead.addEventListener("click",()=>{
     S.pleadLBroken=!S.pleadLBroken;
     faultPlead.classList.toggle("warn-on",S.pleadLBroken);
@@ -652,6 +668,7 @@
     faultFoul.classList.remove("warn-on");faultFoul.textContent="FAULT: FOUL A PLUG (LEFT MAG, CYL 3)";
     pleadBreak.setAttribute("opacity",0);foulX.setAttribute("opacity",0);
     throttleIn.value=1000;S.throttle=1000;throttleOut.textContent="1000 rpm";
+    mixtureIn.value=100;S.mixture=100;mixLabel();
   });
 
   /* ---------- firing ---------- */
@@ -699,7 +716,12 @@
   let lastMsg="";
   function updateExplain(){
     const run=combustion();let m;
-    if(S.pos==="START"){
+    if(S.mixture<=12&&(S.rpm>40||S.startHeld)){
+      m="<b>Mixture at <span class='red'>IDLE CUT-OFF</span> — the engine is being stopped by fuel starvation, not spark.</b> "+
+        ((hotL()||hotR())?"A magneto is still hot and still making sparks, but sparks with nothing to burn do nothing. ":"")+
+        "This is the normal shutdown for every piston aircraft, and the <b>only reliable one</b>: the key can only <i>ask</i> the P-leads to ground the mags, while pulling the mixture <i>always</i> works — broken P-lead or not."+
+        (S.startHeld?" <span class='amb'>(And it works in reverse: cranking with the mixture at cut-off will never start — push it RICH first.)</span>":"");
+    }else if(S.pos==="START"){
       m="<b>Cranking — key at START.</b> The starter spins the engine while the switch keeps the <span class='cyn'>RIGHT mag grounded</span>. Only the <span class='amb'>LEFT mag</span> fires — its <b>impulse coupling</b> snaps the magnet through the coil to make a fat, retarded spark at cranking speed. Release the key and it springs back to BOTH.";
     }else if(S.pos==="OFF"&&run){
       m="<b class='red'>⚠ HOT MAG!</b> The key is OFF, which should ground <i>both</i> P-leads… but the <span class='amb'>LEFT P-lead is broken</span>, so the switch can't reach the left mag. It keeps firing and the engine keeps running. On a real dead-cut check this is exactly how a hot mag is caught — and why an OFF key does <b>not</b> make a prop safe.";
@@ -756,7 +778,7 @@
 
     /* engine dynamics */
     const run=combustion();
-    const rough=run&&S.foulL3&&hotL()&&!hotR();
+    const rough=run&&((S.foulL3&&hotL()&&!hotR())||S.mixture<35);
     if(run){
       const tgt=targetRpm()+(rough?(Math.random()-0.5)*70:0);
       S.rpm+=(tgt-S.rpm)*Math.min(1,dt*2.0);
