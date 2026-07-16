@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aircraft Dual Magneto &amp; P-Lead Simulator</title>
+<style>
+  :root{
+    --panel:#23262b;
+    --panel-dark:#1a1c20;
+    --face:#0b0c0e;
+    --white:#e8e6e0;
+    --amber:#ffb347;
+    --green:#39d353;
+    --red:#ff4545;
+    --cyan:#57c7ff;
+    --font:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;
+    --mono:"Consolas","Menlo","Courier New",ui-monospace,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+  html,body{background:#0a0b0d;color:var(--white);font-family:var(--font);}
+  body{min-height:100vh;padding:10px 14px 20px;}
+
+  header{
+    display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;
+    padding:10px 16px;margin-bottom:10px;
+    background:linear-gradient(180deg,#2b2e34,#1c1e22);
+    border:1px solid #000;border-radius:8px;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.07), 0 3px 8px rgba(0,0,0,.6);
+  }
+  header h1{font-size:17px;letter-spacing:2px;font-weight:600;color:#dfe3ea;}
+  header h1 small{display:block;font-size:10px;letter-spacing:3px;color:#8b93a1;font-weight:400;}
+  .hdr-right{margin-left:auto;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+  .rpm-box{font-family:var(--mono);font-size:14px;color:var(--cyan);
+    background:#07131a;border:1px solid #123;border-radius:4px;padding:4px 12px;min-width:130px;text-align:center;}
+  .btn{
+    cursor:pointer;user-select:none;font-family:var(--font);font-size:11px;letter-spacing:1px;
+    color:#cfd5de;background:linear-gradient(180deg,#3a3e46,#24272c);
+    border:1px solid #0c0d0f;border-radius:5px;padding:7px 12px;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.12), 0 2px 4px rgba(0,0,0,.5);
+  }
+  .btn:hover{background:linear-gradient(180deg,#454a53,#2b2e34);}
+  .btn:active{transform:translateY(1px);box-shadow:inset 0 2px 4px rgba(0,0,0,.5);}
+  .btn.on{color:#0d1108;background:linear-gradient(180deg,#67e07f,#2f9e46);border-color:#194f24;}
+  .btn.warn-on{color:#2a0000;background:linear-gradient(180deg,#ff6a5e,#d42313);border-color:#5a0e06;}
+
+  .layout{
+    display:grid;grid-template-columns:minmax(480px,1.6fr) minmax(320px,1fr);
+    gap:10px;align-items:start;
+  }
+  @media (max-width:1000px){ .layout{grid-template-columns:1fr;} }
+
+  .pane{
+    background:radial-gradient(120% 100% at 50% 0%, #2c2f35 0%, #1e2024 55%, #17181c 100%);
+    border:1px solid #000;border-radius:10px;padding:12px;position:relative;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.06), 0 4px 14px rgba(0,0,0,.55);
+    margin-bottom:10px;
+  }
+  .pane::before,.pane::after{
+    content:"";position:absolute;width:9px;height:9px;border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, #666, #222 70%);
+    box-shadow:inset 0 0 2px #000;
+  }
+  .pane::before{top:7px;left:7px;} .pane::after{top:7px;right:7px;}
+  .pane-title{
+    text-align:center;font-size:10px;letter-spacing:3px;color:#98a0ad;
+    border-bottom:1px solid #34383f;padding-bottom:6px;margin-bottom:10px;font-weight:600;
+  }
+
+  .engine-wrap{background:#0d0e11;border:1px solid #000;border-radius:8px;
+    box-shadow:inset 0 0 30px rgba(0,0,0,.7);}
+  .engine-wrap svg{width:100%;height:auto;display:block;}
+  .lbl{font-size:12px;fill:#8b93a1;letter-spacing:1px;font-family:var(--font);}
+  .lbl-b{font-size:12px;fill:#c3cad6;letter-spacing:1px;font-weight:600;font-family:var(--font);}
+  .lbl-s{font-size:10px;fill:#6d7480;letter-spacing:.5px;font-family:var(--font);}
+  .keypos{cursor:pointer;}
+  .keypos text{font-size:11px;font-weight:700;letter-spacing:1px;fill:#8b93a1;font-family:var(--font);}
+  .keypos.sel text{fill:#ffd27a;}
+  .keypos:hover text{fill:#e8e6e0;}
+  .keypos circle{fill:#1a1c20;stroke:#000;}
+  .keypos.sel circle{fill:#5b451a;stroke:#a97b2a;}
+
+  .legend{display:flex;gap:18px;justify-content:center;font-size:10.5px;color:#8b93a1;
+    padding:8px 0 2px;letter-spacing:.5px;flex-wrap:wrap;}
+  .dotL,.dotR{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:-1px;}
+  .dotL{background:var(--amber);} .dotR{background:var(--cyan);}
+
+  /* controls */
+  .keybtns{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-bottom:4px;}
+  .keybtns .btn{min-width:58px;text-align:center;font-weight:700;}
+  .keybtns .btn.sel{color:#1b1204;background:linear-gradient(180deg,#ffc95e,#e09a1f);border-color:#5e3c00;}
+  .keybtns .btn.start-held{color:#04180a;background:linear-gradient(180deg,#67e07f,#2f9e46);}
+  .key-note{font-size:10px;color:#6d7480;text-align:center;margin-bottom:8px;letter-spacing:.4px;}
+  .slider-row{display:flex;align-items:center;gap:10px;margin:10px 4px;}
+  .slider-row label{font-size:10px;letter-spacing:1.5px;color:#98a0ad;width:80px;}
+  .slider-row input[type=range]{flex:1;accent-color:var(--amber);}
+  .slider-row output{font-family:var(--mono);font-size:11px;color:var(--amber);width:74px;text-align:right;}
+  .ctl-row{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;margin:8px 0 2px;}
+  .hint{font-size:10px;color:#6d7480;text-align:center;margin-top:8px;letter-spacing:.5px;line-height:1.5;}
+
+  /* tach + readouts */
+  .tach-row{display:flex;gap:10px;align-items:center;}
+  .tach-row svg{width:190px;flex:none;}
+  .drops{flex:1;display:flex;flex-direction:column;gap:8px;}
+  .ro{background:#0b0c0e;border:1px solid #000;border-radius:6px;padding:7px 10px;
+    box-shadow:inset 0 1px 4px rgba(0,0,0,.8);}
+  .ro .ro-l{font-size:9px;letter-spacing:1.5px;color:#6d7480;margin-bottom:3px;}
+  .ro .ro-v{font-family:var(--mono);font-size:15px;color:var(--amber);}
+  .ro .ro-v.grn{color:var(--green);} .ro .ro-v.red{color:var(--red);} .ro .ro-v.cyn{color:var(--cyan);}
+  .ro .ro-v.dim{color:#555c66;}
+  .ro .ro-v.small{font-size:12px;}
+  .mag-states{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;}
+  .verdict{margin-top:10px;}
+  .warnbar{
+    margin-top:10px;text-align:center;font-family:var(--mono);font-size:12.5px;font-weight:700;
+    letter-spacing:1px;color:#2a0000;background:linear-gradient(180deg,#ff6a5e,#d42313);
+    border:1px solid #5a0e06;border-radius:5px;padding:8px 6px;display:none;
+    animation:wblink .5s steps(2) infinite;
+  }
+  @keyframes wblink{50%{filter:brightness(.55);}}
+
+  /* checklist */
+  .steps{display:flex;flex-direction:column;gap:6px;}
+  .step{display:flex;gap:10px;align-items:flex-start;padding:7px 10px;border-radius:6px;
+    background:#101113;border:1px solid #000;transition:all .12s;}
+  .step .num{flex:none;width:22px;height:22px;border-radius:50%;text-align:center;line-height:22px;
+    font-family:var(--mono);font-size:12px;color:#555c66;background:#1a1c20;border:1px solid #000;}
+  .step .txt{font-size:11px;line-height:1.45;color:#7c8492;}
+  .step .txt b{color:#aab2bf;display:block;font-size:10.5px;letter-spacing:1.2px;margin-bottom:2px;}
+  .step.done{background:#1b2417;border-color:#2f5121;}
+  .step.done .num{color:#04180a;background:linear-gradient(180deg,#67e07f,#2f9e46);}
+  .step.done .num::before{content:"✓";} .step.done .num{font-size:0;} .step.done .num::before{font-size:12px;}
+  .step.done .txt{color:#b9c4b3;} .step.done .txt b{color:#8fe69f;}
+  .step.now{border-color:#7a5c1e;background:#221d10;}
+  .step.now .num{color:#1b1204;background:linear-gradient(180deg,#ffc95e,#e09a1f);}
+  .step.now .txt b{color:#ffd27a;}
+
+  .explain{background:#0b0c0e;border:1px solid #000;border-radius:6px;padding:10px 12px;
+    font-size:12px;line-height:1.55;color:#aab2bf;min-height:96px;
+    box-shadow:inset 0 1px 4px rgba(0,0,0,.8);}
+  .explain b{color:#e8e6e0;}
+  .explain .grn{color:var(--green);} .explain .red{color:var(--red);}
+  .explain .amb{color:var(--amber);} .explain .cyn{color:var(--cyan);}
+
+  .lesson{font-size:11.5px;line-height:1.6;color:#8f97a4;}
+  .lesson li{margin:0 0 7px 16px;}
+  .lesson b{color:#c3cad6;}
+
+  footer{margin-top:6px;text-align:center;font-size:9.5px;color:#4a4f57;letter-spacing:1px;}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>AIRCRAFT DUAL-MAGNETO IGNITION<small>P-LEADS &bull; MAG CHECK &bull; HOT MAG &mdash; INTERACTIVE TRAINER</small></h1>
+  <div class="hdr-right">
+    <div class="rpm-box" id="hdrRpm">0 RPM</div>
+    <button class="btn" id="soundBtn">SOUND: OFF</button>
+    <button class="btn" id="resetBtn">RESET</button>
+  </div>
+</header>
+
+<div class="layout">
+
+  <!-- ================= LEFT ================= -->
+  <div class="col-left">
+    <div class="pane">
+      <div class="pane-title">ENGINE (TOP VIEW) &mdash; TWO MAGNETOS, P-LEADS &amp; IGNITION SWITCH</div>
+      <div class="engine-wrap">
+      <svg id="engineSvg" viewBox="0 0 880 640" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="steel" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#4a4e56"/><stop offset="50%" stop-color="#33363c"/>
+            <stop offset="100%" stop-color="#22242a"/>
+          </linearGradient>
+          <linearGradient id="case" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stop-color="#2a2d33"/><stop offset="50%" stop-color="#3c4047"/>
+            <stop offset="100%" stop-color="#2a2d33"/>
+          </linearGradient>
+          <filter id="glow" x="-80%" y="-80%" width="260%" height="260%">
+            <feGaussianBlur stdDeviation="2.6" result="b"/>
+            <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+          <filter id="bigglow" x="-120%" y="-120%" width="340%" height="340%">
+            <feGaussianBlur stdDeviation="5" result="b"/>
+            <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+        </defs>
+
+        <!-- ======= PROPELLER ======= -->
+        <g id="propWrap">
+          <circle id="propDisc" cx="440" cy="66" r="150" fill="#57c7ff" opacity="0"/>
+          <g id="propGrp" transform="rotate(20,440,66)">
+            <path d="M440,66 C420,58 320,50 296,64 C320,80 420,74 440,66 Z" fill="#2e323a" stroke="#000"/>
+            <path d="M440,66 C460,74 560,82 584,68 C560,52 460,58 440,66 Z" fill="#2e323a" stroke="#000"/>
+            <path d="M440,66 C420,58 320,50 296,64 C320,80 420,74 440,66 Z" fill="none" stroke="#3a3e46" stroke-width="1"/>
+          </g>
+          <circle cx="440" cy="66" r="17" fill="url(#steel)" stroke="#000" stroke-width="2"/>
+          <circle cx="440" cy="66" r="6" fill="#17181b" stroke="#000"/>
+          <text class="lbl-s" x="612" y="60">PROPELLER</text>
+          <text class="lbl-s" x="612" y="74">(bolted to crankshaft)</text>
+        </g>
+
+        <!-- ======= ENGINE (shakes when rough) ======= -->
+        <g id="engineGrp">
+          <!-- crankcase -->
+          <rect x="386" y="112" width="108" height="330" rx="14" fill="url(#case)" stroke="#000" stroke-width="2"/>
+          <line x1="440" y1="118" x2="440" y2="436" stroke="#22242a" stroke-width="3"/>
+          <text class="lbl-s" x="440" y="392" text-anchor="middle">CRANKCASE</text>
+
+          <!-- ==== cylinders (fins + head + 2 plugs each) ==== -->
+          <!-- cyl 2 : left front -->
+          <g>
+            <rect x="244" y="138" width="142" height="90" rx="6" fill="url(#steel)" stroke="#000" stroke-width="1.5"/>
+            <g stroke="#1c1e22" stroke-width="2">
+              <line x1="300" y1="140" x2="300" y2="226"/><line x1="316" y1="140" x2="316" y2="226"/>
+              <line x1="332" y1="140" x2="332" y2="226"/><line x1="348" y1="140" x2="348" y2="226"/>
+              <line x1="364" y1="140" x2="364" y2="226"/>
+            </g>
+            <rect x="244" y="138" width="42" height="90" rx="6" fill="#2c2f35" stroke="#000" stroke-width="1.5"/>
+            <text class="lbl-s" x="315" y="130" text-anchor="middle">CYL 2</text>
+            <circle cx="265" cy="165" r="7" fill="#17181b" stroke="#ffb347" stroke-width="2.4"/>
+            <circle id="p2L" cx="265" cy="165" r="7" fill="#ffb347" opacity="0" filter="url(#glow)"/>
+            <circle cx="265" cy="201" r="7" fill="#17181b" stroke="#57c7ff" stroke-width="2.4"/>
+            <circle id="p2R" cx="265" cy="201" r="7" fill="#57c7ff" opacity="0" filter="url(#glow)"/>
+          </g>
+          <!-- cyl 4 : left rear -->
+          <g>
+            <rect x="244" y="248" width="142" height="90" rx="6" fill="url(#steel)" stroke="#000" stroke-width="1.5"/>
+            <g stroke="#1c1e22" stroke-width="2">
+              <line x1="300" y1="250" x2="300" y2="336"/><line x1="316" y1="250" x2="316" y2="336"/>
+              <line x1="332" y1="250" x2="332" y2="336"/><line x1="348" y1="250" x2="348" y2="336"/>
+              <line x1="364" y1="250" x2="364" y2="336"/>
+            </g>
+            <rect x="244" y="248" width="42" height="90" rx="6" fill="#2c2f35" stroke="#000" stroke-width="1.5"/>
+            <text class="lbl-s" x="315" y="362" text-anchor="middle">CYL 4</text>
+            <circle cx="265" cy="275" r="7" fill="#17181b" stroke="#ffb347" stroke-width="2.4"/>
+            <circle id="p4L" cx="265" cy="275" r="7" fill="#ffb347" opacity="0" filter="url(#glow)"/>
+            <circle cx="265" cy="311" r="7" fill="#17181b" stroke="#57c7ff" stroke-width="2.4"/>
+            <circle id="p4R" cx="265" cy="311" r="7" fill="#57c7ff" opacity="0" filter="url(#glow)"/>
+          </g>
+          <!-- cyl 1 : right front -->
+          <g>
+            <rect x="494" y="138" width="142" height="90" rx="6" fill="url(#steel)" stroke="#000" stroke-width="1.5"/>
+            <g stroke="#1c1e22" stroke-width="2">
+              <line x1="516" y1="140" x2="516" y2="226"/><line x1="532" y1="140" x2="532" y2="226"/>
+              <line x1="548" y1="140" x2="548" y2="226"/><line x1="564" y1="140" x2="564" y2="226"/>
+              <line x1="580" y1="140" x2="580" y2="226"/>
+            </g>
+            <rect x="594" y="138" width="42" height="90" rx="6" fill="#2c2f35" stroke="#000" stroke-width="1.5"/>
+            <text class="lbl-s" x="565" y="130" text-anchor="middle">CYL 1</text>
+            <circle cx="615" cy="165" r="7" fill="#17181b" stroke="#ffb347" stroke-width="2.4"/>
+            <circle id="p1L" cx="615" cy="165" r="7" fill="#ffb347" opacity="0" filter="url(#glow)"/>
+            <circle cx="615" cy="201" r="7" fill="#17181b" stroke="#57c7ff" stroke-width="2.4"/>
+            <circle id="p1R" cx="615" cy="201" r="7" fill="#57c7ff" opacity="0" filter="url(#glow)"/>
+          </g>
+          <!-- cyl 3 : right rear -->
+          <g>
+            <rect x="494" y="248" width="142" height="90" rx="6" fill="url(#steel)" stroke="#000" stroke-width="1.5"/>
+            <g stroke="#1c1e22" stroke-width="2">
+              <line x1="516" y1="250" x2="516" y2="336"/><line x1="532" y1="250" x2="532" y2="336"/>
+              <line x1="548" y1="250" x2="548" y2="336"/><line x1="564" y1="250" x2="564" y2="336"/>
+              <line x1="580" y1="250" x2="580" y2="336"/>
+            </g>
+            <rect x="594" y="248" width="42" height="90" rx="6" fill="#2c2f35" stroke="#000" stroke-width="1.5"/>
+            <text class="lbl-s" x="565" y="362" text-anchor="middle">CYL 3</text>
+            <circle cx="615" cy="275" r="7" fill="#17181b" stroke="#ffb347" stroke-width="2.4"/>
+            <circle id="p3L" cx="615" cy="275" r="7" fill="#ffb347" opacity="0" filter="url(#glow)"/>
+            <g id="foulX" opacity="0">
+              <line x1="608" y1="268" x2="622" y2="282" stroke="#ff4545" stroke-width="3"/>
+              <line x1="622" y1="268" x2="608" y2="282" stroke="#ff4545" stroke-width="3"/>
+              <text class="lbl-s" x="600" y="298" fill="#ff8a80">FOULED</text>
+            </g>
+            <circle cx="615" cy="311" r="7" fill="#17181b" stroke="#57c7ff" stroke-width="2.4"/>
+            <circle id="p3R" cx="615" cy="311" r="7" fill="#57c7ff" opacity="0" filter="url(#glow)"/>
+          </g>
+
+          <!-- ==== ignition harness ==== -->
+          <!-- LEFT mag trunk (amber) : feeds one plug in every cylinder -->
+          <g id="harnL" stroke="#8a6a30" stroke-width="1.6" fill="none" opacity=".55">
+            <path d="M355,446 L372,420 L372,165"/>
+            <path d="M372,165 L272,165"/>
+            <path d="M372,275 L272,275"/>
+            <path d="M372,165 C420,150 560,150 608,165"/>
+            <path d="M372,275 C420,260 560,260 608,275"/>
+          </g>
+          <g id="harnLhot" stroke="#ffb347" stroke-width="1.8" fill="none" opacity="0" filter="url(#glow)">
+            <path d="M355,446 L372,420 L372,165"/>
+            <path d="M372,165 L272,165"/>
+            <path d="M372,275 L272,275"/>
+            <path d="M372,165 C420,150 560,150 608,165"/>
+            <path d="M372,275 C420,260 560,260 608,275"/>
+          </g>
+          <!-- RIGHT mag trunk (cyan) -->
+          <g id="harnR" stroke="#2d5a73" stroke-width="1.6" fill="none" opacity=".55">
+            <path d="M525,446 L508,420 L508,201"/>
+            <path d="M508,201 L608,201"/>
+            <path d="M508,311 L608,311"/>
+            <path d="M508,201 C460,186 320,186 272,201"/>
+            <path d="M508,311 C460,296 320,296 272,311"/>
+          </g>
+          <g id="harnRhot" stroke="#57c7ff" stroke-width="1.8" fill="none" opacity="0" filter="url(#glow)">
+            <path d="M525,446 L508,420 L508,201"/>
+            <path d="M508,201 L608,201"/>
+            <path d="M508,311 L608,311"/>
+            <path d="M508,201 C460,186 320,186 272,201"/>
+            <path d="M508,311 C460,296 320,296 272,311"/>
+          </g>
+
+          <!-- ==== magnetos (rear of engine) ==== -->
+          <g id="magLgrp">
+            <rect x="312" y="446" width="88" height="76" rx="8" fill="url(#steel)" stroke="#000" stroke-width="2"/>
+            <circle cx="356" cy="478" r="19" fill="#101113" stroke="#000"/>
+            <g id="magLrotor" transform="rotate(0,356,478)">
+              <path d="M356,461 A17,17 0 0 1 356,495 Z" fill="#3f7fb5"/>
+              <path d="M356,461 A17,17 0 0 0 356,495 Z" fill="#c8443a"/>
+            </g>
+            <circle cx="356" cy="478" r="5" fill="#33363c" stroke="#000"/>
+            <text class="lbl-b" x="356" y="512" text-anchor="middle" fill="#ffb347">LEFT MAG</text>
+            <text id="magLstate" class="lbl-s" x="356" y="440" text-anchor="middle" fill="#8fe69f">GROUNDED</text>
+          </g>
+          <g id="magRgrp">
+            <rect x="480" y="446" width="88" height="76" rx="8" fill="url(#steel)" stroke="#000" stroke-width="2"/>
+            <circle cx="524" cy="478" r="19" fill="#101113" stroke="#000"/>
+            <g id="magRrotor" transform="rotate(0,524,478)">
+              <path d="M524,461 A17,17 0 0 1 524,495 Z" fill="#3f7fb5"/>
+              <path d="M524,461 A17,17 0 0 0 524,495 Z" fill="#c8443a"/>
+            </g>
+            <circle cx="524" cy="478" r="5" fill="#33363c" stroke="#000"/>
+            <text class="lbl-b" x="524" y="512" text-anchor="middle" fill="#57c7ff">RIGHT MAG</text>
+            <text id="magRstate" class="lbl-s" x="524" y="440" text-anchor="middle" fill="#8fe69f">GROUNDED</text>
+          </g>
+          <text class="lbl-s" x="440" y="540" text-anchor="middle">each magneto is gear-driven by the engine &mdash; self-powered, no battery</text>
+        </g>
+
+        <!-- ======= P-LEADS ======= -->
+        <path id="pleadL" d="M330,522 C300,586 220,600 172,566" fill="none" stroke="#151515" stroke-width="5" stroke-linecap="round"/>
+        <path d="M330,522 C300,586 220,600 172,566" fill="none" stroke="#3a3e46" stroke-width="1.6"/>
+        <path id="pleadLpulse" d="M330,522 C300,586 220,600 172,566" fill="none" stroke="#8fe69f" stroke-width="3"
+          stroke-linecap="round" stroke-dasharray="8 13" opacity="0" filter="url(#glow)"/>
+        <!-- break in left p-lead -->
+        <g id="pleadBreak" opacity="0">
+          <circle cx="253" cy="592" r="12" fill="#0d0e11"/>
+          <line x1="245" y1="584" x2="261" y2="600" stroke="#ff4545" stroke-width="3.4"/>
+          <line x1="261" y1="584" x2="245" y2="600" stroke="#ff4545" stroke-width="3.4"/>
+          <text class="lbl-s" x="240" y="574" text-anchor="middle" fill="#ff8a80" font-weight="700">P-LEAD BROKEN</text>
+        </g>
+        <text class="lbl-b" x="286" y="560">LEFT P-LEAD</text>
+
+        <path id="pleadR" d="M552,522 C560,600 300,650 160,596" fill="none" stroke="#151515" stroke-width="5" stroke-linecap="round"/>
+        <path d="M552,522 C560,600 300,650 160,596" fill="none" stroke="#3a3e46" stroke-width="1.6"/>
+        <path id="pleadRpulse" d="M552,522 C560,600 300,650 160,596" fill="none" stroke="#8fe69f" stroke-width="3"
+          stroke-linecap="round" stroke-dasharray="8 13" opacity="0" filter="url(#glow)"/>
+        <text class="lbl-b" x="470" y="588">RIGHT P-LEAD</text>
+        <text class="lbl-s" x="470" y="602">P = "primary" &mdash; wired to each mag's primary coil</text>
+
+        <!-- ======= IGNITION SWITCH ======= -->
+        <g id="switchGrp">
+          <circle cx="118" cy="520" r="86" fill="#17191d" stroke="#000" stroke-width="2"/>
+          <circle cx="118" cy="520" r="82" fill="none" stroke="#2c2f35" stroke-width="1.5"/>
+          <text class="lbl-s" x="118" y="580" text-anchor="middle" fill="#c3cad6" font-weight="700" letter-spacing="2">IGNITION</text>
+          <!-- key knob -->
+          <g id="keyKnob" transform="rotate(-80,118,528)">
+            <rect x="112" y="486" width="12" height="46" rx="5" fill="url(#steel)" stroke="#000"/>
+            <circle cx="118" cy="528" r="15" fill="url(#steel)" stroke="#000" stroke-width="2"/>
+            <rect x="115" y="482" width="6" height="14" rx="2" fill="#c9c4b8" stroke="#000" stroke-width=".6"/>
+          </g>
+          <!-- clickable positions -->
+          <g class="keypos" id="kpOFF"><circle cx="52" cy="500" r="12"/><text x="52" y="504" text-anchor="middle">O</text><text x="52" y="536" text-anchor="middle" font-size="9">OFF</text></g>
+          <g class="keypos" id="kpR"><circle cx="76" cy="466" r="12"/><text x="76" y="470" text-anchor="middle">R</text></g>
+          <g class="keypos" id="kpL"><circle cx="118" cy="452" r="12"/><text x="118" y="456" text-anchor="middle">L</text></g>
+          <g class="keypos" id="kpBOTH"><circle cx="160" cy="466" r="12"/><text x="160" y="470" text-anchor="middle">B</text><text x="176" y="446" text-anchor="middle" font-size="9">BOTH</text></g>
+          <g class="keypos" id="kpSTART"><circle cx="184" cy="500" r="12"/><text x="184" y="504" text-anchor="middle">S</text><text x="196" y="530" text-anchor="middle" font-size="9">START</text></g>
+        </g>
+        <!-- switch ground -->
+        <line x1="118" y1="606" x2="118" y2="622" stroke="#3a3e46" stroke-width="4"/>
+        <line x1="100" y1="622" x2="136" y2="622" stroke="#6d7480" stroke-width="3.2"/>
+        <line x1="107" y1="629" x2="129" y2="629" stroke="#6d7480" stroke-width="3.2"/>
+        <line x1="114" y1="636" x2="122" y2="636" stroke="#6d7480" stroke-width="3.2"/>
+        <text class="lbl-s" x="150" y="632">AIRFRAME GROUND</text>
+        <text class="lbl-s" x="24" y="386">The switch KILLS a mag by</text>
+        <text class="lbl-s" x="24" y="400">GROUNDING its P-lead &mdash;</text>
+        <text class="lbl-s" x="24" y="414">it works "backwards".</text>
+
+        <!-- hot mag annunciator -->
+        <g id="hotMagWarn" opacity="0">
+          <rect x="586" y="392" width="272" height="56" rx="6" fill="#3a0a06" stroke="#d42313" stroke-width="2"/>
+          <text x="722" y="415" text-anchor="middle" font-size="15" font-weight="700" fill="#ff8a80"
+            font-family="Consolas,monospace" letter-spacing="1">&#9888; HOT MAG &#9888;</text>
+          <text class="lbl-s" x="722" y="434" text-anchor="middle" fill="#ffb3ac">a magneto is NOT grounded with switch OFF</text>
+        </g>
+        <!-- prop kick warning -->
+        <text id="kickWarn" x="440" y="102" text-anchor="middle" font-size="14" font-weight="700"
+          fill="#ff8a80" opacity="0" letter-spacing="1.5" font-family="Consolas,monospace">&#9888; THE ENGINE JUST FIRED &mdash; TREAT EVERY PROP AS LIVE &#9888;</text>
+      </svg>
+      </div>
+      <div class="legend">
+        <span><span class="dotL"></span>LEFT mag plugs (one per cylinder)</span>
+        <span><span class="dotR"></span>RIGHT mag plugs (one per cylinder)</span>
+        <span>Two independent ignition systems &mdash; redundancy + better combustion</span>
+      </div>
+    </div>
+
+    <div class="pane">
+      <div class="pane-title">HOW THE P-LEAD WORKS</div>
+      <ul class="lesson">
+        <li><b>Magnetos make their own electricity.</b> A spinning magnet inside each mag induces current in a coil &mdash; exactly like the lawn-mower flywheel magneto, just engine-gear-driven. As long as the crankshaft turns, a magneto <b>wants</b> to fire. No battery or master switch can stop it.</li>
+        <li><b>The P-lead is the only "off switch."</b> It runs from each magneto's <b>p</b>rimary winding to the ignition switch. To kill a mag, the switch <b>connects its P-lead to ground</b>, shorting the primary so no high voltage can build &mdash; the same trick as the mower kill switch.</li>
+        <li><b>The key positions ground different P-leads:</b> <b>OFF</b> = both grounded &bull; <b>R</b> = LEFT mag grounded (running on right) &bull; <b>L</b> = RIGHT mag grounded (running on left) &bull; <b>BOTH</b> = neither grounded &bull; <b>START</b> = right mag grounded while the starter cranks (the left mag's impulse coupling makes the starting spark).</li>
+        <li><b>A broken P-lead = a HOT MAG.</b> If the wire breaks, the switch can't ground that mag &mdash; it stays live even with the key OFF and out. One hand-swing of the propeller can fire a cylinder. This is why the mag check matters and why you always treat a prop as live.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ================= RIGHT ================= -->
+  <div class="col-right">
+    <div class="pane">
+      <div class="pane-title">CONTROLS</div>
+      <div class="keybtns">
+        <button class="btn sel" id="kbOFF">OFF</button>
+        <button class="btn" id="kbR">R</button>
+        <button class="btn" id="kbL">L</button>
+        <button class="btn" id="kbBOTH">BOTH</button>
+        <button class="btn" id="kbSTART">START &#9207;</button>
+      </div>
+      <div class="key-note">hold START to crank &mdash; it springs back to BOTH, just like the real key</div>
+      <div class="slider-row">
+        <label>THROTTLE</label>
+        <input type="range" id="throttle" min="650" max="2500" value="1000" step="10">
+        <output id="throttleOut">1000 rpm</output>
+      </div>
+      <div class="ctl-row">
+        <button class="btn" id="faultPlead">FAULT: BREAK LEFT P-LEAD</button>
+        <button class="btn" id="faultFoul">FAULT: FOUL A PLUG (LEFT MAG, CYL 3)</button>
+      </div>
+      <div class="ctl-row">
+        <button class="btn" id="handProp">&#8635; HAND-TURN THE PROP</button>
+      </div>
+      <div class="hint">Try it: start the engine, throttle to <b>1800</b>, then do the run-up mag check below.<br>
+      Then break the left P-lead, switch <b>OFF</b>&hellip; and see why mechanics respect propellers.</div>
+    </div>
+
+    <div class="pane">
+      <div class="pane-title">TACHOMETER &amp; MAG CHECK</div>
+      <div class="tach-row">
+        <svg viewBox="0 0 200 170" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="100" cy="88" r="76" fill="#0b0c0e" stroke="#000" stroke-width="3"/>
+          <circle cx="100" cy="88" r="76" fill="none" stroke="#2c2f35" stroke-width="1"/>
+          <g id="tachTicks"></g>
+          <path id="tachGreen" fill="none" stroke="#2f9e46" stroke-width="5"/>
+          <path id="tachRed" fill="none" stroke="#d42313" stroke-width="5"/>
+          <text x="100" y="66" text-anchor="middle" font-size="9" fill="#6d7480" letter-spacing="2" font-family="Segoe UI,sans-serif">RPM &times;100</text>
+          <line id="tachNeedle" x1="100" y1="88" x2="100" y2="24" stroke="#e8e6e0" stroke-width="3" stroke-linecap="round" transform="rotate(-120,100,88)"/>
+          <circle cx="100" cy="88" r="7" fill="#33363c" stroke="#000"/>
+          <text id="tachDigital" x="100" y="140" text-anchor="middle" font-size="15" fill="#ffb347" font-family="Consolas,monospace">0</text>
+          <text x="100" y="156" text-anchor="middle" font-size="8" fill="#6d7480" letter-spacing="1" font-family="Segoe UI,sans-serif">TACHOMETER</text>
+        </svg>
+        <div class="drops">
+          <div class="ro"><div class="ro-l">DROP ON LEFT MAG ALONE (key = L)</div><div class="ro-v dim" id="dropL">&mdash;</div></div>
+          <div class="ro"><div class="ro-l">DROP ON RIGHT MAG ALONE (key = R)</div><div class="ro-v dim" id="dropR">&mdash;</div></div>
+          <div class="ro"><div class="ro-l">DIFFERENCE L&harr;R</div><div class="ro-v dim" id="dropDiff">&mdash;</div></div>
+        </div>
+      </div>
+      <div class="mag-states">
+        <div class="ro"><div class="ro-l">LEFT MAG</div><div class="ro-v grn small" id="roMagL">GROUNDED via P-lead — cannot fire</div></div>
+        <div class="ro"><div class="ro-l">RIGHT MAG</div><div class="ro-v grn small" id="roMagR">GROUNDED via P-lead — cannot fire</div></div>
+      </div>
+      <div class="ro verdict"><div class="ro-l">MAG CHECK VERDICT</div><div class="ro-v dim small" id="verdict">run the check to get a verdict (normal drop 50–175 rpm, difference &le; 50)</div></div>
+      <div class="warnbar" id="warnbar">&#9888; HOT MAG &mdash; SWITCH OFF BUT ENGINE STILL FIRING</div>
+    </div>
+
+    <div class="pane">
+      <div class="pane-title">RUN-UP &mdash; MAG CHECK PROCEDURE</div>
+      <div class="steps">
+        <div class="step" id="ck1"><div class="num">1</div><div class="txt"><b>START ENGINE, SET 1800 RPM, KEY ON BOTH</b>Hold START to crank, then throttle up to the run-up setting (1750&ndash;1850 rpm).</div></div>
+        <div class="step" id="ck2"><div class="num">2</div><div class="txt"><b>SWITCH TO R &mdash; NOTE THE DROP</b>Grounding the LEFT mag leaves only the right plugs firing. One flame front instead of two burns slower &rarr; rpm drops slightly.</div></div>
+        <div class="step" id="ck3"><div class="num">3</div><div class="txt"><b>BACK TO BOTH &mdash; RPM RECOVERS</b>Always return to BOTH between checks and let the rpm settle.</div></div>
+        <div class="step" id="ck4"><div class="num">4</div><div class="txt"><b>SWITCH TO L &mdash; NOTE THE DROP</b>Now the RIGHT mag is grounded and the engine runs on the left plugs only.</div></div>
+        <div class="step" id="ck5"><div class="num">5</div><div class="txt"><b>BACK TO BOTH &mdash; COMPARE</b>Both drops in limits and close together = two healthy, independent ignition systems. <i>No</i> drop is a fail too &mdash; it means a P-lead isn't grounding (hot mag).</div></div>
+      </div>
+      <div class="ctl-row"><button class="btn" id="resetCheck">RESET MAG CHECK</button></div>
+    </div>
+
+    <div class="pane">
+      <div class="pane-title">WHAT IS HAPPENING NOW</div>
+      <div class="explain" id="explain"></div>
+    </div>
+  </div>
+</div>
+
+<footer>TRAINING AID &bull; TYPICAL 4-CYL HORIZONTALLY-OPPOSED TRAINER (LYCOMING O-320 STYLE, FIRING ORDER 1-3-2-4) &bull; SIMPLIFIED &mdash; NOT FOR MAINTENANCE OR FLIGHT USE</footer>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------- state ---------- */
+  const S = {
+    pos:"OFF",              // OFF | R | L | BOTH | START
+    rpm:0, crank:0,         // crank angle, deg
+    throttle:1000,
+    startHeld:false, startT:0,
+    pleadLBroken:false, foulL3:false,
+    hand:-1,                // >=0 while hand-turning prop
+    kickT:0, warnKickT:0,
+    baseline:0,
+    stintPos:"", stintT:0,
+    dropL:null, dropR:null,
+    ck:[false,false,false,false,false],
+    sound:false,
+    flash:{}                // plug flash timers
+  };
+
+  /* ---------- dom ---------- */
+  const $=id=>document.getElementById(id);
+  const propGrp=$("propGrp"), propDisc=$("propDisc"), engineGrp=$("engineGrp"),
+    magLrotor=$("magLrotor"), magRrotor=$("magRrotor"),
+    magLstate=$("magLstate"), magRstate=$("magRstate"),
+    harnLhot=$("harnLhot"), harnRhot=$("harnRhot"),
+    pleadLpulse=$("pleadLpulse"), pleadRpulse=$("pleadRpulse"), pleadBreak=$("pleadBreak"),
+    keyKnob=$("keyKnob"), foulX=$("foulX"),
+    hotMagWarn=$("hotMagWarn"), kickWarn=$("kickWarn"), warnbar=$("warnbar"),
+    hdrRpm=$("hdrRpm"), tachNeedle=$("tachNeedle"), tachDigital=$("tachDigital"),
+    dropLel=$("dropL"), dropRel=$("dropR"), dropDiff=$("dropDiff"),
+    roMagL=$("roMagL"), roMagR=$("roMagR"), verdict=$("verdict"),
+    explain=$("explain"), throttleIn=$("throttle"), throttleOut=$("throttleOut"),
+    soundBtn=$("soundBtn"), resetBtn=$("resetBtn"),
+    faultPlead=$("faultPlead"), faultFoul=$("faultFoul"), handProp=$("handProp"),
+    resetCheck=$("resetCheck");
+  const cks=[$("ck1"),$("ck2"),$("ck3"),$("ck4"),$("ck5")];
+  const keyBtns={OFF:$("kbOFF"),R:$("kbR"),L:$("kbL"),BOTH:$("kbBOTH")};
+  const kbSTART=$("kbSTART");
+  const keyPos={OFF:$("kpOFF"),R:$("kpR"),L:$("kpL"),BOTH:$("kpBOTH"),START:$("kpSTART")};
+  const KEYANG={OFF:-80,R:-40,L:0,BOTH:40,START:80};
+  // plug flash elements: [cyl][mag]
+  const plugs={1:{L:$("p1L"),R:$("p1R")},2:{L:$("p2L"),R:$("p2R")},3:{L:$("p3L"),R:$("p3R")},4:{L:$("p4L"),R:$("p4R")}};
+  const FIRING=[1,3,2,4]; // every 180 deg of a 720 deg cycle
+
+  /* ---------- tach dial ---------- */
+  (function buildTach(){
+    const g=$("tachTicks");
+    const a0=-120, a1=120, max=3000;
+    function pt(ang,r){const t=(ang-90)*Math.PI/180;return[100+r*Math.cos(t),88+r*Math.sin(t)];}
+    let html="";
+    for(let v=0;v<=max;v+=100){
+      const ang=a0+(a1-a0)*v/max, maj=v%500===0;
+      const[o1,o2]=pt(ang,72),[i1,i2]=pt(ang,maj?60:66);
+      html+=`<line x1="${o1}" y1="${o2}" x2="${i1}" y2="${i2}" stroke="${maj?"#aab2bf":"#4a4f57"}" stroke-width="${maj?2:1}"/>`;
+      if(maj&&v>0){const[t1,t2]=pt(ang,50);
+        html+=`<text x="${t1}" y="${t2+3}" text-anchor="middle" font-size="10" fill="#c3cad6" font-family="Consolas,monospace">${v/100}</text>`;}
+    }
+    g.innerHTML=html;
+    function arc(el,v1,v2,r){
+      const s=a0+(a1-a0)*v1/max, e=a0+(a1-a0)*v2/max;
+      const[x1,y1]=pt(s,r),[x2,y2]=pt(e,r);
+      el.setAttribute("d",`M${x1},${y1} A${r},${r} 0 ${e-s>180?1:0} 1 ${x2},${y2}`);
+    }
+    arc($("tachGreen"),800,2450,72); arc($("tachRed"),2650,2750,72);
+  })();
+
+  /* ---------- sound (engine drone) ---------- */
+  let actx=null,osc=null,gain=null,lfo=null;
+  function soundOn(){
+    if(actx) return;
+    actx=new (window.AudioContext||window.webkitAudioContext)();
+    osc=actx.createOscillator(); gain=actx.createGain();
+    const flt=actx.createBiquadFilter(); flt.type="lowpass"; flt.frequency.value=500;
+    osc.type="sawtooth"; osc.frequency.value=40; gain.gain.value=0;
+    osc.connect(flt); flt.connect(gain); gain.connect(actx.destination); osc.start();
+  }
+  function soundTick(rough){
+    if(!actx) return;
+    const combusting=combustion();
+    const f=Math.max(25,S.rpm*0.048);
+    osc.frequency.setTargetAtTime(f,actx.currentTime,0.08);
+    const target=S.sound&&combusting?(rough?0.05+Math.random()*0.04:0.06):(S.sound&&S.rpm>30?0.02:0);
+    gain.gain.setTargetAtTime(target,actx.currentTime,0.1);
+  }
+
+  /* ---------- mag logic ---------- */
+  function groundedL(){ return !S.pleadLBroken && (S.pos==="OFF"||S.pos==="R"); }
+  function groundedR(){ return S.pos==="OFF"||S.pos==="L"||S.pos==="START"; }
+  function hotL(){ return !groundedL(); }
+  function hotR(){ return !groundedR(); }
+  // engine can sustain combustion: impulse coupling on LEFT mag lets it fire at cranking speed
+  function combustion(){
+    if(!(hotL()||hotR())) return false;
+    if(S.rpm>=350) return true;
+    return hotL() && S.rpm>=140 && (S.startHeld||S.hand>=0||S.kickT>0);
+  }
+  function targetRpm(){
+    const base=S.throttle;
+    const l=hotL(), r=hotR();
+    if(l&&r) return base - (S.foulL3? base*0.012 : 0);
+    if(r)    return base - base*0.045;                          // right alone: normal single-mag drop
+    if(l)    return base - base*0.045 - (S.foulL3? base*0.105 : 0); // left alone: dead cyl if plug fouled
+    return 0;
+  }
+
+  /* ---------- key switch ---------- */
+  function setPos(p){
+    if(S.pos===p) return;
+    S.pos=p;
+    S.stintPos=""; S.stintT=0;
+    keyKnob.setAttribute("transform",`rotate(${KEYANG[p]},118,528)`);
+    Object.keys(keyBtns).forEach(k=>keyBtns[k].classList.toggle("sel",k===p));
+    kbSTART.classList.toggle("start-held",p==="START");
+    Object.keys(keyPos).forEach(k=>keyPos[k].classList.toggle("sel",k===p));
+  }
+  Object.keys(keyBtns).forEach(k=>keyBtns[k].addEventListener("click",()=>setPos(k)));
+  ["OFF","R","L","BOTH"].forEach(k=>keyPos[k].addEventListener("click",()=>setPos(k)));
+  function startDown(e){ e.preventDefault(); S.startHeld=true; S.startT=0; setPos("START"); }
+  function startUp(){ if(!S.startHeld) return; S.startHeld=false; setPos("BOTH"); }
+  kbSTART.addEventListener("pointerdown",startDown);
+  keyPos.START.addEventListener("pointerdown",startDown);
+  window.addEventListener("pointerup",startUp);
+  window.addEventListener("pointercancel",startUp);
+
+  /* ---------- controls ---------- */
+  throttleIn.addEventListener("input",()=>{
+    S.throttle=+throttleIn.value; throttleOut.textContent=S.throttle+" rpm";
+  });
+  faultPlead.addEventListener("click",()=>{
+    S.pleadLBroken=!S.pleadLBroken;
+    faultPlead.classList.toggle("warn-on",S.pleadLBroken);
+    faultPlead.textContent=S.pleadLBroken?"FAULT ACTIVE: LEFT P-LEAD BROKEN":"FAULT: BREAK LEFT P-LEAD";
+    pleadBreak.setAttribute("opacity",S.pleadLBroken?1:0);
+  });
+  faultFoul.addEventListener("click",()=>{
+    S.foulL3=!S.foulL3;
+    faultFoul.classList.toggle("warn-on",S.foulL3);
+    faultFoul.textContent=S.foulL3?"FAULT ACTIVE: CYL 3 LEFT PLUG FOULED":"FAULT: FOUL A PLUG (LEFT MAG, CYL 3)";
+    foulX.setAttribute("opacity",S.foulL3?1:0);
+  });
+  handProp.addEventListener("click",()=>{ if(S.rpm<30&&S.hand<0){ S.hand=0; S.handFired=false; } });
+  soundBtn.addEventListener("click",()=>{
+    S.sound=!S.sound;
+    soundBtn.textContent="SOUND: "+(S.sound?"ON":"OFF");
+    soundBtn.classList.toggle("on",S.sound);
+    if(S.sound) soundOn();
+  });
+  function clearCheck(){
+    S.dropL=null;S.dropR=null;S.ck=[false,false,false,false,false];S.baseline=0;
+    verdict.textContent="run the check to get a verdict (normal drop 50–175 rpm, difference ≤ 50)";
+    verdict.className="ro-v dim small";
+  }
+  resetCheck.addEventListener("click",clearCheck);
+  resetBtn.addEventListener("click",()=>{
+    S.rpm=0;S.crank=0;S.pleadLBroken=false;S.foulL3=false;S.hand=-1;S.kickT=0;S.warnKickT=0;
+    setPos("OFF");clearCheck();
+    faultPlead.classList.remove("warn-on");faultPlead.textContent="FAULT: BREAK LEFT P-LEAD";
+    faultFoul.classList.remove("warn-on");faultFoul.textContent="FAULT: FOUL A PLUG (LEFT MAG, CYL 3)";
+    pleadBreak.setAttribute("opacity",0);foulX.setAttribute("opacity",0);
+    throttleIn.value=1000;S.throttle=1000;throttleOut.textContent="1000 rpm";
+  });
+
+  /* ---------- firing ---------- */
+  function fireCylinder(cyl){
+    if(hotL() && !(S.foulL3&&cyl===3)) S.flash[cyl+"L"]=1;
+    if(hotR()) S.flash[cyl+"R"]=1;
+  }
+
+  /* ---------- mag check recording ---------- */
+  function recordDrops(dt){
+    const running=combustion();
+    if(S.pos==="BOTH"&&running&&Math.abs(S.rpm-targetRpm())<25){
+      S.baseline=S.baseline?S.baseline*0.95+S.rpm*0.05:S.rpm;
+      if(S.baseline>1750&&S.baseline<1850) S.ck[0]=true;
+      if(S.ck[1]&&S.dropR!==null) S.ck[2]=true;
+      if(S.ck[3]&&S.dropL!==null) S.ck[4]=true;
+    }
+    if((S.pos==="L"||S.pos==="R")&&running&&S.baseline>600){
+      if(S.stintPos!==S.pos){S.stintPos=S.pos;S.stintT=0;}
+      S.stintT+=dt;
+      if(S.stintT>1.8){
+        const drop=Math.max(0,Math.round((S.baseline-S.rpm)/5)*5);
+        if(S.pos==="L"){S.dropL=drop;S.ck[3]=S.ck[0];}
+        else{S.dropR=drop;S.ck[1]=S.ck[0];}
+      }
+    }
+    // verdict
+    if(S.dropL!==null&&S.dropR!==null){
+      const d=Math.abs(S.dropL-S.dropR);
+      let msg,cls;
+      if(S.dropL<25||S.dropR<25){
+        msg="FAIL — a mag showed (almost) NO drop: its P-lead is not grounding. HOT MAG — do not fly.";cls="red";
+      }else if(S.dropL>175||S.dropR>175){
+        msg="FAIL — excessive drop ("+(S.dropL>175?"L":"R")+" mag): fouled plug or weak magneto. Do not fly.";cls="red";
+      }else if(d>50){
+        msg="MARGINAL — drops differ by "+d+" rpm (limit 50). Investigate before flight.";cls="";
+      }else{
+        msg="PASS — both drops in limits and within "+d+" rpm of each other. Two healthy ignition systems.";cls="grn";
+      }
+      verdict.textContent=msg;verdict.className="ro-v small "+cls;
+    }
+  }
+
+  /* ---------- explanation ---------- */
+  let lastMsg="";
+  function updateExplain(){
+    const run=combustion();let m;
+    if(S.pos==="START"){
+      m="<b>Cranking — key at START.</b> The starter spins the engine while the switch keeps the <span class='cyn'>RIGHT mag grounded</span>. Only the <span class='amb'>LEFT mag</span> fires — its <b>impulse coupling</b> snaps the magnet through the coil to make a fat, retarded spark at cranking speed. Release the key and it springs back to BOTH.";
+    }else if(S.pos==="OFF"&&run){
+      m="<b class='red'>⚠ HOT MAG!</b> The key is OFF, which should ground <i>both</i> P-leads… but the <span class='amb'>LEFT P-lead is broken</span>, so the switch can't reach the left mag. It keeps firing and the engine keeps running. On a real dead-cut check this is exactly how a hot mag is caught — and why an OFF key does <b>not</b> make a prop safe.";
+    }else if(S.pos==="OFF"){
+      m=S.pleadLBroken
+        ? "<b>Key OFF — but the <span class='red'>left P-lead is broken</span>.</b> The right mag is safely grounded; the left mag is <b>hot</b>. It only takes one cylinder's worth of prop movement to fire it. Try <b>HAND-TURN THE PROP</b> and see."
+        : "<b>Key OFF.</b> The switch grounds <b>both</b> P-leads, shorting each magneto's primary winding — the same trick as a mower kill switch, doubled. Neither mag can make a spark. Hold <b>START</b> to crank, and note that even now you should treat the prop as live.";
+    }else if(S.pos==="BOTH"){
+      m=run?"<b>Running on <span class='grn'>BOTH</span> magnetos.</b> Neither P-lead is grounded. Every cylinder is lit by <span class='amb'>two plugs</span> <span class='cyn'>at once</span> — two flame fronts burn the charge faster and more completely, which is why BOTH gives the highest rpm. Set 1800 rpm and run the mag check."
+        :"<b>Key at BOTH — both mags armed.</b> Ground removed from both P-leads. Hold <b>START</b> to crank the engine.";
+    }else if(S.pos==="R"){
+      m="<b>Key at R:</b> the switch grounds the <span class='amb'>LEFT mag's P-lead</span> — you are running on the <span class='cyn'>RIGHT mag only</span>. Half the plugs went dark, one flame front instead of two, so the rpm drops a little. That small drop is <i>proof the left mag actually died when grounded</i> — which is really what the mag check is testing."+(S.pleadLBroken?" <b class='red'>But look — no drop! The broken left P-lead means the left mag never shut off. That 'perfect' reading is a FAIL.</b>":"");
+    }else if(S.pos==="L"){
+      m="<b>Key at L:</b> the switch grounds the <span class='cyn'>RIGHT mag's P-lead</span> — you are running on the <span class='amb'>LEFT mag only</span>."+(S.foulL3&&run?" <b class='red'>Feel that? Cylinder 3's left plug is fouled, so on the left mag alone that cylinder is dead — a big, rough drop. On BOTH you'd barely notice; the single-mag check exposes it.</b>":" Note the drop, then back to BOTH.");
+    }
+    if(m!==lastMsg){explain.innerHTML=m;lastMsg=m;}
+  }
+
+  /* ---------- main loop ---------- */
+  let prev=performance.now(), dashOff=0;
+  function frame(now){
+    const dt=Math.min(0.05,(now-prev)/1000); prev=now;
+
+    /* starter */
+    if(S.startHeld){
+      S.startT+=dt;
+      if(!combustion()||S.rpm<400) S.rpm=Math.max(S.rpm,Math.min(220,S.startT*300));
+    }
+    /* hand prop: half a blade-swing over ~1.2 s */
+    if(S.hand>=0){
+      S.hand+=dt/1.2;
+      S.crank+=150*dt;
+      S.rpm=Math.max(S.rpm,25);
+      if(S.hand>0.5&&!S.handFired){
+        S.handFired=true;
+        if(hotL()){ // impulse coupling will fire at hand speed
+          fireCylinder(1); S.kickT=1; S.warnKickT=1; S.rpm=90;
+        }else if(hotR()){
+          S.warnKickT=0.6; // weak spark at hand speed, still scold the user
+        }
+      }
+      if(S.hand>=1){S.hand=-1;if(!combustion())S.rpm=Math.min(S.rpm,20);}
+    }
+    if(S.kickT>0){S.kickT-=dt/0.5;}
+
+    /* engine dynamics */
+    const run=combustion();
+    const rough=run&&S.foulL3&&hotL()&&!hotR();
+    if(run){
+      const tgt=targetRpm()+(rough?(Math.random()-0.5)*70:0);
+      S.rpm+=(tgt-S.rpm)*Math.min(1,dt*2.0);
+    }else if(!S.startHeld&&S.hand<0){
+      S.rpm=Math.max(0,S.rpm-(S.rpm*0.5+26)*dt);
+    }
+
+    /* crank + firing events (fires every 180 deg of 720 cycle, order 1-3-2-4) */
+    const prevCyc=S.crank;
+    S.crank+=S.rpm*6*dt; // deg
+    if(run||S.startHeld){
+      const from=Math.floor(prevCyc/180), to=Math.floor(S.crank/180);
+      if(to>from){
+        // fire at most a few per frame (visual)
+        for(let k=from+1;k<=Math.min(to,from+4);k++) fireCylinder(FIRING[k%4]);
+      }
+    }
+
+    /* mag check bookkeeping */
+    recordDrops(dt);
+
+    /* ---------- visuals ---------- */
+    const spin=S.crank%360;
+    propGrp.setAttribute("transform",`rotate(${spin+(S.kickT>0?S.kickT*40:0)},440,66)`);
+    propDisc.setAttribute("opacity",S.rpm>500?0.07:0);
+    magLrotor.setAttribute("transform",`rotate(${(spin*1.5)%360},356,478)`);
+    magRrotor.setAttribute("transform",`rotate(${(spin*1.5)%360},524,478)`);
+
+    if(rough){engineGrp.setAttribute("transform",`translate(${(Math.random()-0.5)*3},${(Math.random()-0.5)*3})`);}
+    else engineGrp.setAttribute("transform","");
+
+    /* plug flashes */
+    for(const key in S.flash){
+      S.flash[key]-=dt/0.09;
+      const el=plugs[key[0]][key[1]];
+      el.setAttribute("opacity",Math.max(0,S.flash[key]).toFixed(2));
+      if(S.flash[key]<=0) delete S.flash[key];
+    }
+
+    /* harness hot glow */
+    harnLhot.setAttribute("opacity",hotL()&&(run||S.startHeld||S.kickT>0)?0.5:0);
+    harnRhot.setAttribute("opacity",hotR()&&run?0.5:0);
+
+    /* p-lead grounding pulses (energy shunted while mag turning + grounded) */
+    dashOff-=dt*80;
+    const turn=S.rpm>60;
+    pleadLpulse.setAttribute("opacity",groundedL()&&turn?0.85:0);
+    pleadRpulse.setAttribute("opacity",groundedR()&&turn?0.85:0);
+    pleadLpulse.setAttribute("stroke-dashoffset",dashOff.toFixed(1));
+    pleadRpulse.setAttribute("stroke-dashoffset",dashOff.toFixed(1));
+
+    /* mag state labels */
+    magLstate.textContent=groundedL()?"GROUNDED":"HOT";
+    magLstate.setAttribute("fill",groundedL()?"#8fe69f":"#ffb347");
+    magRstate.textContent=groundedR()?"GROUNDED":"HOT";
+    magRstate.setAttribute("fill",groundedR()?"#8fe69f":"#ffb347");
+
+    /* warnings */
+    const hotMag=S.pos==="OFF"&&(hotL()||hotR());
+    hotMagWarn.setAttribute("opacity",hotMag?1:0);
+    warnbar.style.display=hotMag&&run?"block":"none";
+    if(S.warnKickT>0){S.warnKickT-=dt/2.5;kickWarn.setAttribute("opacity",Math.min(1,S.warnKickT*2).toFixed(2));}
+    else kickWarn.setAttribute("opacity",0);
+
+    /* readouts */
+    const r=Math.round(S.rpm);
+    hdrRpm.textContent=r+" RPM";
+    tachDigital.textContent=r;
+    tachNeedle.setAttribute("transform",`rotate(${-120+240*Math.min(3000,S.rpm)/3000},100,88)`);
+    dropLel.textContent=S.dropL===null?"—":S.dropL+" rpm";
+    dropLel.className="ro-v "+(S.dropL===null?"dim":(S.dropL<25||S.dropL>175?"red":"grn"));
+    dropRel.textContent=S.dropR===null?"—":S.dropR+" rpm";
+    dropRel.className="ro-v "+(S.dropR===null?"dim":(S.dropR<25||S.dropR>175?"red":"grn"));
+    if(S.dropL!==null&&S.dropR!==null){
+      const d=Math.abs(S.dropL-S.dropR);
+      dropDiff.textContent=d+" rpm";dropDiff.className="ro-v "+(d>50?"red":"grn");
+    }else{dropDiff.textContent="—";dropDiff.className="ro-v dim";}
+    roMagL.textContent=groundedL()?"GROUNDED via P-lead — cannot fire":"HOT — will fire when turned";
+    roMagL.className="ro-v small "+(groundedL()?"grn":(S.pos==="OFF"?"red":"amb")||"");
+    if(!groundedL()&&S.pos!=="OFF")roMagL.className="ro-v small";
+    roMagL.style.color=groundedL()?"":"#ffb347";
+    if(S.pos==="OFF"&&!groundedL())roMagL.style.color="#ff4545";
+    roMagR.textContent=groundedR()?"GROUNDED via P-lead — cannot fire":"HOT — will fire when turned";
+    roMagR.className="ro-v small "+(groundedR()?"grn":"");
+    roMagR.style.color=groundedR()?"":"#57c7ff";
+
+    handProp.disabled=S.rpm>=30;
+    /* checklist */
+    for(let i=0;i<5;i++){cks[i].classList.toggle("done",S.ck[i]);}
+    const nowIdx=S.ck.indexOf(false);
+    for(let i=0;i<5;i++){cks[i].classList.toggle("now",i===nowIdx&&run);}
+
+    soundTick(rough);
+    updateExplain();
+    requestAnimationFrame(frame);
+  }
+  setPos("BOTH");setPos("OFF"); // init labels through the setter
+  updateExplain();
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
