@@ -705,7 +705,7 @@
       m="<b class='red'>⚠ HOT MAG!</b> The key is OFF, which should ground <i>both</i> P-leads… but the <span class='amb'>LEFT P-lead is broken</span>, so the switch can't reach the left mag. It keeps firing and the engine keeps running. On a real dead-cut check this is exactly how a hot mag is caught — and why an OFF key does <b>not</b> make a prop safe.";
     }else if(S.pos==="OFF"){
       m=S.pleadLBroken
-        ? "<b>Key OFF — but the <span class='red'>left P-lead is broken</span>.</b> The right mag is safely grounded; the left mag is <b>hot</b>. It only takes one cylinder's worth of prop movement to fire it. Try <b>HAND-TURN THE PROP</b> and see."
+        ? "<b>Key OFF — but the <span class='red'>left P-lead is broken</span>.</b> The right mag is safely grounded; the left mag is <b>hot</b>. It only takes one cylinder's worth of prop movement to fire it. Try <b>HAND-TURN THE PROP</b>: with the throttle closed there's barely any fuel-air charge, so it fires and <i>kicks</i> — but crack the throttle open (&asymp;850+ rpm setting) and it can <b class='red'>start and run</b>."
         : "<b>Key OFF.</b> The switch grounds <b>both</b> P-leads, shorting each magneto's primary winding — the same trick as a mower kill switch, doubled. Neither mag can make a spark. Hold <b>START</b> to crank, and note that even now you should treat the prop as live.";
     }else if(S.pos==="BOTH"){
       m=run?"<b>Running on <span class='grn'>BOTH</span> magnetos.</b> Neither P-lead is grounded. Every cylinder is lit by <span class='amb'>two plugs</span> <span class='cyn'>at once</span> — two flame fronts burn the charge faster and more completely, which is why BOTH gives the highest rpm. Set 1800 rpm and run the mag check."
@@ -735,10 +735,19 @@
       S.rpm=Math.max(S.rpm,25);
       if(S.hand>0.5&&!S.handFired){
         S.handFired=true;
-        if(hotL()){ // impulse coupling will fire at hand speed
-          fireCylinder(1); S.kickT=1; S.warnKickT=1; S.rpm=90;
+        if(hotL()){ // impulse coupling: full-strength retarded spark even at hand speed
+          fireCylinder(1); S.kickT=1;
+          if(S.throttle>=850){ // throttle cracked open (or primed): enough charge to run
+            S.warnKickT=1.6; S.rpm=430;
+            kickWarn.textContent="⚠ THE ENGINE JUST STARTED WITH THE KEY OFF — THE CLASSIC HAND-PROP ACCIDENT ⚠";
+          }else{ // throttle closed: barely any fuel-air charge — it fires and kicks, but won't sustain
+            S.warnKickT=1.4; S.rpm=110;
+            kickWarn.textContent="⚠ IT FIRED — PROP KICKED! CLOSED THROTTLE = TOO LITTLE CHARGE TO RUN, BUT THAT KICK CAN MAIM ⚠";
+          }
         }else if(hotR()){
-          S.warnKickT=0.6; // weak spark at hand speed, still scold the user
+          // no impulse coupling on the right mag: weak, advanced spark — a violent kick
+          fireCylinder(1); S.kickT=1; S.warnKickT=1.2; S.rpm=90;
+          kickWarn.textContent="⚠ THE PROP KICKED BACK — A HOT MAG CAN FIRE AT HAND SPEED. TREAT EVERY PROP AS LIVE ⚠";
         }
       }
       if(S.hand>=1){S.hand=-1;if(!combustion())S.rpm=Math.min(S.rpm,20);}
