@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Turbine High-Tension AC Ignition Exciter Simulator</title>
+<style>
+  :root{
+    --panel:#23262b;
+    --face:#0b0c0e;
+    --white:#e8e6e0;
+    --amber:#ffb347;
+    --green:#39d353;
+    --red:#ff4545;
+    --cyan:#57c7ff;
+    --violet:#c792ff;
+    --font:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;
+    --mono:"Consolas","Menlo","Courier New",ui-monospace,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+  html,body{background:#0a0b0d;color:var(--white);font-family:var(--font);}
+  body{min-height:100vh;padding:10px 14px 20px;}
+
+  header{
+    display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;
+    padding:10px 16px;margin-bottom:10px;
+    background:linear-gradient(180deg,#2b2e34,#1c1e22);
+    border:1px solid #000;border-radius:8px;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.07), 0 3px 8px rgba(0,0,0,.6);
+  }
+  header h1{font-size:17px;letter-spacing:2px;font-weight:600;color:#dfe3ea;}
+  header h1 small{display:block;font-size:10px;letter-spacing:3px;color:#8b93a1;font-weight:400;}
+  .hdr-right{margin-left:auto;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+  .kv-box{font-family:var(--mono);font-size:14px;color:var(--cyan);
+    background:#07131a;border:1px solid #123;border-radius:4px;padding:4px 12px;min-width:130px;text-align:center;}
+  .btn{
+    cursor:pointer;user-select:none;font-family:var(--font);font-size:11px;letter-spacing:1px;
+    color:#cfd5de;background:linear-gradient(180deg,#3a3e46,#24272c);
+    border:1px solid #0c0d0f;border-radius:5px;padding:7px 12px;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.12), 0 2px 4px rgba(0,0,0,.5);
+  }
+  .btn:hover{background:linear-gradient(180deg,#454a53,#2b2e34);}
+  .btn:active{transform:translateY(1px);box-shadow:inset 0 2px 4px rgba(0,0,0,.5);}
+  .btn.on{color:#0d1108;background:linear-gradient(180deg,#67e07f,#2f9e46);border-color:#194f24;}
+
+  .layout{
+    display:grid;grid-template-columns:minmax(500px,1.7fr) minmax(310px,.95fr);
+    gap:10px;align-items:start;
+  }
+  @media (max-width:1000px){ .layout{grid-template-columns:1fr;} }
+
+  .pane{
+    background:radial-gradient(120% 100% at 50% 0%, #2c2f35 0%, #1e2024 55%, #17181c 100%);
+    border:1px solid #000;border-radius:10px;padding:12px;position:relative;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.06), 0 4px 14px rgba(0,0,0,.55);
+    margin-bottom:10px;
+  }
+  .pane::before,.pane::after{
+    content:"";position:absolute;width:9px;height:9px;border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, #666, #222 70%);
+    box-shadow:inset 0 0 2px #000;
+  }
+  .pane::before{top:7px;left:7px;} .pane::after{top:7px;right:7px;}
+  .pane-title{
+    text-align:center;font-size:10px;letter-spacing:3px;color:#98a0ad;
+    border-bottom:1px solid #34383f;padding-bottom:6px;margin-bottom:10px;font-weight:600;
+  }
+
+  .engine-wrap{background:#0d0e11;border:1px solid #000;border-radius:8px;
+    box-shadow:inset 0 0 30px rgba(0,0,0,.7);}
+  .engine-wrap svg{width:100%;height:auto;display:block;}
+  .hit{fill:#000;fill-opacity:0;stroke:none;pointer-events:all;cursor:pointer;}
+  .hit:hover{stroke:#8ec9ff;stroke-width:1.5;stroke-dasharray:4 3;}
+  .hit.sel{stroke:#ffd27a;stroke-width:2;stroke-dasharray:none;}
+  .lbl{font-size:11px;fill:#8b93a1;letter-spacing:1px;font-family:var(--font);}
+  .lbl-b{font-size:12px;fill:#c3cad6;letter-spacing:1px;font-weight:600;font-family:var(--font);}
+  .lbl-s{font-size:9.5px;fill:#6d7480;letter-spacing:.4px;font-family:var(--font);}
+
+  .scope-wrap{background:#050607;border:1px solid #000;border-radius:6px;padding:6px;
+    box-shadow:inset 0 0 18px rgba(0,0,0,.8);}
+  canvas#scope{width:100%;height:130px;display:block;}
+  .scope-cap{display:flex;justify-content:space-between;font-family:var(--mono);
+    font-size:10px;color:#5f96b5;padding:4px 4px 0;}
+
+  .ctl-row{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;margin:8px 0;}
+  .ctl-row .btn{min-width:104px;text-align:center;font-weight:700;}
+  .speed-btns{display:flex;gap:6px;justify-content:center;}
+  .speed-btns .btn.sel{color:#101317;background:linear-gradient(180deg,#8ec9ff,#4d94d6);border-color:#1c3a52;font-weight:700;}
+  .slider-row{display:flex;align-items:center;gap:10px;margin:8px 4px;}
+  .slider-row label{font-size:10px;letter-spacing:1.5px;color:#98a0ad;width:78px;}
+  .hint{font-size:10px;color:#6d7480;text-align:center;margin-top:8px;letter-spacing:.5px;line-height:1.6;}
+
+  .readouts{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  .ro{background:#0b0c0e;border:1px solid #000;border-radius:6px;padding:8px 10px;
+    box-shadow:inset 0 1px 4px rgba(0,0,0,.8);}
+  .ro .ro-l{font-size:9px;letter-spacing:1.5px;color:#6d7480;margin-bottom:4px;}
+  .ro .ro-v{font-family:var(--mono);font-size:16px;color:var(--amber);}
+  .ro .ro-v.grn{color:var(--green);} .ro .ro-v.red{color:var(--red);}
+  .ro .ro-v.cyn{color:var(--cyan);} .ro .ro-v.vio{color:var(--violet);} .ro .ro-v.dim{color:#555c66;}
+  .ro .ro-v.small{font-size:12px;}
+  .ro.wide{grid-column:1/-1;}
+  .warnbar{
+    margin-top:10px;text-align:center;font-family:var(--mono);font-size:12px;font-weight:700;
+    letter-spacing:1px;color:#2a0000;background:linear-gradient(180deg,#ff6a5e,#d42313);
+    border:1px solid #5a0e06;border-radius:5px;padding:8px 6px;display:none;
+    animation:wblink .5s steps(2) infinite;
+  }
+  @keyframes wblink{50%{filter:brightness(.55);}}
+
+  .steps{display:flex;flex-direction:column;gap:6px;}
+  .step{display:flex;gap:10px;align-items:flex-start;padding:7px 10px;border-radius:6px;
+    background:#101113;border:1px solid #000;transition:all .12s;}
+  .step .num{flex:none;width:22px;height:22px;border-radius:50%;text-align:center;line-height:22px;
+    font-family:var(--mono);font-size:12px;color:#555c66;background:#1a1c20;border:1px solid #000;}
+  .step .txt{font-size:11px;line-height:1.45;color:#7c8492;}
+  .step .txt b{color:#aab2bf;display:block;font-size:10.5px;letter-spacing:1.2px;margin-bottom:2px;}
+  .step.hot{background:#1b2417;border-color:#2f5121;}
+  .step.hot .num{color:#04180a;background:linear-gradient(180deg,#67e07f,#2f9e46);}
+  .step.hot .txt{color:#b9c4b3;} .step.hot .txt b{color:#8fe69f;}
+
+  .explain{background:#0b0c0e;border:1px solid #000;border-radius:6px;padding:10px 12px;
+    font-size:12px;line-height:1.55;color:#aab2bf;min-height:96px;
+    box-shadow:inset 0 1px 4px rgba(0,0,0,.8);}
+  .explain b{color:#e8e6e0;}
+  .explain .grn{color:var(--green);} .explain .red{color:var(--red);}
+  .explain .amb{color:var(--amber);} .explain .cyn{color:var(--cyan);} .explain .vio{color:var(--violet);}
+
+  .lesson{font-size:11.5px;line-height:1.6;color:#8f97a4;}
+  .lesson li{margin:0 0 7px 16px;}
+  .lesson b{color:#c3cad6;}
+
+  footer{margin-top:6px;text-align:center;font-size:9.5px;color:#4a4f57;letter-spacing:1px;}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>TURBINE HIGH-TENSION IGNITION SYSTEM<small>115V AC CAPACITOR-DISCHARGE EXCITER &bull; TRIGGER TRANSFORMER &mdash; INTERACTIVE TRAINER</small></h1>
+  <div class="hdr-right">
+    <div class="kv-box" id="hdrKV">0 V STORED</div>
+    <button class="btn" id="soundBtn">SOUND: OFF</button>
+    <button class="btn" id="resetBtn">RESET</button>
+  </div>
+</header>
+
+<div class="layout">
+
+  <!-- ================= LEFT ================= -->
+  <div class="col-left">
+    <div class="pane">
+      <div class="pane-title">115V AC BUS &rarr; EXCITER &rarr; TRIGGER TRANSFORMER &rarr; AIR-GAP IGNITER</div>
+      <div class="engine-wrap">
+      <svg id="sysSvg" viewBox="0 0 880 620" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="steel" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#4a4e56"/><stop offset="50%" stop-color="#33363c"/>
+            <stop offset="100%" stop-color="#22242a"/>
+          </linearGradient>
+          <filter id="glow" x="-80%" y="-80%" width="260%" height="260%">
+            <feGaussianBlur stdDeviation="2.6" result="b"/>
+            <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+          <filter id="bigglow" x="-120%" y="-120%" width="340%" height="340%">
+            <feGaussianBlur stdDeviation="6" result="b"/>
+            <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+          <radialGradient id="flameG" cx="50%" cy="30%" r="75%">
+            <stop offset="0%" stop-color="#fff3c4"/><stop offset="35%" stop-color="#ffb347"/>
+            <stop offset="75%" stop-color="#e05a1e"/><stop offset="100%" stop-color="#7a1e08" stop-opacity="0"/>
+          </radialGradient>
+        </defs>
+
+        <!-- ======= 115V AC BUS + SWITCH ======= -->
+        <rect x="20" y="82" width="112" height="48" rx="6" fill="url(#steel)" stroke="#000" stroke-width="1.5"/>
+        <text class="lbl-b" x="76" y="100" text-anchor="middle">115V AC BUS</text>
+        <path d="M48,114 q7,-10 14,0 q7,10 14,0 q7,-10 14,0 q7,10 14,0" fill="none" stroke="#57c7ff" stroke-width="1.6"/>
+        <text class="lbl-s" x="76" y="128" text-anchor="middle">400 Hz generator</text>
+        <circle cx="152" cy="106" r="4" fill="#c9c4b8" stroke="#000"/>
+        <circle cx="190" cy="106" r="4" fill="#c9c4b8" stroke="#000"/>
+        <line id="ignBlade" x1="152" y1="106" x2="178" y2="86" stroke="#e8e6e0" stroke-width="4" stroke-linecap="round"/>
+        <text class="lbl-s" x="171" y="70" text-anchor="middle">IGN SWITCH</text>
+
+        <!-- ======= BASE WIRES ======= -->
+        <path d="M132,106 H148 M194,106 H304 M304,166 V250 M300,250 H600 M344,182 V250"
+          fill="none" stroke="#2c2f35" stroke-width="3"/>
+        <path d="M344,100 V88 H386 M410,88 H440 V148 M440,216 V250 M440,120 H477 M440,120 H400 V140 M400,200 V250"
+          fill="none" stroke="#2c2f35" stroke-width="3"/>
+        <path d="M533,120 H572 V176 H580 M588,205 V250 M572,150 V246 H613"
+          fill="none" stroke="#2c2f35" stroke-width="3"/>
+        <path d="M622,160 V110 H648 C700,60 800,56 806,128 M806,196 V210" fill="none" stroke="#2c2f35" stroke-width="3"/>
+
+        <!-- ======= EXCITER BOX ======= -->
+        <rect x="210" y="52" width="438" height="380" rx="10" fill="#15171b" opacity=".45"/>
+        <rect x="210" y="52" width="438" height="380" rx="10" fill="none" stroke="#4a4e56" stroke-width="2"/>
+        <text class="lbl-b" x="300" y="64" text-anchor="middle" letter-spacing="2">IGNITION EXCITER</text>
+
+        <!-- power transformer -->
+        <rect x="310" y="100" width="8" height="90" fill="url(#steel)" stroke="#000"/>
+        <rect x="320" y="100" width="8" height="90" fill="url(#steel)" stroke="#000"/>
+        <g stroke="#d08a4a" stroke-width="3.4" fill="none">
+          <ellipse cx="304" cy="114" rx="9" ry="4.6"/><ellipse cx="304" cy="127" rx="9" ry="4.6"/>
+          <ellipse cx="304" cy="140" rx="9" ry="4.6"/><ellipse cx="304" cy="153" rx="9" ry="4.6"/>
+        </g>
+        <g stroke="#e8b06a" stroke-width="1.4" fill="none">
+          <ellipse cx="344" cy="106" rx="7" ry="3"/><ellipse cx="344" cy="114" rx="7" ry="3"/>
+          <ellipse cx="344" cy="122" rx="7" ry="3"/><ellipse cx="344" cy="130" rx="7" ry="3"/>
+          <ellipse cx="344" cy="138" rx="7" ry="3"/><ellipse cx="344" cy="146" rx="7" ry="3"/>
+          <ellipse cx="344" cy="154" rx="7" ry="3"/><ellipse cx="344" cy="162" rx="7" ry="3"/>
+          <ellipse cx="344" cy="170" rx="7" ry="3"/><ellipse cx="344" cy="178" rx="7" ry="3"/>
+        </g>
+        <rect id="pwrGlow" x="288" y="94" width="70" height="102" rx="6" fill="none" stroke="#ffd27a" stroke-width="2" opacity="0" filter="url(#glow)"/>
+        <text class="lbl-s" x="290" y="212" text-anchor="middle">POWER TRANSFORMER</text>
+        <text class="lbl-s" x="290" y="224" text-anchor="middle">115 V AC &rarr; &asymp;2,000 V AC</text>
+        <text class="lbl-s" x="290" y="236" text-anchor="middle">(AC needs no vibrator!)</text>
+
+        <!-- rectifier -->
+        <path d="M390,80 L390,96 L406,88 Z" fill="#8b93a1" stroke="#000" stroke-width=".8"/>
+        <line x1="406" y1="80" x2="406" y2="96" stroke="#8b93a1" stroke-width="3"/>
+        <text class="lbl-s" x="398" y="64" text-anchor="middle">RECTIFIER</text>
+        <text class="lbl-s" x="398" y="75" text-anchor="middle">(one-way valve)</text>
+        <g id="blockedX" opacity="0">
+          <line x1="390" y1="102" x2="406" y2="114" stroke="#ff4545" stroke-width="2.6"/>
+          <line x1="406" y1="102" x2="390" y2="114" stroke="#ff4545" stroke-width="2.6"/>
+          <text class="lbl-s" x="398" y="128" text-anchor="middle" fill="#ff8a80">reverse half blocked</text>
+        </g>
+
+        <!-- bleed resistor -->
+        <path d="M400,140 l6,7 l-12,7 l12,7 l-12,7 l12,7 l-12,7 l6,7" fill="none" stroke="#8b93a1" stroke-width="2.4"/>
+        <text class="lbl-s" x="388" y="214" text-anchor="middle">BLEED R</text>
+
+        <!-- storage capacitor -->
+        <rect x="417" y="148" width="46" height="68" rx="5" fill="#101113" stroke="#000" stroke-width="1.5"/>
+        <rect id="capFill" x="419" y="214" width="42" height="0" fill="#2f9e46" opacity=".5"/>
+        <line x1="425" y1="176" x2="455" y2="176" stroke="#c9c4b8" stroke-width="3.4"/>
+        <line x1="425" y1="188" x2="455" y2="188" stroke="#c9c4b8" stroke-width="3.4"/>
+        <rect x="417" y="148" width="46" height="68" rx="5" fill="none" stroke="#33363c" stroke-width="1"/>
+        <text class="lbl-s" x="440" y="230" text-anchor="middle">STORAGE CAPACITOR</text>
+        <text id="capVlbl" x="468" y="170" font-size="13" fill="#ffb347" font-family="Consolas,monospace">0 V</text>
+
+        <!-- sealed control gap -->
+        <ellipse cx="505" cy="120" rx="29" ry="14" fill="#0e1822" stroke="#2d5a73" stroke-width="1.6"/>
+        <line x1="477" y1="120" x2="497" y2="120" stroke="#c9c4b8" stroke-width="3"/>
+        <line x1="533" y1="120" x2="513" y2="120" stroke="#c9c4b8" stroke-width="3"/>
+        <circle cx="498" cy="120" r="3.2" fill="#c9c4b8" stroke="#000" stroke-width=".5"/>
+        <circle cx="512" cy="120" r="3.2" fill="#c9c4b8" stroke="#000" stroke-width=".5"/>
+        <polyline id="gapArc" points="500,120 504,116 507,124 510,120" fill="none" stroke="#dff4ff" stroke-width="2.4" opacity="0" filter="url(#bigglow)"/>
+        <text class="lbl-s" x="505" y="98" text-anchor="middle">CONTROL GAP</text>
+        <text class="lbl-s" x="505" y="87" text-anchor="middle">fires at &asymp;2,500 V</text>
+
+        <!-- ======= TRIGGER TRANSFORMER ======= -->
+        <rect x="596" y="158" width="8" height="86" fill="url(#steel)" stroke="#000"/>
+        <rect x="606" y="158" width="8" height="86" fill="url(#steel)" stroke="#000"/>
+        <!-- primary: 3 heavy turns -->
+        <g stroke="#d08a4a" stroke-width="4.2" fill="none">
+          <ellipse cx="588" cy="180" rx="10" ry="5.4"/>
+          <ellipse cx="588" cy="193" rx="10" ry="5.4"/>
+          <ellipse cx="588" cy="206" rx="10" ry="5.4"/>
+        </g>
+        <!-- secondary: many fine turns -->
+        <g stroke="#c792ff" stroke-width="1.3" fill="none" opacity=".85">
+          <ellipse cx="622" cy="166" rx="7" ry="3"/><ellipse cx="622" cy="174" rx="7" ry="3"/>
+          <ellipse cx="622" cy="182" rx="7" ry="3"/><ellipse cx="622" cy="190" rx="7" ry="3"/>
+          <ellipse cx="622" cy="198" rx="7" ry="3"/><ellipse cx="622" cy="206" rx="7" ry="3"/>
+          <ellipse cx="622" cy="214" rx="7" ry="3"/><ellipse cx="622" cy="222" rx="7" ry="3"/>
+          <ellipse cx="622" cy="230" rx="7" ry="3"/><ellipse cx="622" cy="238" rx="7" ry="3"/>
+        </g>
+        <rect id="trigGlowP" x="574" y="170" width="28" height="46" rx="6" fill="none" stroke="#dff4ff" stroke-width="2.4" opacity="0" filter="url(#bigglow)"/>
+        <rect id="trigGlowS" x="611" y="158" width="24" height="88" rx="6" fill="none" stroke="#c792ff" stroke-width="2.4" opacity="0" filter="url(#bigglow)"/>
+        <text class="lbl-b" x="555" y="270" text-anchor="middle" fill="#c792ff">TRIGGER TRANSFORMER</text>
+        <text class="lbl-s" x="555" y="284" text-anchor="middle">3 heavy turns &rarr; thousands of turns</text>
+        <text class="lbl-s" id="trigState" x="555" y="300" text-anchor="middle" fill="#8fe69f"></text>
+
+        <!-- internal ground bus -->
+        <line x1="444" y1="256" x2="476" y2="256" stroke="#6d7480" stroke-width="3"/>
+        <line x1="450" y1="262" x2="470" y2="262" stroke="#6d7480" stroke-width="3"/>
+        <line x1="456" y1="268" x2="464" y2="268" stroke="#6d7480" stroke-width="3"/>
+        <text class="lbl-s" x="436" y="268" text-anchor="end">internal ground</text>
+
+        <!-- exciter output terminal -->
+        <circle cx="648" cy="110" r="5" fill="#c9c4b8" stroke="#000"/>
+        <text class="lbl-s" x="700" y="48" text-anchor="middle">SHIELDED HT LEAD (&asymp;25,000 V)</text>
+
+        <!-- ======= COMBUSTOR ======= -->
+        <rect x="660" y="140" width="200" height="280" rx="14" fill="url(#steel)" stroke="#000" stroke-width="2"/>
+        <rect x="678" y="168" width="164" height="226" rx="12" fill="#0c0d10" stroke="#000" stroke-width="2"/>
+        <g fill="#22242a" stroke="#000" stroke-width=".8">
+          <circle cx="686" cy="220" r="5"/><circle cx="686" cy="270" r="5"/><circle cx="686" cy="320" r="5"/>
+          <circle cx="834" cy="220" r="5"/><circle cx="834" cy="270" r="5"/><circle cx="834" cy="320" r="5"/>
+        </g>
+        <text class="lbl-b" x="752" y="161" text-anchor="middle">COMBUSTOR</text>
+
+        <!-- fuel nozzle -->
+        <rect x="694" y="108" width="16" height="34" rx="3" fill="url(#steel)" stroke="#000"/>
+        <path d="M702,142 L702,150 L696,158 L708,158 Z" fill="#33363c" stroke="#000"/>
+        <text class="lbl-s" x="678" y="100" text-anchor="middle">FUEL</text>
+        <text class="lbl-s" x="678" y="112" text-anchor="middle">NOZZLE</text>
+        <g id="fuelSpray" opacity="0" stroke="#79c9e8" stroke-width="1.6" fill="none" stroke-dasharray="4 6">
+          <path d="M702,158 L672,240"/>
+          <path d="M702,158 L690,244"/>
+          <path d="M702,158 L708,246"/>
+          <path d="M702,158 L726,242"/>
+        </g>
+
+        <!-- flame -->
+        <g id="flameGrp" opacity="0">
+          <ellipse id="flameOuter" cx="742" cy="280" rx="58" ry="86" fill="url(#flameG)" opacity=".8"/>
+          <ellipse id="flameInner" cx="740" cy="262" rx="28" ry="46" fill="#fff3c4" opacity=".75"/>
+        </g>
+
+        <!-- air-gap igniter -->
+        <rect x="796" y="104" width="20" height="26" rx="3" fill="url(#steel)" stroke="#000"/>
+        <rect x="800" y="130" width="12" height="66" fill="#3a3e46" stroke="#000"/>
+        <line x1="800" y1="142" x2="812" y2="142" stroke="#1c1e22" stroke-width="1.6"/>
+        <line x1="800" y1="152" x2="812" y2="152" stroke="#1c1e22" stroke-width="1.6"/>
+        <rect x="798" y="196" width="16" height="16" rx="3" fill="#2c2f35" stroke="#000"/>
+        <!-- centre electrode + shell prongs with a true AIR GAP -->
+        <rect x="803" y="212" width="6" height="10" fill="#c9c4b8" stroke="#000" stroke-width=".5"/>
+        <path d="M798,212 Q796,228 806,231" fill="none" stroke="#8b93a1" stroke-width="3.4" stroke-linecap="round"/>
+        <path d="M814,212 Q816,228 806,231" fill="none" stroke="#8b93a1" stroke-width="3.4" stroke-linecap="round"/>
+        <text class="lbl-b" x="806" y="94" text-anchor="middle">IGNITER</text>
+        <polyline id="streamer" points="806,222 803,225 809,227 806,231" fill="none" stroke="#c792ff" stroke-width="1.6" opacity="0" filter="url(#glow)"/>
+        <circle id="igFlash" cx="806" cy="226" r="14" fill="#bfe8ff" opacity="0" filter="url(#bigglow)"/>
+        <text id="spikeLbl" x="726" y="84" text-anchor="middle" font-size="13" font-weight="700"
+          fill="#c792ff" opacity="0" font-family="Consolas,monospace">&asymp;25,000 V!</text>
+        <text class="lbl-s" x="688" y="368">true AIR GAP at the tip &mdash;</text>
+        <text class="lbl-s" x="688" y="380">needs &asymp;25 kV to ionise</text>
+
+        <!-- exhaust + engine ground -->
+        <path d="M752,398 L752,414 M746,408 L752,416 L758,408" fill="none" stroke="#8b93a1" stroke-width="2.4"/>
+        <text class="lbl-s" x="760" y="436" text-anchor="middle">HOT GAS &rarr; TURBINE</text>
+        <line x1="846" y1="420" x2="846" y2="434" stroke="#3a3e46" stroke-width="3"/>
+        <line x1="834" y1="434" x2="858" y2="434" stroke="#6d7480" stroke-width="3"/>
+        <line x1="839" y1="440" x2="853" y2="440" stroke="#6d7480" stroke-width="3"/>
+        <text class="lbl-s" x="812" y="452" text-anchor="middle">return via engine ground</text>
+
+        <!-- ======= CURRENT OVERLAYS ======= -->
+        <!-- AC input loop: sloshes back and forth -->
+        <path id="acFlow" d="M132,106 H148 M194,106 H304 M304,166 V250 M300,250 H436"
+          fill="none" stroke="#ffd27a" stroke-width="2.6" stroke-linecap="round" stroke-dasharray="7 11" opacity="0" filter="url(#glow)"/>
+        <!-- secondary AC before the diode: sloshes too -->
+        <path id="secFlow" d="M344,100 V88 H386 M344,182 V250"
+          fill="none" stroke="#57c7ff" stroke-width="2.4" stroke-linecap="round" stroke-dasharray="6 9" opacity="0" filter="url(#glow)"/>
+        <!-- rectified charging pulses: one-way only -->
+        <path id="rectFlow" d="M410,88 H440 V148 M440,216 V250 L344,250"
+          fill="none" stroke="#57c7ff" stroke-width="2.8" stroke-linecap="round" stroke-dasharray="6 9" opacity="0" filter="url(#glow)"/>
+        <path id="bleedFlow" d="M440,148 V120 H400 V140 M400,200 V250 H444"
+          fill="none" stroke="#8fe69f" stroke-width="2.2" stroke-linecap="round" stroke-dasharray="4 10" opacity="0" filter="url(#glow)"/>
+        <!-- discharge phase A: cap -> gap -> trigger PRIMARY -> ground -->
+        <path id="trigFlow" d="M440,148 V120 H477 M533,120 H572 V176 H580 M588,205 V250 H444"
+          fill="none" stroke="#dff4ff" stroke-width="3.2" stroke-linecap="round" stroke-dasharray="9 13" opacity="0" filter="url(#bigglow)"/>
+        <!-- discharge phase A: secondary 25kV spike races to the plug -->
+        <path id="spikeFlow" d="M622,160 V110 H648 C700,60 800,56 806,128 M806,128 V212"
+          fill="none" stroke="#c792ff" stroke-width="2.2" stroke-linecap="round" stroke-dasharray="5 8" opacity="0" filter="url(#glow)"/>
+        <!-- discharge phase B: main energy through the SECONDARY and the ionised gap -->
+        <path id="mainFlow" d="M572,150 V246 H613 M622,160 V110 H648 C700,60 800,56 806,128 M806,128 V212"
+          fill="none" stroke="#dff4ff" stroke-width="3.6" stroke-linecap="round" stroke-dasharray="11 14" opacity="0" filter="url(#bigglow)"/>
+
+        <!-- ======= CLICK-TO-INSPECT HIT ZONES ======= -->
+        <g id="hitGrp">
+          <rect class="hit" data-comp="combustor" x="678" y="240" width="130" height="140" rx="8"/>
+          <rect class="hit" data-comp="acbus" x="18" y="78" width="118" height="56" rx="6"/>
+          <rect class="hit" data-comp="ignswitch" x="142" y="76" width="58" height="42" rx="6"/>
+          <rect class="hit" data-comp="pwrxfmr" x="286" y="90" width="74" height="150" rx="6"/>
+          <rect class="hit" data-comp="rectifier" x="384" y="56" width="30" height="74" rx="6"/>
+          <rect class="hit" data-comp="bleed" x="380" y="134" width="32" height="86" rx="6"/>
+          <rect class="hit" data-comp="capacitor" x="413" y="144" width="54" height="92" rx="6"/>
+          <rect class="hit" data-comp="controlgap" x="472" y="82" width="66" height="54" rx="6"/>
+          <rect class="hit" data-comp="trigxfmr" x="570" y="152" width="70" height="152" rx="6"/>
+          <rect class="hit" data-comp="htlead" x="648" y="50" width="126" height="46" rx="6"/>
+          <rect class="hit" data-comp="fuel" x="686" y="98" width="32" height="64" rx="6"/>
+          <rect class="hit" data-comp="igniter" x="790" y="88" width="30" height="148" rx="6"/>
+          <rect class="hit" data-comp="ground" x="438" y="250" width="44" height="26" rx="5"/>
+        </g>
+
+        <!-- charged-cap safety warning -->
+        <g id="capWarn" opacity="0">
+          <rect x="226" y="300" width="240" height="52" rx="6" fill="#3a0a06" stroke="#d42313" stroke-width="2"/>
+          <text x="346" y="322" text-anchor="middle" font-size="13" font-weight="700" fill="#ff8a80"
+            font-family="Consolas,monospace">&#9888; CAPACITOR STILL CHARGED &#9888;</text>
+          <text class="lbl-s" x="346" y="340" text-anchor="middle" fill="#ffb3ac">power OFF does not mean safe &mdash; wait for bleed-down</text>
+        </g>
+      </svg>
+      </div>
+      <div class="explain" id="compInfo" style="margin-top:8px;min-height:52px">
+        &#128269; <b>Component inspector:</b> click any part of the diagram &mdash; the AC bus, switch, power transformer, rectifier, capacitor, bleed resistor, control gap, <b>trigger transformer</b>, HT lead, igniter, fuel nozzle, combustor, or ground &mdash; to read what it does and how it does it.
+      </div>
+    </div>
+
+    <div class="pane">
+      <div class="pane-title">STORAGE CAPACITOR VOLTAGE + AC INPUT &mdash; OSCILLOSCOPE</div>
+      <div class="scope-wrap">
+        <canvas id="scope" width="760" height="130"></canvas>
+        <div class="scope-cap"><span id="scopeState">EXCITER OFF</span><span>amber = capacitor &bull; cyan = AC input (slowed for visibility; real bus is 400 Hz)</span></div>
+      </div>
+    </div>
+
+    <div class="pane">
+      <div class="pane-title">HIGH-TENSION vs LOW-TENSION &mdash; WORTH KNOWING</div>
+      <ul class="lesson">
+        <li><b>Same heart, different front and back ends.</b> Both systems store joules in a capacitor and release them through a sealed gap. This one differs at the input &mdash; <b>AC in, so no vibrator is needed</b> (alternating current already changes direction constantly, which is all a transformer requires) &mdash; and at the output, where a <b>trigger transformer</b> boosts the punch to &asymp;25,000 V.</li>
+        <li><b>Why 25,000 V?</b> The high-tension igniter has a <b>true air gap</b> &mdash; no semiconductor pellet helping out. Cold, dense, fuel-soaked air is a stubborn insulator; it takes tens of kilovolts to rip it into a conductive plasma path.</li>
+        <li><b>The trigger transformer is the match, the capacitor is the fuel.</b> The tiny, fast surge through its 3-turn primary induces a huge voltage in its thousands-of-turns secondary &mdash; but almost no energy. That 25 kV spike only <i>ionises</i> the gap. The instant the gap conducts, the storage capacitor's several joules pour through the ionised path and do the real igniting.</li>
+        <li><b>Ignition only starts the fire.</b> As with the low-tension system: light-off, then the exciter is switched off &mdash; re-armed as continuous ignition for rain, ice, and relight.</li>
+        <li><b>Respect the box &mdash; even more.</b> Same stored-energy hazard as the low-tension unit, plus a 25 kV output side. Bleed-down time before touching anything is mandatory.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ================= RIGHT ================= -->
+  <div class="col-right">
+    <div class="pane">
+      <div class="pane-title">CONTROLS</div>
+      <div class="ctl-row">
+        <button class="btn" id="busBtn">115V AC BUS: OFF</button>
+        <button class="btn" id="ignSwBtn">IGNITION: OFF</button>
+        <button class="btn" id="fuelBtn">FUEL: OFF</button>
+      </div>
+      <div class="slider-row">
+        <label>SIM SPEED</label>
+        <div class="speed-btns" style="flex:1">
+          <button class="btn sel" data-speed="1">1&times;</button>
+          <button class="btn" data-speed="0.25">&frac14;&times;</button>
+          <button class="btn" data-speed="0.0625">1/16&times;</button>
+        </div>
+      </div>
+      <div class="hint">Startup: <b>BUS ON &rarr; IGNITION ON</b> &mdash; watch the AC slosh back and forth in the wires, the capacitor stair-step up, and the <b>two-phase discharge</b>: trigger spike, then main energy. <b>&rarr; FUEL ON</b> &rarr; light-off.<br>
+      Use <b>1/16&times;</b> and watch the trigger transformer caption during a spark.</div>
+    </div>
+
+    <div class="pane">
+      <div class="pane-title">READOUTS</div>
+      <div class="readouts">
+        <div class="ro"><div class="ro-l">CAPACITOR VOLTAGE</div><div class="ro-v" id="roV">0 V</div></div>
+        <div class="ro"><div class="ro-l">STORED ENERGY (&frac12;CV&sup2;)</div><div class="ro-v cyn" id="roJ">0.0 J</div></div>
+        <div class="ro"><div class="ro-l">SPARK RATE</div><div class="ro-v" id="roRate">&mdash;</div></div>
+        <div class="ro"><div class="ro-l">TOTAL SPARKS</div><div class="ro-v cyn" id="roCount">0</div></div>
+        <div class="ro wide"><div class="ro-l">TRIGGER SECONDARY OUTPUT</div><div class="ro-v dim small" id="roTrig">0 V</div></div>
+        <div class="ro wide"><div class="ro-l">EXCITER</div><div class="ro-v dim small" id="roExc">de-energised</div></div>
+        <div class="ro wide"><div class="ro-l">COMBUSTOR</div><div class="ro-v dim small" id="roComb">NOT LIT &mdash; no fuel, no flame</div></div>
+      </div>
+      <div class="warnbar" id="warnbar">&#9888; STORED CHARGE &mdash; EXCITER NOT SAFE TO HANDLE</div>
+    </div>
+
+    <div class="pane">
+      <div class="pane-title">HOW A 25,000-VOLT SPARK IS MADE</div>
+      <div class="steps">
+        <div class="step" id="st1"><div class="num">1</div><div class="txt"><b>115V AC COMES ABOARD</b>The AC bus feeds the exciter. Watch the current <i>slosh back and forth</i> in the input wires &mdash; that constant reversal is why no vibrator is needed: AC is already "chopped" by nature.</div></div>
+        <div class="step" id="st2"><div class="num">2</div><div class="txt"><b>POWER TRANSFORMER STEPS IT UP</b>Because the current is always changing, the transformer works continuously: 115 V AC in, &asymp;2,000 V AC out of the secondary.</div></div>
+        <div class="step" id="st3"><div class="num">3</div><div class="txt"><b>RECTIFIER STACKS THE POSITIVE HALVES</b>The diode passes only the positive half of each cycle into the storage capacitor and blocks the reverse half (watch the red &#10005;). One charge step per AC cycle &mdash; the staircase.</div></div>
+        <div class="step" id="st4"><div class="num">4</div><div class="txt"><b>CONTROL GAP FIRES &rarr; TRIGGER PRIMARY SURGE</b>At &asymp;2,500 V the sealed gap conducts and the capacitor slams a fast surge through the trigger transformer's <b>3-turn primary</b> (white flash on the left winding).</div></div>
+        <div class="step" id="st5"><div class="num">5</div><div class="txt"><b>25 kV SPIKE IONISES THE AIR GAP &rarr; MAIN DISCHARGE</b>That surge induces &asymp;25,000 V in the <b>thousands-of-turns secondary</b> (violet) &mdash; a needle of voltage that rips the igniter's air gap into plasma. The instant it conducts, the capacitor's joules pour through the secondary and the ionised gap: the fat white flash.</div></div>
+      </div>
+    </div>
+
+    <div class="pane">
+      <div class="pane-title">WHAT IS HAPPENING NOW</div>
+      <div class="explain" id="explain"></div>
+    </div>
+  </div>
+</div>
+
+<footer>TRAINING AID &bull; TYPICAL HIGH-TENSION AC CAPACITOR-DISCHARGE TURBINE IGNITION &bull; SIMPLIFIED &mdash; NOT FOR MAINTENANCE USE</footer>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------- state ---------- */
+  const S = {
+    busOn:false, ignOn:false, fuelOn:false, lit:false,
+    capV:0, acPhase:0,
+    sparkT:0,
+    sparks:0, lastSparkAt:0, rate:0,
+    speed:1, sound:false, simTime:0,
+    acDash:0, fwdDash:0
+  };
+  const BREAKOVER=2500, CAP_F=3e-6, AC_HZ=8;
+
+  /* ---------- dom ---------- */
+  const $=id=>document.getElementById(id);
+  const ignBlade=$("ignBlade"), pwrGlow=$("pwrGlow"), blockedX=$("blockedX"),
+    capFill=$("capFill"), capVlbl=$("capVlbl"), gapArc=$("gapArc"),
+    trigGlowP=$("trigGlowP"), trigGlowS=$("trigGlowS"), trigState=$("trigState"),
+    streamer=$("streamer"), igFlash=$("igFlash"), spikeLbl=$("spikeLbl"),
+    fuelSpray=$("fuelSpray"), flameGrp=$("flameGrp"),
+    flameOuter=$("flameOuter"), flameInner=$("flameInner"),
+    acFlow=$("acFlow"), secFlow=$("secFlow"), rectFlow=$("rectFlow"),
+    bleedFlow=$("bleedFlow"), trigFlow=$("trigFlow"), spikeFlow=$("spikeFlow"), mainFlow=$("mainFlow"),
+    capWarn=$("capWarn"), warnbar=$("warnbar"),
+    hdrKV=$("hdrKV"), roV=$("roV"), roJ=$("roJ"), roRate=$("roRate"), roCount=$("roCount"),
+    roTrig=$("roTrig"), roExc=$("roExc"), roComb=$("roComb"),
+    busBtn=$("busBtn"), ignSwBtn=$("ignSwBtn"), fuelBtn=$("fuelBtn"),
+    soundBtn=$("soundBtn"), resetBtn=$("resetBtn"),
+    scopeState=$("scopeState"), explain=$("explain"),
+    scope=$("scope"), sctx=scope.getContext("2d");
+  const steps=[$("st1"),$("st2"),$("st3"),$("st4"),$("st5")];
+
+  const NSAMP=380, samples=new Float32Array(NSAMP), acSamples=new Float32Array(NSAMP), marks=new Uint8Array(NSAMP);
+
+  /* ---------- sound ---------- */
+  let actx=null,humOsc=null,humGain=null;
+  function ensureAudio(){
+    if(actx) return;
+    actx=new (window.AudioContext||window.webkitAudioContext)();
+    humOsc=actx.createOscillator(); humGain=actx.createGain();
+    humOsc.type="sine"; humOsc.frequency.value=100; humGain.gain.value=0;
+    humOsc.connect(humGain); humGain.connect(actx.destination); humOsc.start();
+  }
+  function snap(){
+    if(!S.sound||!actx) return;
+    const t=actx.currentTime,o=actx.createOscillator(),g=actx.createGain();
+    o.type="triangle"; o.frequency.setValueAtTime(2200,t);
+    o.frequency.exponentialRampToValueAtTime(150,t+0.06);
+    g.gain.setValueAtTime(0.24,t); g.gain.exponentialRampToValueAtTime(0.001,t+0.07);
+    o.connect(g); g.connect(actx.destination); o.start(t); o.stop(t+0.08);
+  }
+
+  function charging(){ return S.busOn && S.ignOn; }
+
+  /* ---------- controls ---------- */
+  function setBtn(btn,on,label){ btn.textContent=label+": "+(on?"ON":"OFF"); btn.classList.toggle("on",on); }
+  busBtn.addEventListener("click",()=>{ S.busOn=!S.busOn; setBtn(busBtn,S.busOn,"115V AC BUS"); });
+  ignSwBtn.addEventListener("click",()=>{
+    S.ignOn=!S.ignOn; setBtn(ignSwBtn,S.ignOn,"IGNITION");
+    ignBlade.setAttribute("x2",S.ignOn?190:178); ignBlade.setAttribute("y2",S.ignOn?106:86);
+  });
+  fuelBtn.addEventListener("click",()=>{
+    S.fuelOn=!S.fuelOn; setBtn(fuelBtn,S.fuelOn,"FUEL");
+    if(!S.fuelOn) S.lit=false;
+  });
+  document.querySelectorAll(".speed-btns .btn").forEach(b=>{
+    b.addEventListener("click",()=>{
+      document.querySelectorAll(".speed-btns .btn").forEach(x=>x.classList.remove("sel"));
+      b.classList.add("sel"); S.speed=+b.dataset.speed;
+    });
+  });
+  soundBtn.addEventListener("click",()=>{
+    S.sound=!S.sound; soundBtn.textContent="SOUND: "+(S.sound?"ON":"OFF");
+    soundBtn.classList.toggle("on",S.sound);
+    if(S.sound) ensureAudio();
+  });
+  resetBtn.addEventListener("click",()=>{
+    S.busOn=S.ignOn=S.fuelOn=S.lit=false; S.capV=0; S.sparkT=0; S.sparks=0; S.rate=0;
+    setBtn(busBtn,false,"115V AC BUS"); setBtn(ignSwBtn,false,"IGNITION"); setBtn(fuelBtn,false,"FUEL");
+    ignBlade.setAttribute("x2",178); ignBlade.setAttribute("y2",86);
+    samples.fill(0); acSamples.fill(0); marks.fill(0);
+  });
+
+  /* ---------- component inspector ---------- */
+  const COMP_INFO={
+    acbus:["115V AC BUS","Aircraft alternating-current power, usually 115 V at 400 Hz from the engine-driven generators. The key property here: AC constantly reverses direction &mdash; and a transformer only responds to <i>changing</i> current. So this exciter needs no vibrator or chopper at all; the bus hands it ready-to-transform power."],
+    ignswitch:["IGNITION SWITCH","A plain series switch feeding the exciter. Like the low-tension unit (and unlike a magneto), this system is <b>not self-powered</b>: open the switch and everything downstream goes dead &mdash; after the capacitor bleeds down."],
+    pwrxfmr:["POWER TRANSFORMER","Runs continuously on the AC input: 115 V across the primary becomes &asymp;2,000 V across the secondary, set by the turns ratio. Compare with the low-tension exciter, which needed a vibrator to fake 'changing current' out of DC before its transformer could do the same job."],
+    rectifier:["RECTIFIER","A diode &mdash; one-way valve. AC out of the secondary swings positive and negative; the diode passes only the positive half of each cycle into the storage capacitor and blocks the reverse half (watch the red &#10005; flash on negative half-cycles). Result: charge accumulates instead of sloshing in and out."],
+    capacitor:["STORAGE (TANK) CAPACITOR","Identical role to the low-tension unit: stores each rectified half-cycle as charge, one staircase step per AC cycle, several joules at 2,500 V (E = &frac12;CV&sup2;). Slow to fill, explosive to empty &mdash; and it stays loaded after power-off until the bleed resistor drains it."],
+    bleed:["BLEED RESISTOR","High-value resistor permanently across the capacitor. Irrelevant during charging, life-saving after shutdown: it slowly drains the stored joules to ground. Bleed-down takes time &mdash; hence the mandatory wait before maintenance."],
+    controlgap:["SEALED CONTROL GAP","The timing switch of the exciter: an inert-gas gap that insulates below &asymp;2,500 V and avalanches into a conductor the instant the capacitor reaches it. Its breakover point decides exactly how much energy every spark carries."],
+    trigxfmr:["TRIGGER TRANSFORMER","<b>The component that makes this a HIGH-tension system.</b> Its primary is just 3 heavy turns in the capacitor's discharge path; its secondary is thousands of fine turns in series with the igniter. When the control gap fires, the surge through those 3 turns collapses a field through the huge secondary &mdash; inducing &asymp;25,000 V. That spike carries almost no energy; it is only the <i>match</i>: it ionises the igniter's air gap, and the instant the gap conducts, the capacitor's full joules follow through the secondary and the plasma path. Watch it in slow motion: white surge in the primary first, violet spike to the plug, then the fat main discharge."],
+    htlead:["SHIELDED HT LEAD","Carries up to 25,000 V to the igniter, so its insulation and shielding are heavier than the low-tension equivalent. The braided shield contains radio interference and provides the return path. Moisture or damage here causes flashover &mdash; a spark that never reaches the plug."],
+    fuel:["FUEL NOZZLE","Atomises fuel into a fine mist for light-off. The igniter's plasma flash catches the spray; after light-off the flame anchors and the ignition system becomes a passenger."],
+    igniter:["AIR-GAP IGNITER","A true spark gap at the tip &mdash; centre electrode to shell, with nothing but air (and fuel mist) between. No semiconductor pellet to help, which is why it needs the trigger transformer's &asymp;25 kV to ionise, where the low-tension surface-discharge plug fires at 2,500 V. Once ionised, the gap conducts the capacitor's full energy as a plasma flash."],
+    combustor:["COMBUSTION CHAMBER","Continuous combustion once lit &mdash; no spark-per-cycle. The igniter starts the fire; the flame then sustains itself and the exciter is switched off. Two igniters and two exciters per engine for redundancy."],
+    ground:["GROUND (COMMON RETURN)","Every loop closes through here: the AC input returns to the bus, the charging loop returns to the transformer secondary, the trigger primary surge returns to the capacitor, and the main discharge returns from the igniter shell through the engine ground. Follow any glowing wire and you'll arrive back where it started."]
+  };
+  const compInfo=$("compInfo");
+  let selHit=null;
+  document.querySelectorAll(".hit").forEach(h=>{
+    h.addEventListener("click",()=>{
+      if(selHit) selHit.classList.remove("sel");
+      selHit=h; h.classList.add("sel");
+      const[t,d]=COMP_INFO[h.dataset.comp];
+      compInfo.innerHTML="&#128269; <b>"+t+".</b> "+d;
+    });
+  });
+
+  /* ---------- explanation ---------- */
+  let lastMsg="";
+  function updateExplain(){
+    let m;
+    if(S.lit&&!charging()){
+      m="<b class='grn'>Self-sustaining combustion, ignition OFF.</b> Normal turbine operation &mdash; the exciter only works during start, and is re-armed as <b>continuous ignition</b> in heavy rain, icing or turbulence. Cut the FUEL to see a flameout.";
+    }else if(!S.busOn&&S.capV>150){
+      m="<b class='red'>Power is OFF but the capacitor still holds "+Math.round(S.capV)+" V.</b> Only the bleed resistor is draining it. High-tension exciters get extra respect: the storage side holds joules and the output side reaches 25,000 V. Wait for bleed-down.";
+    }else if(!S.busOn){
+      m="<b>System dead.</b> Turn on the <b>115V AC BUS</b>, then <b>IGNITION</b>. Because the input is AC, this exciter has no vibrator &mdash; watch the input current simply slosh back and forth through the power transformer, which is all a transformer needs.";
+    }else if(!S.ignOn){
+      m="<b>Bus powered, ignition switched off.</b> 115 V AC waits at the ignition switch. Close it and the transformer starts pumping the storage capacitor via the rectifier.";
+    }else if(!S.fuelOn){
+      m="<b>Exciter energised &mdash; dry sparking.</b> The <span class='amb'>AC sloshes</span> through the power transformer, the rectifier keeps only the positive halves (<span class='cyn'>blue pulses</span>), and the capacitor climbs to "+BREAKOVER+" V. Then the two-phase discharge: <b>white surge</b> through the trigger primary, <span class='vio'>violet 25 kV spike</span> ionises the air gap, and the main energy follows. Open <b>FUEL</b> to light the fire.";
+    }else if(!S.lit){
+      m="<b>Fuel spraying, waiting for a spark&hellip;</b> The next trigger-transformer spike should catch it &mdash; <b>light-off!</b>";
+    }else{
+      m="<b class='grn'>LIGHT-OFF!</b> The flame is continuous now. The igniter keeps snapping, but it's redundant &mdash; switch <b>IGNITION OFF</b> and the fire keeps burning on its own.";
+    }
+    if(m!==lastMsg){ explain.innerHTML=m; lastMsg=m; }
+  }
+
+  /* ---------- scope ---------- */
+  function drawScope(){
+    const W=scope.width,H=scope.height;
+    sctx.fillStyle="#050607"; sctx.fillRect(0,0,W,H);
+    sctx.strokeStyle="#12202a"; sctx.lineWidth=1;
+    for(let x=0;x<W;x+=38){sctx.beginPath();sctx.moveTo(x,0);sctx.lineTo(x,H);sctx.stroke();}
+    for(let y=0;y<H;y+=26){sctx.beginPath();sctx.moveTo(0,y);sctx.lineTo(W,y);sctx.stroke();}
+    const yB=H-6-(BREAKOVER/2800)*(H-14);
+    sctx.strokeStyle="#4a2a10"; sctx.setLineDash([5,5]);
+    sctx.beginPath(); sctx.moveTo(0,yB); sctx.lineTo(W,yB); sctx.stroke(); sctx.setLineDash([]);
+    sctx.fillStyle="#8a5426"; sctx.font="10px Consolas"; sctx.fillText("2,500 V breakover",6,yB-4);
+    sctx.strokeStyle="rgba(199,146,255,.55)";
+    for(let i=0;i<NSAMP;i++){ if(marks[i]){const x=i*(W/NSAMP);
+      sctx.beginPath();sctx.moveTo(x,4);sctx.lineTo(x,H-4);sctx.stroke();} }
+    /* AC input trace (small, bottom) */
+    sctx.strokeStyle="#2d8ab8"; sctx.lineWidth=1.2; sctx.beginPath();
+    for(let i=0;i<NSAMP;i++){
+      const x=i*(W/NSAMP), y=H-18-acSamples[i]*11;
+      i?sctx.lineTo(x,y):sctx.moveTo(x,y);
+    }
+    sctx.stroke();
+    /* capacitor trace */
+    sctx.strokeStyle="#ffb347"; sctx.lineWidth=1.8; sctx.beginPath();
+    for(let i=0;i<NSAMP;i++){
+      const x=i*(W/NSAMP), y=H-6-(samples[i]/2800)*(H-14);
+      i?sctx.lineTo(x,y):sctx.moveTo(x,y);
+    }
+    sctx.stroke();
+  }
+
+  /* ---------- main loop ---------- */
+  let prev=performance.now(), fwdOff=0, trigTxt="";
+  function frame(now){
+    const rdt=Math.min(0.05,(now-prev)/1000); prev=now;
+    const dt=rdt*S.speed;
+    S.simTime+=dt;
+
+    /* AC + charging */
+    let sinval=0;
+    if(charging()&&S.sparkT<=0){
+      const before=S.acPhase;
+      S.acPhase+=AC_HZ*dt;
+      sinval=Math.sin(S.acPhase*2*Math.PI);
+      /* one charge step per positive peak */
+      const peaks=Math.floor(S.acPhase-0.25)-Math.floor(before-0.25);
+      for(let i=0;i<Math.min(peaks,4);i++){
+        S.capV+=Math.max(40,300*(1-S.capV/3300));
+      }
+    }
+
+    /* breakover -> two-phase discharge */
+    if(S.capV>=BREAKOVER&&S.sparkT<=0){
+      S.capV=BREAKOVER;
+      S.sparkT=1; S.sparks++;
+      const gap=S.simTime-S.lastSparkAt;
+      if(gap>0.05&&S.lastSparkAt>0) S.rate=1/gap;
+      S.lastSparkAt=S.simTime;
+      snap();
+      if(S.fuelOn) S.lit=true;
+    }
+    if(S.sparkT>0){
+      S.sparkT-=dt/0.3;
+      S.capV=Math.max(0,S.capV-BREAKOVER*dt/0.07);
+      if(S.sparkT<=0) S.sparkT=0;
+    }
+
+    /* bleed when off */
+    if(!charging()&&S.capV>0&&S.sparkT<=0){
+      S.capV=Math.max(0,S.capV-(S.capV*0.30+8)*dt);
+    }
+
+    /* scope samples */
+    samples.copyWithin(0,1); acSamples.copyWithin(0,1); marks.copyWithin(0,1);
+    samples[NSAMP-1]=S.capV;
+    acSamples[NSAMP-1]=charging()&&S.sparkT<=0?sinval:0;
+    marks[NSAMP-1]=S.sparkT>0.9?1:0;
+
+    /* ---------- visuals ---------- */
+    /* AC sloshing: dash offset follows the sine's direction */
+    S.acDash+=sinval*rdt*130;
+    fwdOff-=rdt*70;
+    const acOn=charging()&&S.sparkT<=0;
+    acFlow.setAttribute("opacity",acOn?0.9:0);
+    acFlow.setAttribute("stroke-dashoffset",S.acDash.toFixed(1));
+    secFlow.setAttribute("opacity",acOn?0.8:0);
+    secFlow.setAttribute("stroke-dashoffset",(-S.acDash*1.3).toFixed(1));
+    pwrGlow.setAttribute("opacity",acOn?(0.25+Math.abs(sinval)*0.6).toFixed(2):0);
+    /* rectified side: one-way, only while the diode conducts */
+    const conducting=acOn&&sinval>0.05;
+    rectFlow.setAttribute("opacity",conducting?Math.min(1,sinval*1.3).toFixed(2):0);
+    rectFlow.setAttribute("stroke-dashoffset",fwdOff.toFixed(1));
+    blockedX.setAttribute("opacity",acOn&&sinval<-0.15?Math.min(1,-sinval*1.2).toFixed(2):0);
+    bleedFlow.setAttribute("opacity",!charging()&&S.capV>60?0.8:0);
+    bleedFlow.setAttribute("stroke-dashoffset",fwdOff.toFixed(1));
+
+    capFill.setAttribute("height",(66*Math.min(1,S.capV/2600)).toFixed(1));
+    capFill.setAttribute("y",(214-66*Math.min(1,S.capV/2600)).toFixed(1));
+    capVlbl.textContent=Math.round(S.capV)+" V";
+
+    /* two-phase discharge: A (sparkT 1 -> 0.65) trigger, B (0.65 -> 0) main */
+    const phaseA=S.sparkT>0.65, phaseB=S.sparkT>0&&!phaseA;
+    gapArc.setAttribute("opacity",S.sparkT>0?Math.min(1,S.sparkT*1.2).toFixed(2):0);
+    trigFlow.setAttribute("opacity",phaseA?1:0);
+    trigFlow.setAttribute("stroke-dashoffset",(fwdOff*3).toFixed(1));
+    trigGlowP.setAttribute("opacity",phaseA?1:0);
+    spikeFlow.setAttribute("opacity",phaseA?1:0);
+    spikeFlow.setAttribute("stroke-dashoffset",(fwdOff*5).toFixed(1));
+    trigGlowS.setAttribute("opacity",S.sparkT>0?Math.min(1,S.sparkT+0.2).toFixed(2):0);
+    spikeLbl.setAttribute("opacity",phaseA?1:0);
+    streamer.setAttribute("opacity",phaseA?1:0);
+    mainFlow.setAttribute("opacity",phaseB?Math.min(1,S.sparkT*2.2).toFixed(2):0);
+    mainFlow.setAttribute("stroke-dashoffset",(fwdOff*4).toFixed(1));
+    if(phaseB){
+      igFlash.setAttribute("opacity",Math.min(1,S.sparkT*2).toFixed(2));
+      igFlash.setAttribute("r",(10+(0.65-S.sparkT)*26).toFixed(1));
+    }else igFlash.setAttribute("opacity",0);
+    const tt=phaseA?"TRIGGER! primary surge → 25 kV":(phaseB?"gap ionised → MAIN ENERGY follows":(acOn?"waiting for control gap…":""));
+    if(tt!==trigTxt){trigState.textContent=tt;trigTxt=tt;
+      trigState.setAttribute("fill",phaseA?"#c792ff":(phaseB?"#dff4ff":"#8fe69f"));}
+
+    fuelSpray.setAttribute("opacity",S.fuelOn?0.9:0);
+    if(S.lit){
+      const f1=0.85+Math.random()*0.15;
+      flameGrp.setAttribute("opacity",(0.85+Math.random()*0.15).toFixed(2));
+      flameOuter.setAttribute("rx",(58*f1).toFixed(1)); flameOuter.setAttribute("ry",(86*f1).toFixed(1));
+      flameInner.setAttribute("opacity",(0.5+Math.random()*0.3).toFixed(2));
+    }else flameGrp.setAttribute("opacity",0);
+
+    capWarn.setAttribute("opacity",!S.busOn&&S.capV>150?1:0);
+    warnbar.style.display=!S.busOn&&S.capV>150?"block":"none";
+
+    /* steps */
+    steps[0].classList.toggle("hot",acOn);
+    steps[1].classList.toggle("hot",acOn&&Math.abs(sinval)>0.3);
+    steps[2].classList.toggle("hot",conducting);
+    steps[3].classList.toggle("hot",phaseA);
+    steps[4].classList.toggle("hot",phaseB);
+
+    /* readouts */
+    hdrKV.textContent=Math.round(S.capV)+" V STORED";
+    roV.textContent=Math.round(S.capV)+" V";
+    roJ.textContent=(0.5*CAP_F*S.capV*S.capV).toFixed(1)+" J";
+    roRate.textContent=S.rate>0&&charging()?S.rate.toFixed(1)+" / sec":"—";
+    roCount.textContent=S.sparks;
+    if(phaseA){roTrig.textContent="≈25,000 V — IONISING THE AIR GAP";roTrig.className="ro-v vio small";}
+    else if(phaseB){roTrig.textContent="gap conducting — main energy flowing";roTrig.className="ro-v cyn small";}
+    else{roTrig.textContent="0 V";roTrig.className="ro-v dim small";}
+    if(charging()){roExc.textContent="CHARGING — AC input, no vibrator needed";roExc.className="ro-v grn small";}
+    else if(S.capV>150){roExc.textContent="OFF — but capacitor holds charge!";roExc.className="ro-v red small";}
+    else{roExc.textContent="de-energised";roExc.className="ro-v dim small";}
+    if(S.lit){roComb.textContent="LIT — self-sustaining flame";roComb.className="ro-v grn small";}
+    else if(S.fuelOn){roComb.textContent="FUEL SPRAYING — awaiting spark";roComb.className="ro-v cyn small";}
+    else{roComb.textContent="NOT LIT — no fuel, no flame";roComb.className="ro-v dim small";}
+    scopeState.textContent=charging()?"EXCITER CHARGING — "+Math.round(S.capV)+" V":(S.capV>150?"BLEEDING DOWN — "+Math.round(S.capV)+" V":"EXCITER OFF");
+
+    if(actx&&humGain){
+      humGain.gain.setTargetAtTime(S.sound&&acOn?0.03:0,actx.currentTime,0.05);
+      humOsc.frequency.setTargetAtTime(Math.max(20,AC_HZ*12*S.speed),actx.currentTime,0.05);
+    }
+
+    updateExplain();
+    drawScope();
+    requestAnimationFrame(frame);
+  }
+  updateExplain();
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
