@@ -352,7 +352,7 @@
         <path id="spikeFlow" d="M622,160 V110 H648 C700,60 800,56 806,128 M806,128 V212"
           fill="none" stroke="#c792ff" stroke-width="2.2" stroke-linecap="round" stroke-dasharray="5 8" opacity="0" filter="url(#glow)"/>
         <!-- discharge phase B: main energy through the SECONDARY and the ionised gap -->
-        <path id="mainFlow" d="M572,150 V246 H613 M622,160 V110 H648 C700,60 800,56 806,128 M806,128 V212"
+        <path id="mainFlow" d="M440,148 V120 H477 M533,120 H572 V246 H613 M622,160 V110 H648 C700,60 800,56 806,128 M806,128 V212"
           fill="none" stroke="#dff4ff" stroke-width="3.6" stroke-linecap="round" stroke-dasharray="11 14" opacity="0" filter="url(#bigglow)"/>
 
         <!-- ======= CLICK-TO-INSPECT HIT ZONES ======= -->
@@ -657,8 +657,10 @@
     }
     if(S.sparkT>0){
       S.sparkT-=dt/0.3;
-      S.capV=Math.max(0,S.capV-BREAKOVER*dt/0.07);
-      if(S.sparkT<=0) S.sparkT=0;
+      // small drain during the trigger phase, then the bulk pours out through
+      // the secondary while the ionised gap conducts (phase B)
+      S.capV=Math.max(0,S.capV-BREAKOVER*dt/(S.sparkT>0.65?0.9:0.13));
+      if(S.sparkT<=0){S.sparkT=0;S.capV=0;}
     }
 
     /* bleed when off */
@@ -711,7 +713,7 @@
       igFlash.setAttribute("opacity",Math.min(1,S.sparkT*2).toFixed(2));
       igFlash.setAttribute("r",(10+(0.65-S.sparkT)*26).toFixed(1));
     }else igFlash.setAttribute("opacity",0);
-    const tt=phaseA?"TRIGGER! primary surge → 25 kV":(phaseB?"gap ionised → MAIN ENERGY follows":(acOn?"waiting for control gap…":""));
+    const tt=phaseA?"TRIGGER! primary surge → 25 kV":(phaseB?"gap ionised → cap drains via secondary":(acOn?"waiting for control gap…":""));
     if(tt!==trigTxt){trigState.textContent=tt;trigTxt=tt;
       trigState.setAttribute("fill",phaseA?"#c792ff":(phaseB?"#dff4ff":"#8fe69f"));}
 
