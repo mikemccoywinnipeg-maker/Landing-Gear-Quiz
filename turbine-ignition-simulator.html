@@ -69,6 +69,9 @@
   .engine-wrap{background:#0d0e11;border:1px solid #000;border-radius:8px;
     box-shadow:inset 0 0 30px rgba(0,0,0,.7);}
   .engine-wrap svg{width:100%;height:auto;display:block;}
+  .hit{fill:#000;fill-opacity:0;stroke:none;pointer-events:all;cursor:pointer;}
+  .hit:hover{stroke:#8ec9ff;stroke-width:1.5;stroke-dasharray:4 3;}
+  .hit.sel{stroke:#ffd27a;stroke-width:2;stroke-dasharray:none;}
   .lbl{font-size:11px;fill:#8b93a1;letter-spacing:1px;font-family:var(--font);}
   .lbl-b{font-size:12px;fill:#c3cad6;letter-spacing:1px;font-weight:600;font-family:var(--font);}
   .lbl-s{font-size:9.5px;fill:#6d7480;letter-spacing:.4px;font-family:var(--font);}
@@ -179,7 +182,7 @@
 
         <!-- base wires (dark) -->
         <path d="M132,106 H148 M194,106 H224 M288,106 H318" fill="none" stroke="#2c2f35" stroke-width="3"/>
-        <path d="M346,106 H446 V128 M446,168 V250 M330,140 V250 M310,250 H600 M480,184 V250"
+        <path d="M346,106 H446 V128 M446,168 V250 M440,250 H580 M480,184 V250"
           fill="none" stroke="#2c2f35" stroke-width="3"/>
         <path d="M480,96 V88 H500 M532,88 H560 V148 M560,120 H575 M560,120 H520 V140 M520,200 V250"
           fill="none" stroke="#2c2f35" stroke-width="3"/>
@@ -189,7 +192,7 @@
         <!-- ======= EXCITER BOX ======= -->
         <rect x="210" y="52" width="438" height="380" rx="10" fill="none" stroke="#4a4e56" stroke-width="2" stroke-dasharray="1 0"/>
         <rect x="210" y="52" width="438" height="380" rx="10" fill="#15171b" opacity=".45"/>
-        <text class="lbl-b" x="429" y="72" text-anchor="middle" letter-spacing="2">IGNITION EXCITER &mdash; SEALED UNIT</text>
+        <text class="lbl-b" x="340" y="72" text-anchor="middle" letter-spacing="2">IGNITION EXCITER &mdash; SEALED UNIT</text>
 
         <!-- filter -->
         <rect x="224" y="88" width="64" height="36" rx="4" fill="#1c1e22" stroke="#000"/>
@@ -235,8 +238,8 @@
         <!-- rectifier -->
         <path d="M504,80 L504,96 L520,88 Z" fill="#8b93a1" stroke="#000" stroke-width=".8"/>
         <line x1="520" y1="80" x2="520" y2="96" stroke="#8b93a1" stroke-width="3"/>
-        <text class="lbl-s" x="514" y="110" text-anchor="middle">RECTIFIER</text>
-        <text class="lbl-s" x="514" y="121" text-anchor="middle">(one-way valve)</text>
+        <text class="lbl-s" x="518" y="64" text-anchor="middle">RECTIFIER</text>
+        <text class="lbl-s" x="518" y="75" text-anchor="middle">(one-way valve)</text>
 
         <!-- bleed resistor -->
         <path d="M520,140 l6,7 l-12,7 l12,7 l-12,7 l12,7 l-12,7 l6,7" fill="none" stroke="#8b93a1" stroke-width="2.4"/>
@@ -325,14 +328,32 @@
         <text class="lbl-s" x="812" y="452" text-anchor="middle">return via engine ground</text>
 
         <!-- ======= CURRENT OVERLAYS ======= -->
-        <path id="lowFlow" d="M132,106 H148 M194,106 H224 M288,106 H318 M346,106 H446 V128 M446,168 V250 M310,250 H600"
+        <path id="lowFlow" d="M132,106 H148 M194,106 H224 M288,106 H318 M346,106 H446 V128 M446,168 V250 M446,250 H505"
           fill="none" stroke="#ffd27a" stroke-width="2.6" stroke-linecap="round" stroke-dasharray="7 11" opacity="0" filter="url(#glow)"/>
-        <path id="hvFlow" d="M480,96 V88 H500 M532,88 H560 V148"
+        <path id="hvFlow" d="M480,96 V88 H500 M532,88 H560 V148 M560,214 V250 L480,250 L480,184"
           fill="none" stroke="#57c7ff" stroke-width="2.8" stroke-linecap="round" stroke-dasharray="6 9" opacity="0" filter="url(#glow)"/>
-        <path id="bleedFlow" d="M560,120 H520 V140 M520,200 V250"
+        <path id="bleedFlow" d="M560,148 V120 H520 V140 M520,200 V250 H508"
           fill="none" stroke="#8fe69f" stroke-width="2.2" stroke-linecap="round" stroke-dasharray="4 10" opacity="0" filter="url(#glow)"/>
         <path id="dischFlow" d="M560,148 V120 H575 M635,120 H656 C700,64 800,56 806,128 M806,128 V214"
           fill="none" stroke="#dff4ff" stroke-width="3.4" stroke-linecap="round" stroke-dasharray="10 14" opacity="0" filter="url(#bigglow)"/>
+
+        <!-- ======= CLICK-TO-INSPECT HIT ZONES ======= -->
+        <g id="hitGrp">
+          <rect class="hit" data-comp="combustor" x="678" y="230" width="130" height="150" rx="8"/>
+          <rect class="hit" data-comp="bus" x="18" y="78" width="118" height="56" rx="6"/>
+          <rect class="hit" data-comp="ignswitch" x="142" y="76" width="58" height="42" rx="6"/>
+          <rect class="hit" data-comp="filter" x="220" y="82" width="72" height="58" rx="6"/>
+          <rect class="hit" data-comp="vibrator" x="312" y="86" width="62" height="88" rx="6"/>
+          <rect class="hit" data-comp="transformer" x="436" y="90" width="60" height="126" rx="6"/>
+          <rect class="hit" data-comp="rectifier" x="498" y="72" width="30" height="54" rx="6"/>
+          <rect class="hit" data-comp="bleed" x="498" y="130" width="34" height="106" rx="6"/>
+          <rect class="hit" data-comp="capacitor" x="534" y="142" width="52" height="114" rx="6"/>
+          <rect class="hit" data-comp="gap" x="570" y="100" width="70" height="66" rx="6"/>
+          <rect class="hit" data-comp="lead" x="646" y="50" width="130" height="48" rx="6"/>
+          <rect class="hit" data-comp="fuel" x="686" y="98" width="32" height="64" rx="6"/>
+          <rect class="hit" data-comp="igniter" x="792" y="88" width="28" height="136" rx="6"/>
+          <rect class="hit" data-comp="ground" x="490" y="248" width="40" height="26" rx="5"/>
+        </g>
 
         <!-- charged-cap safety warning -->
         <g id="capWarn" opacity="0">
@@ -342,6 +363,9 @@
           <text class="lbl-s" x="346" y="328" text-anchor="middle" fill="#ffb3ac">power OFF does not mean safe &mdash; wait for bleed-down</text>
         </g>
       </svg>
+      </div>
+      <div class="explain" id="compInfo" style="margin-top:8px;min-height:52px">
+        &#128269; <b>Component inspector:</b> click any part of the diagram &mdash; the bus, switch, filter, vibrator, transformer, rectifier, capacitor, bleed resistor, spark gap, lead, igniter, fuel nozzle, combustor, or ground &mdash; to read what it does and how it does it.
       </div>
     </div>
 
@@ -501,6 +525,34 @@
     setBtn(busBtn,false,"28V BUS"); setBtn(ignSwBtn,false,"IGNITION"); setBtn(fuelBtn,false,"FUEL");
     ignBlade.setAttribute("x2",178); ignBlade.setAttribute("y2",86);
     samples.fill(0); marks.fill(0);
+  });
+
+  /* ---------- component inspector ---------- */
+  const COMP_INFO={
+    bus:["28V DC BUS","This is all the electricity the airplane offers &mdash; battery or generator power at just 28 volts. Useless for making a spark directly (a spark in the combustor needs thousands of volts), which is the whole reason the exciter box exists: it converts low-voltage DC into stored high-voltage energy."],
+    ignswitch:["IGNITION SWITCH","A plain series switch that feeds bus power to the exciter. Note the contrast with a magneto: a magneto makes its own power and must be killed by <i>grounding</i> it, but this system is <b>not self-powered</b> &mdash; open the switch and the exciter simply goes dead. Crews arm it for start and for continuous ignition in rain, icing, or turbulence."],
+    filter:["RF FILTER","An inductor-capacitor low-pass filter on the input. The vibrator hash and the violent capacitor discharges generate strong radio-frequency noise; this filter blocks it from travelling back up the aircraft wiring into the radios and nav equipment. The inductor blocks fast changes, the capacitors short them to ground."],
+    vibrator:["VIBRATOR (CHOPPER)","A transformer ignores steady DC &mdash; it only responds to <i>changing</i> current. The vibrator is a self-interrupting buzzer: current through its electromagnet pulls the spring arm, which opens the contacts, which cuts the current, which releases the arm, which closes the contacts again&hellip; hundreds of times per second. The result: the 28V supply is chopped into pulses the transformer can work with. (Modern exciters do the same job with transistors.)"],
+    transformer:["STEP-UP TRANSFORMER","Two windings share an iron core: a primary of a few heavy turns and a secondary of thousands of fine turns. Every time the vibrator contacts open, the primary's magnetic field collapses through the secondary, and the turns ratio multiplies the voltage &mdash; each 28V pulse becomes a burst of about 2,000 volts. Same principle as the mower magneto coil, driven electrically instead of by a passing magnet."],
+    rectifier:["RECTIFIER","A diode &mdash; a one-way valve for current. Each high-voltage burst from the secondary pushes charge <i>forward</i> into the storage capacitor; when the burst ends, the diode blocks the charge from draining back out. That one-way action is what lets many small pulses accumulate into one big stored voltage: the staircase on the scope."],
+    capacitor:["STORAGE (TANK) CAPACITOR","The heart of the exciter. It stores each rectified pulse as electrostatic charge, building voltage step by step. Energy stored is &frac12;CV&sup2; &mdash; at 2,500V this unit holds several joules, hundreds of times a magneto spark. The energy arrives slowly (a second of pulses) but leaves in microseconds, which is what makes the discharge so violent. It also holds that charge after power is removed &mdash; treat it as loaded."],
+    bleed:["BLEED RESISTOR","A high-value resistor permanently connected across the capacitor. During charging it wastes almost nothing (too much resistance to matter), but when power is removed it slowly drains the stored charge to ground &mdash; a safety feature. It takes time, though: maintenance manuals still demand a waiting period before touching leads, because a failed bleed resistor leaves the capacitor lethal."],
+    gap:["SEALED SPARK GAP","A voltage-operated switch with no moving parts: two electrodes a fixed distance apart, sealed in inert gas. Below the design voltage it's an insulator; at &asymp;2,500V the gas ionises in an avalanche and it suddenly conducts almost like a wire, connecting the loaded capacitor straight to the igniter. Its breakover voltage is what sets the spark energy &mdash; the capacitor can never fire early or late."],
+    lead:["SHIELDED IGNITION LEAD","Heavy coaxial cable carrying the discharge surge to the igniter. The braided shield does two jobs: it contains the intense radio noise of each surge, and it provides the return path for the discharge current back to the exciter. Damaged shielding is a classic cause of radio interference during engine start."],
+    fuel:["FUEL NOZZLE","Atomises fuel into a fine cone-shaped spray. The igniter can't light a stream of liquid &mdash; only a mist with lots of surface area. Light-off is the moment the plasma flash from the igniter catches this spray; after that the flame anchors in the combustor and needs no further help."],
+    igniter:["IGNITER PLUG","Not a spark plug with an air gap &mdash; a low-tension igniter has a <b>semiconductor pellet</b> bridging the centre electrode and shell. A small leakage current heats the pellet surface first, ionising a conductive path across it; then the capacitor dumps its full charge along that path in microseconds &mdash; a plasma flash across the face of the plug. That surface-discharge trick is why only &asymp;2,500V is needed. The tip erodes a little with every snap, which is why igniters are lifed parts."],
+    combustor:["COMBUSTION CHAMBER","Where fuel and compressed air burn <i>continuously</i> &mdash; unlike a piston engine there is no spark-per-cycle. The igniter only starts the fire; once lit, the flame sustains itself and the exciter is switched off. Real combustors carry two igniters fed by two independent exciters for redundancy."],
+    ground:["GROUND (COMMON RETURN)","Every circuit is a loop. The exciter's internal ground ties the primary return, the capacitor, and the bleed resistor to the case and the airframe, completing each loop back to the battery's negative terminal. Watch the flow animations: what goes out along a wire always comes back through ground."]
+  };
+  const compInfo=$("compInfo");
+  let selHit=null;
+  document.querySelectorAll(".hit").forEach(h=>{
+    h.addEventListener("click",()=>{
+      if(selHit) selHit.classList.remove("sel");
+      selHit=h; h.classList.add("sel");
+      const[t,d]=COMP_INFO[h.dataset.comp];
+      compInfo.innerHTML="&#128269; <b>"+t+".</b> "+d;
+    });
   });
 
   /* ---------- explanation ---------- */
