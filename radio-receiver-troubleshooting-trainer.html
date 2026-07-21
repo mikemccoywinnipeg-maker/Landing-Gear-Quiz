@@ -505,7 +505,7 @@
           </div>
         </div>
         <p class="flow-note" style="text-align:center; margin:0.5rem 0;">Pick a mode, then click a test point &#9312;&ndash;&#9320; on the board.</p>
-        <div class="log" id="labLog"><span class="muted">&mdash; probe log &mdash;</span></div>
+        <div class="log" id="labLog"><span class="log-ph muted">&mdash; probe log &mdash;</span></div>
       </div>
     </div>
   </section>
@@ -795,7 +795,7 @@ function probe(tp) {
 
 function logLine(html) {
   const log = document.getElementById('labLog');
-  if (log.querySelector('.muted')) log.innerHTML = '';
+  if (log.querySelector('.log-ph')) log.innerHTML = '';
   const div = document.createElement('div');
   div.innerHTML = html;
   log.appendChild(div);
@@ -811,7 +811,7 @@ function newCase() {
   document.getElementById('symptomText').textContent = pick.symptom;
   document.getElementById('labReading').textContent = '—';
   document.getElementById('labUnit').textContent = 'select mode';
-  document.getElementById('labLog').innerHTML = '<span class="muted">&mdash; probe log &mdash;</span>';
+  document.getElementById('labLog').innerHTML = '<span class="log-ph muted">&mdash; probe log &mdash;</span>';
   document.getElementById('verdict').className = 'verdict';
   document.getElementById('verdict').innerHTML = '';
   document.getElementById('newCaseBtn').style.display = 'none';
