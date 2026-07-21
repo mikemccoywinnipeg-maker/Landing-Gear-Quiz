@@ -1,0 +1,1093 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Electronics Troubleshooting Trainer</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #0d1b2a;
+    --steel: #1e3a5f;
+    --sky: #2a6496;
+    --accent: #e8a838;
+    --light: #f4f7fb;
+    --text: #1a2332;
+    --muted: #6b7c93;
+    --green: #1a8a4a;
+    --red: #c0392b;
+    --card: #ffffff;
+    --border: #d0dde8;
+    --board: #16421f;
+    --board-hi: #1e5a2b;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Barlow', sans-serif;
+    background: var(--light);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  header {
+    background: linear-gradient(135deg, var(--navy) 0%, var(--steel) 100%);
+    color: #fff;
+    padding: 1.8rem 1.5rem 1.3rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 200px; height: 200px;
+    border-radius: 50%;
+    background: rgba(232,168,56,0.12);
+  }
+  header h1 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 2.1rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    position: relative;
+  }
+  header h1 span { color: var(--accent); }
+  header p {
+    margin-top: 0.35rem;
+    font-size: 0.92rem;
+    opacity: 0.82;
+    position: relative;
+  }
+
+  /* Tab nav */
+  .tabs {
+    background: var(--navy);
+    display: flex;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab {
+    flex: 0 0 auto;
+    padding: 0.75rem 1.05rem;
+    color: #b9c6d6;
+    background: none;
+    border: none;
+    border-bottom: 3px solid transparent;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 600;
+    font-size: 0.9rem;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: color 0.15s, border-color 0.15s, background 0.15s;
+  }
+  .tab:hover { color: #fff; background: rgba(255,255,255,0.05); }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .tab .num {
+    display: inline-block;
+    width: 20px; height: 20px;
+    line-height: 20px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.12);
+    font-size: 0.75rem;
+    text-align: center;
+    margin-right: 0.4rem;
+  }
+  .tab.active .num { background: var(--accent); color: var(--navy); }
+
+  .container {
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 1.5rem 1rem 4rem;
+  }
+
+  .panel { display: none; }
+  .panel.active { display: block; animation: fade 0.25s ease; }
+  @keyframes fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+  h2.section {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--steel);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.3rem;
+  }
+  .lead { color: var(--muted); font-size: 0.97rem; margin-bottom: 1.3rem; line-height: 1.5; }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.4rem 1.5rem;
+    box-shadow: 0 2px 12px rgba(13,27,42,0.06);
+    margin-bottom: 1.1rem;
+  }
+  .card h3 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 1.15rem;
+    color: var(--steel);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.6rem;
+  }
+  .card p { font-size: 0.96rem; line-height: 1.6; margin-bottom: 0.7rem; }
+  .card p:last-child { margin-bottom: 0; }
+  .card ul { margin: 0.4rem 0 0.7rem 1.1rem; }
+  .card li { font-size: 0.94rem; line-height: 1.55; margin-bottom: 0.35rem; }
+  strong { color: var(--steel); }
+  .k { color: var(--sky); font-weight: 600; }
+
+  .callout {
+    border-left: 4px solid var(--accent);
+    background: #fdf7ea;
+    padding: 0.8rem 1rem;
+    border-radius: 0 6px 6px 0;
+    font-size: 0.92rem;
+    line-height: 1.55;
+    margin: 0.7rem 0;
+  }
+  .callout.danger { border-left-color: var(--red); background: #fdeeec; }
+  .callout.tip { border-left-color: var(--green); background: #ecf7f0; }
+  .callout b { color: var(--steel); }
+
+  /* Ohm's law playground */
+  .ohm-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.2rem;
+    align-items: center;
+  }
+  @media (max-width: 640px) { .ohm-grid { grid-template-columns: 1fr; } }
+  .slider-row { margin-bottom: 1rem; }
+  .slider-row label {
+    display: flex; justify-content: space-between;
+    font-weight: 600; font-size: 0.9rem; color: var(--steel);
+    margin-bottom: 0.3rem;
+  }
+  .slider-row label .val { color: var(--sky); font-family: 'Barlow Condensed', sans-serif; font-size: 1.05rem; }
+  input[type=range] { width: 100%; accent-color: var(--sky); }
+  .result-box {
+    background: var(--navy);
+    color: #fff;
+    border-radius: 8px;
+    padding: 1.1rem;
+    text-align: center;
+  }
+  .result-box .big {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 2.4rem;
+    font-weight: 700;
+    color: var(--accent);
+    line-height: 1;
+  }
+  .result-box .lbl { font-size: 0.8rem; opacity: 0.8; text-transform: uppercase; letter-spacing: 1px; margin-top: 0.3rem; }
+  .flow-note { font-size: 0.85rem; color: var(--muted); margin-top: 0.5rem; }
+
+  /* Component board */
+  .board-wrap { text-align: center; }
+  svg { max-width: 100%; height: auto; }
+  .hot { cursor: pointer; }
+  .hot:hover .comp-body { stroke: var(--accent); stroke-width: 3; }
+  .comp-info {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--sky);
+    border-radius: 8px;
+    padding: 1rem 1.2rem;
+    margin-top: 1rem;
+    min-height: 96px;
+  }
+  .comp-info h4 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 1.1rem; color: var(--steel); text-transform: uppercase; letter-spacing: 0.5px;
+    margin-bottom: 0.3rem;
+  }
+  .comp-info .role { font-size: 0.94rem; line-height: 1.55; margin-bottom: 0.5rem; }
+  .comp-info .fail { font-size: 0.88rem; color: var(--red); font-weight: 500; }
+  .comp-info .fail b { color: var(--red); }
+  .comp-info .placeholder { color: var(--muted); font-style: italic; }
+
+  /* Multimeter */
+  .meter {
+    background: #f2b705;
+    border-radius: 14px;
+    padding: 1rem;
+    max-width: 260px;
+    margin: 0 auto;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.18);
+    border: 2px solid #d99e00;
+  }
+  .meter .screen {
+    background: #b9d4b0;
+    border: 3px solid #2a2a2a;
+    border-radius: 6px;
+    padding: 0.6rem 0.8rem;
+    font-family: 'Barlow Condensed', monospace;
+    text-align: right;
+    color: #14210f;
+  }
+  .meter .reading { font-size: 2rem; font-weight: 700; line-height: 1; letter-spacing: 1px; }
+  .meter .mode-lbl { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; opacity: 0.75; }
+  .dial {
+    margin: 0.9rem auto 0.4rem;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.4rem;
+  }
+  .dial button {
+    background: #2a2a2a;
+    color: #f2b705;
+    border: none;
+    border-radius: 6px;
+    padding: 0.45rem;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 600;
+    font-size: 0.82rem;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .dial button:hover { background: #444; }
+  .dial button.sel { background: var(--red); color: #fff; }
+
+  /* Troubleshooting lab */
+  .lab-top { display: grid; grid-template-columns: 1fr 280px; gap: 1.2rem; align-items: start; }
+  @media (max-width: 760px) { .lab-top { grid-template-columns: 1fr; } }
+  .tp-dot { cursor: pointer; }
+  .tp-dot circle { transition: r 0.1s; }
+  .tp-dot:hover circle.tp-hit { fill: var(--accent); }
+  .tp-dot.probed circle.tp-hit { fill: var(--sky); }
+  .symptom-box {
+    background: var(--navy); color: #fff; border-radius: 8px; padding: 0.9rem 1.1rem; margin-bottom: 1rem;
+  }
+  .symptom-box .tag { font-size: 0.72rem; letter-spacing: 1px; text-transform: uppercase; color: var(--accent); font-weight: 700; }
+  .symptom-box p { font-size: 0.95rem; line-height: 1.5; margin-top: 0.25rem; }
+  .log {
+    background: #0c1622; color: #b9e6c5; border-radius: 8px; padding: 0.8rem 1rem;
+    font-family: 'Barlow Condensed', monospace; font-size: 0.9rem; line-height: 1.7;
+    min-height: 120px; max-height: 200px; overflow-y: auto; margin-top: 0.8rem;
+  }
+  .log .t { color: var(--accent); }
+  .log .warn { color: #ff9c8a; }
+  .log .ok { color: #7fdca0; }
+  .log .muted { color: #5f7285; }
+
+  .btn {
+    display: inline-block;
+    background: var(--sky); color: #fff; border: none;
+    border-radius: 7px; padding: 0.65rem 1.3rem;
+    font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 0.95rem;
+    letter-spacing: 0.5px; text-transform: uppercase; cursor: pointer;
+    transition: background 0.15s; margin: 0.3rem 0.3rem 0.3rem 0;
+  }
+  .btn:hover { background: var(--steel); }
+  .btn.accent { background: var(--accent); color: var(--navy); }
+  .btn.accent:hover { background: #d1942b; }
+  .btn.ghost { background: none; color: var(--sky); border: 2px solid var(--border); }
+  .btn.ghost:hover { background: var(--light); border-color: var(--sky); }
+  .btn:disabled { opacity: 0.45; cursor: default; }
+
+  .diag-options { display: flex; flex-direction: column; gap: 0.55rem; margin-top: 0.8rem; }
+  .diag-opt {
+    background: var(--light); border: 2px solid var(--border); border-radius: 8px;
+    padding: 0.75rem 1rem; text-align: left; cursor: pointer; font-family: 'Barlow', sans-serif;
+    font-size: 0.94rem; font-weight: 500; color: var(--text); transition: border-color 0.15s, background 0.15s;
+  }
+  .diag-opt:hover:not(:disabled) { border-color: var(--sky); background: #e8f1fa; }
+  .diag-opt.correct { border-color: var(--green); background: #e8f8ee; }
+  .diag-opt.wrong { border-color: var(--red); background: #fdf0ee; }
+  .diag-opt:disabled { cursor: default; }
+
+  .verdict {
+    margin-top: 1rem; padding: 1rem 1.2rem; border-radius: 8px; display: none;
+    font-size: 0.95rem; line-height: 1.6;
+  }
+  .verdict.show { display: block; }
+  .verdict.good { background: #e8f8ee; border: 1px solid var(--green); }
+  .verdict.bad { background: #fdf0ee; border: 1px solid var(--red); }
+  .verdict h4 { font-family: 'Barlow Condensed', sans-serif; font-size: 1.1rem; margin-bottom: 0.35rem; text-transform: uppercase; }
+  .verdict.good h4 { color: var(--green); }
+  .verdict.bad h4 { color: var(--red); }
+
+  .scorepill {
+    display: inline-block; background: var(--navy); color: #fff; border-radius: 20px;
+    padding: 0.3rem 0.9rem; font-size: 0.85rem; font-weight: 600; margin-left: 0.5rem;
+  }
+  .scorepill span { color: var(--accent); }
+
+  /* Quiz */
+  .q-block { margin-bottom: 1.3rem; }
+  .q-block .qtext { font-weight: 600; font-size: 1rem; margin-bottom: 0.6rem; line-height: 1.5; }
+  .q-block .qtext .n { color: var(--sky); font-family: 'Barlow Condensed', sans-serif; margin-right: 0.4rem; }
+  .opt {
+    display: block; width: 100%; text-align: left; background: var(--light);
+    border: 2px solid var(--border); border-radius: 8px; padding: 0.7rem 0.95rem;
+    margin-bottom: 0.5rem; cursor: pointer; font-family: 'Barlow', sans-serif;
+    font-size: 0.93rem; color: var(--text); transition: border-color 0.15s, background 0.15s;
+  }
+  .opt:hover:not(:disabled) { border-color: var(--sky); background: #e8f1fa; }
+  .opt.correct { border-color: var(--green); background: #e8f8ee; }
+  .opt.wrong { border-color: var(--red); background: #fdf0ee; }
+  .opt:disabled { cursor: default; }
+  .qexplain { font-size: 0.88rem; color: var(--muted); margin-top: 0.3rem; line-height: 1.5; display: none; padding-left: 0.2rem; }
+  .qexplain.show { display: block; }
+
+  .footer-note { text-align: center; color: var(--muted); font-size: 0.82rem; margin-top: 2rem; line-height: 1.6; }
+  .path { display:flex; flex-wrap:wrap; gap:0.4rem; margin:0.8rem 0 0.3rem; }
+  .path .step { background: var(--light); border:1px solid var(--border); border-radius:20px; padding:0.25rem 0.75rem; font-size:0.82rem; font-weight:600; color:var(--steel); }
+  .path .arrow { color: var(--muted); align-self:center; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Electronics <span>Troubleshooting</span> Trainer</h1>
+  <p>From "I know a bit about circuits" to fixing a dead TV power board &mdash; the hands-on way</p>
+</header>
+
+<nav class="tabs" id="tabs">
+  <button class="tab active" data-panel="basics"><span class="num">1</span>Basics</button>
+  <button class="tab" data-panel="components"><span class="num">2</span>Components</button>
+  <button class="tab" data-panel="meter"><span class="num">3</span>The Multimeter</button>
+  <button class="tab" data-panel="board"><span class="num">4</span>How a Board Works</button>
+  <button class="tab" data-panel="lab"><span class="num">5</span>Troubleshooting Lab</button>
+  <button class="tab" data-panel="safety"><span class="num">6</span>Safety</button>
+  <button class="tab" data-panel="quiz"><span class="num">7</span>Quiz</button>
+</nav>
+
+<div class="container">
+
+  <!-- ================= BASICS ================= -->
+  <section class="panel active" id="basics">
+    <h2 class="section">The Three Things You Actually Need</h2>
+    <p class="lead">Everything in electronics comes back to three quantities and one law. Get comfortable with these and the rest is just detail.</p>
+
+    <div class="card">
+      <h3>Voltage, Current &amp; Resistance &mdash; the water analogy</h3>
+      <p>Picture water in a pipe. It's the single best mental model for electricity, and it holds up surprisingly far.</p>
+      <ul>
+        <li><span class="k">Voltage (V)</span> &mdash; the <strong>pressure</strong> pushing the water. Measured in <strong>volts</strong>. A dead battery has low pressure; the mains wall socket has a lot.</li>
+        <li><span class="k">Current (I)</span> &mdash; how much water actually <strong>flows</strong>. Measured in <strong>amps</strong>. This is what does the work &mdash; and what burns things out when it's too high.</li>
+        <li><span class="k">Resistance (R)</span> &mdash; how much the pipe <strong>fights</strong> the flow. Measured in <strong>ohms (&Omega;)</strong>. A kinked hose is high resistance; a wide open pipe is low.</li>
+      </ul>
+      <div class="callout tip"><b>The key insight for troubleshooting:</b> a <b>short circuit</b> is a pipe with almost no resistance &mdash; huge current, blows fuses. An <b>open circuit</b> is a pipe cut in half &mdash; no current, nothing works. Nearly every fault you'll chase is one of those two.</div>
+    </div>
+
+    <div class="card">
+      <h3>Ohm's Law &mdash; play with it</h3>
+      <p>The whole thing is one equation: <strong>V = I &times; R</strong>. Voltage equals current times resistance. Drag the sliders and watch how they push on each other.</p>
+      <div class="ohm-grid">
+        <div>
+          <div class="slider-row">
+            <label>Voltage (V) <span class="val" id="vVal">12.0 V</span></label>
+            <input type="range" id="vSlide" min="1" max="240" step="1" value="12">
+          </div>
+          <div class="slider-row">
+            <label>Resistance (R) <span class="val" id="rVal">100 &Omega;</span></label>
+            <input type="range" id="rSlide" min="1" max="1000" step="1" value="100">
+          </div>
+          <p class="flow-note">Set the pressure (V) and how much the pipe fights back (R). The trainer computes the flow (I) for you.</p>
+        </div>
+        <div class="result-box">
+          <div class="big" id="iVal">0.12 A</div>
+          <div class="lbl">Current flowing</div>
+          <div style="margin-top:0.7rem; font-size:0.85rem; opacity:0.85;" id="pVal">Power: 1.4 W</div>
+        </div>
+      </div>
+      <div class="callout" id="ohmNote"><b>Reading it:</b> raise the voltage and current rises. Raise the resistance and current falls. That trade-off is what you're doing every time you probe a circuit and ask "does this reading make sense?"</div>
+    </div>
+
+    <div class="card">
+      <h3>What a "circuit" really is</h3>
+      <p>Current only flows in a <strong>complete loop</strong>: out of the source's positive side, through the load, and back to the negative side. Break the loop anywhere &mdash; a blown fuse, a cracked solder joint, a corroded connector &mdash; and everything downstream goes dead.</p>
+      <p><strong>Ground</strong> is just the common "return" side that everything shares &mdash; the big copper areas on a board, or the metal chassis. When you measure voltage, you're really measuring the pressure difference <em>between a point and ground.</em> That's why your black meter probe almost always clips to ground and stays there.</p>
+      <div class="callout"><b>This is the foundation of board troubleshooting:</b> black probe on ground, red probe walking along the circuit, asking at each stage &mdash; "is the voltage that should be here actually here?" The first place it isn't is at or just before your fault.</div>
+    </div>
+  </section>
+
+  <!-- ================= COMPONENTS ================= -->
+  <section class="panel" id="components">
+    <h2 class="section">Meet the Board</h2>
+    <p class="lead">Click any component to learn what it does and how it usually fails. These are the parts you'll find on almost every power board &mdash; TV, monitor, appliance, or amplifier.</p>
+
+    <div class="card board-wrap">
+      <svg id="compSvg" viewBox="0 0 700 380" role="img" aria-label="Interactive circuit board">
+        <!-- board substrate -->
+        <rect x="0" y="0" width="700" height="380" rx="10" fill="var(--board)"/>
+        <rect x="0" y="0" width="700" height="380" rx="10" fill="none" stroke="var(--board-hi)" stroke-width="2"/>
+        <!-- copper traces (decorative) -->
+        <g stroke="#3f7a48" stroke-width="3" fill="none" opacity="0.6">
+          <path d="M60,90 H180 V150 H300"/>
+          <path d="M300,150 H430 V90 H560"/>
+          <path d="M120,250 H300 V300 H520"/>
+          <path d="M300,150 V250"/>
+        </g>
+
+        <!-- FUSE -->
+        <g class="hot" data-comp="fuse">
+          <rect class="comp-body" x="40" y="60" width="70" height="26" rx="6" fill="#d9c27a" stroke="#8a7a3a" stroke-width="2"/>
+          <line x1="52" y1="73" x2="98" y2="73" stroke="#5a4d20" stroke-width="1.5"/>
+          <text x="75" y="105" fill="#cfe6d3" font-size="12" text-anchor="middle" font-family="Barlow Condensed">FUSE</text>
+        </g>
+
+        <!-- BRIDGE RECTIFIER -->
+        <g class="hot" data-comp="bridge">
+          <rect class="comp-body" x="150" y="55" width="60" height="60" rx="5" fill="#1c1c1c" stroke="#000" stroke-width="2"/>
+          <text x="180" y="90" fill="#e8a838" font-size="16" text-anchor="middle" font-family="Barlow Condensed">~ +</text>
+          <text x="180" y="132" fill="#cfe6d3" font-size="11" text-anchor="middle" font-family="Barlow Condensed">BRIDGE</text>
+        </g>
+
+        <!-- BIG FILTER CAP -->
+        <g class="hot" data-comp="filtercap">
+          <ellipse class="comp-body" cx="290" cy="90" rx="30" ry="34" fill="#1a2f6b" stroke="#0d1b45" stroke-width="2"/>
+          <ellipse cx="290" cy="90" rx="20" ry="24" fill="#24398a"/>
+          <line x1="290" y1="66" x2="290" y2="114" stroke="#8fa4e0" stroke-width="2"/>
+          <text x="290" y="140" fill="#cfe6d3" font-size="11" text-anchor="middle" font-family="Barlow Condensed">FILTER CAP</text>
+        </g>
+
+        <!-- MOSFET -->
+        <g class="hot" data-comp="mosfet">
+          <rect class="comp-body" x="390" y="60" width="46" height="56" rx="4" fill="#2b2b2b" stroke="#000" stroke-width="2"/>
+          <circle cx="413" cy="72" r="4" fill="#555"/>
+          <text x="413" y="132" fill="#cfe6d3" font-size="11" text-anchor="middle" font-family="Barlow Condensed">MOSFET</text>
+        </g>
+
+        <!-- TRANSFORMER -->
+        <g class="hot" data-comp="transformer">
+          <rect class="comp-body" x="500" y="55" width="64" height="64" rx="5" fill="#3a2d16" stroke="#1c150a" stroke-width="2"/>
+          <line x1="512" y1="63" x2="512" y2="111" stroke="#c99a3a" stroke-width="3"/>
+          <line x1="524" y1="63" x2="524" y2="111" stroke="#c99a3a" stroke-width="3"/>
+          <line x1="540" y1="63" x2="540" y2="111" stroke="#c99a3a" stroke-width="3"/>
+          <line x1="552" y1="63" x2="552" y2="111" stroke="#c99a3a" stroke-width="3"/>
+          <text x="532" y="135" fill="#cfe6d3" font-size="11" text-anchor="middle" font-family="Barlow Condensed">TRANSFORMER</text>
+        </g>
+
+        <!-- OPTOCOUPLER -->
+        <g class="hot" data-comp="opto">
+          <rect class="comp-body" x="600" y="150" width="54" height="34" rx="4" fill="#1c1c1c" stroke="#000" stroke-width="2"/>
+          <circle cx="612" cy="167" r="3" fill="#e8a838"/>
+          <text x="627" y="205" fill="#cfe6d3" font-size="11" text-anchor="middle" font-family="Barlow Condensed">OPTO</text>
+        </g>
+
+        <!-- RESISTOR -->
+        <g class="hot" data-comp="resistor">
+          <rect class="comp-body" x="90" y="230" width="60" height="20" rx="10" fill="#c9a06a" stroke="#7a5a2a" stroke-width="2"/>
+          <line x1="106" y1="230" x2="106" y2="250" stroke="#5a2a2a" stroke-width="3"/>
+          <line x1="118" y1="230" x2="118" y2="250" stroke="#7a3a1a" stroke-width="3"/>
+          <line x1="130" y1="230" x2="130" y2="250" stroke="#3a2a1a" stroke-width="3"/>
+          <text x="120" y="272" fill="#cfe6d3" font-size="11" text-anchor="middle" font-family="Barlow Condensed">RESISTOR</text>
+        </g>
+
+        <!-- DIODE -->
+        <g class="hot" data-comp="diode">
+          <rect class="comp-body" x="200" y="228" width="48" height="24" rx="4" fill="#151515" stroke="#000" stroke-width="2"/>
+          <rect x="240" y="228" width="6" height="24" fill="#b0b0b0"/>
+          <text x="224" y="272" fill="#cfe6d3" font-size="11" text-anchor="middle" font-family="Barlow Condensed">DIODE</text>
+        </g>
+
+        <!-- SMALL CAPS -->
+        <g class="hot" data-comp="smallcap">
+          <ellipse class="comp-body" cx="330" cy="288" rx="18" ry="20" fill="#1a2f6b" stroke="#0d1b45" stroke-width="2"/>
+          <ellipse cx="330" cy="288" rx="11" ry="13" fill="#24398a"/>
+          <text x="330" y="328" fill="#cfe6d3" font-size="11" text-anchor="middle" font-family="Barlow Condensed">SECONDARY CAP</text>
+        </g>
+
+        <!-- IC -->
+        <g class="hot" data-comp="ic">
+          <rect class="comp-body" x="440" y="260" width="70" height="44" rx="4" fill="#111" stroke="#000" stroke-width="2"/>
+          <circle cx="450" cy="270" r="3" fill="#e8a838"/>
+          <g fill="#888"><rect x="438" y="266" width="4" height="4"/><rect x="438" y="278" width="4" height="4"/><rect x="438" y="290" width="4" height="4"/><rect x="508" y="266" width="4" height="4"/><rect x="508" y="278" width="4" height="4"/><rect x="508" y="290" width="4" height="4"/></g>
+          <text x="475" y="324" fill="#cfe6d3" font-size="11" text-anchor="middle" font-family="Barlow Condensed">CONTROL IC</text>
+        </g>
+      </svg>
+
+      <div class="comp-info" id="compInfo">
+        <p class="placeholder">&#128071; Click a component above to learn what it does &mdash; and how it fails.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= MULTIMETER ================= -->
+  <section class="panel" id="meter">
+    <h2 class="section">Your One Essential Tool</h2>
+    <p class="lead">A cheap digital multimeter (DMM) is 90% of board troubleshooting. You only need four of its settings. Click each dial position to learn it.</p>
+
+    <div class="lab-top">
+      <div>
+        <div class="card">
+          <h3 id="dmmTitle">DC Voltage &mdash; the workhorse</h3>
+          <div id="dmmBody">
+            <p><strong>What it does:</strong> measures the pressure between your red probe and ground (black probe). This is how you follow power through a board &mdash; "should be 12&nbsp;V here... is it?"</p>
+            <p><strong>How to use it:</strong> black probe on a ground point, red probe on the test point. Read the number. Power is ON for this test &mdash; be careful.</p>
+            <div class="callout tip"><b>Golden rule:</b> voltage present where it should be = that stage is probably fine. Voltage missing = your fault is here or just upstream. Walk the rails until the voltage disappears.</div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="meter">
+          <div class="screen">
+            <div class="reading" id="dmmReading">12.0</div>
+            <div class="mode-lbl" id="dmmUnit">V DC</div>
+          </div>
+          <div class="dial">
+            <button data-mode="dcv" class="sel">V&#8250; DC VOLTS</button>
+            <button data-mode="cont">&#8226;))) CONT</button>
+            <button data-mode="ohm">&Omega; OHMS</button>
+            <button data-mode="diode">&#9662;| DIODE</button>
+          </div>
+        </div>
+        <p class="flow-note" style="text-align:center; margin-top:0.6rem;">Tap the dial to switch modes</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= BOARD OVERVIEW ================= -->
+  <section class="panel" id="board">
+    <h2 class="section">How a TV Power Board Works</h2>
+    <p class="lead">Almost every modern TV, monitor and charger uses the same trick: a <strong>switch-mode power supply (SMPS)</strong>. Once you understand this signal path, you understand 80% of the boards you'll ever open. Follow the power left to right.</p>
+
+    <div class="card">
+      <div class="path">
+        <span class="step">AC mains</span><span class="arrow">&rarr;</span>
+        <span class="step">Fuse</span><span class="arrow">&rarr;</span>
+        <span class="step">Bridge rectifier</span><span class="arrow">&rarr;</span>
+        <span class="step">Big filter cap (~160V DC)</span><span class="arrow">&rarr;</span>
+        <span class="step">MOSFET switcher</span><span class="arrow">&rarr;</span>
+        <span class="step">Transformer</span><span class="arrow">&rarr;</span>
+        <span class="step">Secondary rectifier + caps</span><span class="arrow">&rarr;</span>
+        <span class="step">DC rails out</span>
+      </div>
+      <button class="btn accent" id="animBtn">&#9654; Animate the power flow</button>
+      <button class="btn ghost" id="animReset">Reset</button>
+
+      <div class="board-wrap" style="margin-top:1rem;">
+        <svg id="flowSvg" viewBox="0 0 720 220" role="img" aria-label="Power supply signal flow">
+          <rect x="0" y="0" width="720" height="220" rx="10" fill="var(--board)"/>
+          <!-- main path line -->
+          <path id="flowPath" d="M30,110 H690" stroke="#2f5c38" stroke-width="6" fill="none" stroke-linecap="round"/>
+          <path id="flowPulse" d="M30,110 H690" stroke="#e8a838" stroke-width="6" fill="none" stroke-linecap="round"
+                stroke-dasharray="14 700" stroke-dashoffset="0" opacity="0"/>
+          <!-- stage nodes -->
+          <g font-family="Barlow Condensed" font-size="12" text-anchor="middle">
+            <g><circle cx="60" cy="110" r="16" fill="#c0392b"/><text x="60" y="114" fill="#fff">AC</text><text x="60" y="150" fill="#cfe6d3">120V AC</text></g>
+            <g><rect x="140" y="96" width="46" height="28" rx="5" fill="#d9c27a"/><text x="163" y="150" fill="#cfe6d3">Fuse</text></g>
+            <g><rect x="245" y="90" width="40" height="40" rx="5" fill="#1c1c1c"/><text x="265" y="115" fill="#e8a838" font-size="14">~+</text><text x="265" y="152" fill="#cfe6d3">Bridge</text></g>
+            <g><ellipse cx="360" cy="110" rx="20" ry="26" fill="#1a2f6b"/><text x="360" y="158" fill="#cfe6d3">Cap 160V</text></g>
+            <g><rect x="435" y="92" width="34" height="36" rx="4" fill="#2b2b2b"/><text x="452" y="152" fill="#cfe6d3">MOSFET</text></g>
+            <g><rect x="520" y="88" width="44" height="44" rx="5" fill="#3a2d16"/><text x="542" y="156" fill="#cfe6d3">Xformer</text></g>
+            <g><ellipse cx="628" cy="110" rx="14" ry="20" fill="#1a2f6b"/><text x="628" y="152" fill="#cfe6d3">Out caps</text></g>
+            <g><circle cx="690" cy="110" r="14" fill="#1a8a4a"/><text x="690" y="114" fill="#fff" font-size="10">DC</text></g>
+          </g>
+        </svg>
+      </div>
+      <p class="flow-note" id="flowCaption" style="text-align:center;">Hit "Animate" to watch power travel from the wall to the DC rails that run the TV.</p>
+    </div>
+
+    <div class="card">
+      <h3>What each stage does (and where it goes wrong)</h3>
+      <ul>
+        <li><strong>Fuse</strong> &mdash; the sacrificial link. Blows to protect everything else. A blown fuse is a <em>symptom</em>, not usually the root cause &mdash; something downstream shorted.</li>
+        <li><strong>Bridge rectifier</strong> &mdash; turns AC (which swings +/&minus;) into pulsing DC (always one direction). Four diodes in a box.</li>
+        <li><strong>Big filter cap</strong> &mdash; smooths that pulsing DC into a steady ~160&nbsp;V. This is the fat cylinder that <strong>holds a dangerous charge</strong> even unplugged.</li>
+        <li><strong>MOSFET switcher</strong> &mdash; chops the 160&nbsp;V on and off tens of thousands of times a second. This is the "switch" in switch-mode. Runs hot, fails often.</li>
+        <li><strong>Transformer</strong> &mdash; steps that chopped voltage down and <strong>isolates</strong> the dangerous mains side from the safe low-voltage side.</li>
+        <li><strong>Secondary rectifier + caps</strong> &mdash; convert the transformer's output back to clean, low DC (5&nbsp;V standby, 12&nbsp;V, 24&nbsp;V for the panel, etc.).</li>
+        <li><strong>Standby rail</strong> &mdash; a small supply (often 5&nbsp;V) that's always alive so the TV can hear the remote. If standby is dead, the TV shows <em>zero</em> signs of life.</li>
+      </ul>
+      <div class="callout tip"><b>The mental hook:</b> a TV that's totally dead usually has a problem on the <em>primary</em> (mains) side &mdash; fuse, bridge, or standby. A TV whose standby light is on but won't fully start usually has a problem on the <em>secondary</em> side &mdash; a main rail cap or regulator.</div>
+    </div>
+  </section>
+
+  <!-- ================= TROUBLESHOOTING LAB ================= -->
+  <section class="panel" id="lab">
+    <h2 class="section">Troubleshooting Lab <span class="scorepill">Solved: <span id="labScore">0</span></span></h2>
+    <p class="lead">A dead board is on the bench. Read the symptom, probe the test points with your virtual meter, and diagnose the fault &mdash; exactly the workflow you'd use on a real TV. Each case is randomized.</p>
+
+    <div class="symptom-box">
+      <div class="tag">Customer complaint / symptom</div>
+      <p id="symptomText">Loading a case&hellip;</p>
+    </div>
+
+    <div class="lab-top">
+      <div>
+        <div class="card" style="margin-bottom:0.8rem;">
+          <div class="board-wrap">
+            <svg id="labSvg" viewBox="0 0 560 300" role="img" aria-label="Test board with test points">
+              <rect x="0" y="0" width="560" height="300" rx="10" fill="var(--board)"/>
+              <g stroke="#3f7a48" stroke-width="3" fill="none" opacity="0.55">
+                <path d="M40,80 H150 V150 H260 V90 H370 V150 H480"/>
+                <path d="M150,150 V230 H420"/>
+              </g>
+              <!-- stage boxes -->
+              <g font-family="Barlow Condensed" font-size="11" text-anchor="middle" fill="#cfe6d3">
+                <rect x="20" y="60" width="42" height="26" rx="5" fill="#d9c27a"/><text x="41" y="102">FUSE</text>
+                <rect x="120" y="55" width="40" height="40" rx="5" fill="#1c1c1c"/><text x="140" y="112">BRIDGE</text>
+                <ellipse cx="245" cy="80" rx="22" ry="26" fill="#1a2f6b"/><text x="245" y="122">MAIN CAP</text>
+                <rect x="345" y="58" width="34" height="36" rx="4" fill="#2b2b2b"/><text x="362" y="112">MOSFET</text>
+                <rect x="440" y="55" width="44" height="44" rx="5" fill="#3a2d16"/><text x="462" y="115">XFRMR</text>
+                <rect x="150" y="210" width="52" height="34" rx="4" fill="#111"/><text x="176" y="262">STBY REG</text>
+                <ellipse cx="330" cy="228" rx="16" ry="20" fill="#1a2f6b"/><text x="330" y="262">12V CAP</text>
+              </g>
+              <!-- TEST POINTS -->
+              <g id="tpGroup"></g>
+            </svg>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Your diagnosis</h3>
+          <p style="font-size:0.9rem; color:var(--muted); margin-bottom:0.2rem;">Once you've probed enough to be confident, commit to a call:</p>
+          <div class="diag-options" id="diagOptions"></div>
+          <div class="verdict" id="verdict"></div>
+          <div style="margin-top:0.9rem;">
+            <button class="btn accent" id="newCaseBtn" style="display:none;">&#8635; Next case</button>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="meter">
+          <div class="screen">
+            <div class="reading" id="labReading">&mdash;</div>
+            <div class="mode-lbl" id="labUnit">select mode</div>
+          </div>
+          <div class="dial">
+            <button data-labmode="dcv" class="sel">V&#8250; DC VOLTS</button>
+            <button data-labmode="cont">&#8226;))) CONT</button>
+            <button data-labmode="ohm">&Omega; OHMS</button>
+            <button data-labmode="diode">&#9662;| DIODE</button>
+          </div>
+        </div>
+        <p class="flow-note" style="text-align:center; margin:0.5rem 0;">Pick a mode, then click a test point &#9312;&ndash;&#9319; on the board.</p>
+        <div class="log" id="labLog"><span class="muted">&mdash; probe log &mdash;</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= SAFETY ================= -->
+  <section class="panel" id="safety">
+    <h2 class="section">Safety First &mdash; Read This Before You Open Anything</h2>
+    <p class="lead">This isn't boilerplate. Power boards run on mains voltage and store lethal charge. Respect it and you'll be fine for a lifetime of tinkering.</p>
+
+    <div class="card">
+      <div class="callout danger"><b>Mains voltage can kill.</b> The primary side of a TV power board carries ~120&nbsp;V (or 240&nbsp;V) AC and ~160&nbsp;V DC. Never probe a live board with wet hands, on a metal bench, or while distracted. Keep one hand behind your back when probing live so current can't cross your chest.</div>
+
+      <div class="callout danger"><b>Big capacitors bite even when unplugged.</b> That fat filter cap can hold 160&nbsp;V+ for <em>minutes to hours</em> after you pull the plug. Before touching the primary side, <strong>discharge it</strong>: with the board unplugged, bridge the cap's two legs through a resistor (a ~2W, 1&ndash;10k&Omega; resistor on insulated leads, or a purpose-made discharge tool). Then confirm it reads near 0&nbsp;V on your meter before proceeding. Never just short it with a screwdriver &mdash; that's a spark, pitted metal, and a damaged board.</div>
+
+      <div class="callout tip"><b>The safe habits that make it routine:</b>
+        <ul style="margin:0.5rem 0 0 1.1rem;">
+          <li>Unplug first. Do visual inspection and continuity/resistance tests with <em>no power</em> whenever you can.</li>
+          <li>Only apply power for the voltage tests that genuinely need it &mdash; and know where your probes are before you flip it on.</li>
+          <li>Work on a non-conductive surface, good light, nothing to knock over.</li>
+          <li>Discharge the big cap and verify 0&nbsp;V before your fingers go near the primary side.</li>
+          <li>When in doubt about a mains-side repair, a bench isolation transformer is cheap insurance.</li>
+        </ul>
+      </div>
+      <p style="margin-top:0.6rem;">Most of what you'll actually do &mdash; spotting bulging caps, checking the fuse, testing the bridge with the diode function &mdash; happens with the board <strong>unplugged and discharged.</strong> The dangerous live-voltage tests are a small, deliberate part of the job.</p>
+    </div>
+  </section>
+
+  <!-- ================= QUIZ ================= -->
+  <section class="panel" id="quiz">
+    <h2 class="section">Knowledge Check <span class="scorepill">Score: <span id="quizScore">0</span>/<span id="quizTotal">0</span></span></h2>
+    <p class="lead">No pressure &mdash; this just tells you what's stuck and what to revisit. Explanations pop up after each answer.</p>
+    <div class="card" id="quizHost"></div>
+  </section>
+
+  <p class="footer-note">
+    Electronics Troubleshooting Trainer &mdash; a hands-on starter module.<br>
+    Built to grow: tell me what to add next (soldering, more fault cases, oscilloscope basics, specific TV symptoms&hellip;).
+  </p>
+</div>
+
+<script>
+/* ---------------- TAB NAV ---------------- */
+const tabs = document.querySelectorAll('.tab');
+const panels = document.querySelectorAll('.panel');
+tabs.forEach(t => t.addEventListener('click', () => {
+  tabs.forEach(x => x.classList.remove('active'));
+  panels.forEach(p => p.classList.remove('active'));
+  t.classList.add('active');
+  document.getElementById(t.dataset.panel).classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}));
+
+/* ---------------- OHM'S LAW ---------------- */
+const vSlide = document.getElementById('vSlide');
+const rSlide = document.getElementById('rSlide');
+function updateOhm() {
+  const V = +vSlide.value, R = +rSlide.value;
+  const I = V / R;
+  const P = V * I;
+  document.getElementById('vVal').textContent = V.toFixed(1) + ' V';
+  document.getElementById('rVal').textContent = R + ' Ω';
+  document.getElementById('iVal').textContent = I >= 1 ? I.toFixed(2) + ' A' : (I*1000).toFixed(0) + ' mA';
+  document.getElementById('pVal').textContent = 'Power: ' + (P >= 1 ? P.toFixed(1) + ' W' : (P*1000).toFixed(0) + ' mW');
+  const note = document.getElementById('ohmNote');
+  if (I > 5) note.innerHTML = '<b>Whoa — that’s a lot of current.</b> Low resistance with high voltage means big flow. In a real circuit this is where fuses blow and things get hot. A dead short (R near 0) is exactly this.';
+  else if (I < 0.02) note.innerHTML = '<b>Barely any flow.</b> High resistance chokes the current down to a trickle. A near-open connection (corroded joint, cracked trace) behaves like this — the load gets almost nothing.';
+  else note.innerHTML = '<b>Reading it:</b> raise the voltage and current rises; raise the resistance and current falls. That trade-off is what you check every time you ask “does this reading make sense?”';
+}
+vSlide.addEventListener('input', updateOhm);
+rSlide.addEventListener('input', updateOhm);
+updateOhm();
+
+/* ---------------- COMPONENTS ---------------- */
+const COMPONENTS = {
+  fuse: { name: 'Fuse', role: 'A deliberately weak link that melts and breaks the circuit if too much current flows, protecting everything downstream. On a power board it’s the first thing after the AC input.', fail: 'Blows open. Check with continuity — good fuse beeps, blown fuse is silent. But a blown fuse is a clue: something downstream probably shorted and caused it.' },
+  bridge: { name: 'Bridge Rectifier', role: 'Four diodes in one package that convert AC (which reverses direction) into pulsing DC (one direction only). The first stage of turning wall power into something usable.', fail: 'Can go short (blows the fuse instantly) or open (no DC output). Test each of the four internal diodes with the meter’s diode setting.' },
+  filtercap: { name: 'Main Filter Capacitor', role: 'A large reservoir that smooths the pulsing DC from the bridge into a steady ~160V. Think of it as a surge tank keeping pressure constant.', fail: 'Bulges, leaks, or dries out (loses capacitance). Symptoms: hum, low/rippled voltage, intermittent operation. ⚠ Holds a lethal charge — discharge before touching!' },
+  mosfet: { name: 'Power MOSFET (Switcher)', role: 'An electronic switch that chops the 160V on and off tens of thousands of times per second — the heart of a switch-mode supply. Runs hot, works hard.', fail: 'Often fails shorted, which blows the fuse. A very common failure. Test drain-to-source with the meter; a dead short across it points straight here.' },
+  transformer: { name: 'Transformer', role: 'Steps the chopped high voltage down to safe low voltages AND isolates the dangerous mains side from the side you touch. Safety-critical.', fail: 'Rarely fails outright, but can have shorted windings or bad solder joints on its pins. Usually you suspect it only after ruling out everything around it.' },
+  opto: { name: 'Optocoupler', role: 'Sends a feedback signal across the isolation barrier using a tiny LED and light sensor — tells the primary-side controller how the output voltage is doing, keeping it regulated.', fail: 'Can fail and cause the supply to run away (voltage too high) or shut down. A subtle one, but a classic cause of “clicks on then off” symptoms.' },
+  resistor: { name: 'Resistor', role: 'Limits current or sets a voltage level. The most common part on any board. Values read from color bands or printed numbers.', fail: 'Usually fails open (burns up) if overloaded — look for scorched or cracked bodies. Measure resistance with power off; way-off value = suspect.' },
+  diode: { name: 'Diode', role: 'A one-way valve for current — lets it flow one direction, blocks the other. Used for rectifying, steering, and protection all over a board.', fail: 'Fails open (blocks both ways) or shorted (conducts both ways). The meter’s diode setting shows ~0.5V one way, open (OL) the other. Both-ways-conduct or both-ways-open = bad.' },
+  smallcap: { name: 'Secondary Filter Caps', role: 'Smaller versions of the big cap, on the low-voltage output rails (5V, 12V, etc.). Smooth the final DC that runs the TV’s boards.', fail: 'THE most common failure in consumer electronics — they bulge or leak with age and heat. A domed top instead of flat = replace it. Cheap fix, huge hit rate.' },
+  ic: { name: 'Control IC', role: 'The brain of the power supply — drives the MOSFET, reads feedback, decides timing. Everything else dances to its tune.', fail: 'Fails less often than the big power parts, but bad solder on its pins or loss of its own supply voltage can kill the whole board. Check it has power and a good ground first.' }
+};
+document.querySelectorAll('#compSvg .hot').forEach(g => {
+  g.addEventListener('click', () => {
+    const c = COMPONENTS[g.dataset.comp];
+    document.getElementById('compInfo').innerHTML =
+      '<h4>' + c.name + '</h4><p class="role">' + c.role + '</p><p class="fail"><b>How it fails:</b> ' + c.fail + '</p>';
+  });
+});
+
+/* ---------------- MULTIMETER TEACH ---------------- */
+const DMM = {
+  dcv:   { title: 'DC Voltage — the workhorse', reading: '12.0', unit: 'V DC',
+    body: '<p><strong>What it does:</strong> measures the pressure between your red probe and ground (black probe). This is how you follow power through a board — “should be 12&nbsp;V here... is it?”</p><p><strong>How to use it:</strong> black probe on a ground point, red probe on the test point. Power is ON for this test — be careful.</p><div class="callout tip"><b>Golden rule:</b> voltage present where it should be = that stage is probably fine. Voltage missing = your fault is here or just upstream. Walk the rails until the voltage disappears.</div>' },
+  cont:  { title: 'Continuity — the beeper', reading: 'BEEP', unit: '·))) CONT',
+    body: '<p><strong>What it does:</strong> beeps if two points are electrically connected (near-zero resistance). Power OFF for this test.</p><p><strong>How to use it:</strong> the fastest check there is. Is the fuse good? Is that wire broken? Is this solder joint actually connected? Beep = connected, silence = broken.</p><div class="callout tip"><b>Use it for:</b> fuses, switches, connectors, traces, and hunting cracked solder joints — all with the board unplugged and safe.</div>' },
+  ohm:   { title: 'Resistance (Ohms) — the measurer', reading: '100', unit: 'Ω OHMS',
+    body: '<p><strong>What it does:</strong> measures exact resistance in ohms. Power OFF, and ideally the part lifted from circuit for an accurate read.</p><p><strong>How to use it:</strong> check a resistor is still its rated value; sniff out a dead short (reads near 0&nbsp;Ω where it shouldn’t) or an open (reads OL / infinite where it should conduct).</p><div class="callout"><b>OL on the screen</b> means “over limit” — infinite resistance, i.e. an open circuit. That’s normal for some tests, a red flag for others.</div>' },
+  diode: { title: 'Diode Test — the valve checker', reading: '0.5', unit: '▼| DIODE',
+    body: '<p><strong>What it does:</strong> pushes a tiny current through and shows the voltage drop, telling you if a diode (or a diode junction inside a bridge/MOSFET) is healthy. Power OFF.</p><p><strong>How to use it:</strong> a good silicon diode reads ~0.4–0.7&nbsp;V one way and OL (open) the other. Reads 0 both ways = shorted. Reads OL both ways = open. Both are dead.</p><div class="callout tip"><b>This is how you test a bridge rectifier</b> without removing it — check all four junctions for that one-way behavior.</div>' }
+};
+document.querySelectorAll('#meter .dial button').forEach(b => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('#meter .dial button').forEach(x => x.classList.remove('sel'));
+    b.classList.add('sel');
+    const m = DMM[b.dataset.mode];
+    document.getElementById('dmmTitle').textContent = m.title;
+    document.getElementById('dmmBody').innerHTML = m.body;
+    document.getElementById('dmmReading').textContent = m.reading;
+    document.getElementById('dmmUnit').textContent = m.unit;
+  });
+});
+
+/* ---------------- BOARD FLOW ANIMATION ---------------- */
+const flowPulse = document.getElementById('flowPulse');
+let flowTimer = null;
+const flowStages = [
+  '120V AC comes in from the wall…',
+  'through the fuse (the guardian)…',
+  'the bridge rectifier flips it all one direction…',
+  'the big cap smooths it to a steady 160V DC…',
+  'the MOSFET chops it on/off thousands of times a second…',
+  'the transformer steps it down and isolates it safely…',
+  'output caps clean it up — and out come the DC rails that run your TV!'
+];
+document.getElementById('animBtn').addEventListener('click', () => {
+  if (flowTimer) return;
+  flowPulse.style.opacity = '1';
+  let offset = 730, stage = 0;
+  const cap = document.getElementById('flowCaption');
+  flowTimer = setInterval(() => {
+    offset -= 8;
+    flowPulse.setAttribute('stroke-dashoffset', offset);
+    const prog = (730 - offset) / 730;
+    const s = Math.min(flowStages.length - 1, Math.floor(prog * flowStages.length));
+    if (s !== stage) { stage = s; cap.textContent = flowStages[s]; }
+    if (offset <= 0) { clearInterval(flowTimer); flowTimer = null; cap.textContent = flowStages[flowStages.length-1]; }
+  }, 30);
+});
+document.getElementById('animReset').addEventListener('click', () => {
+  if (flowTimer) { clearInterval(flowTimer); flowTimer = null; }
+  flowPulse.style.opacity = '0';
+  flowPulse.setAttribute('stroke-dashoffset', '0');
+  document.getElementById('flowCaption').textContent = 'Hit "Animate" to watch power travel from the wall to the DC rails that run the TV.';
+});
+
+/* ---------------- TROUBLESHOOTING LAB ---------------- */
+// Test points: id, x, y, label number, stage
+const TEST_POINTS = [
+  { id:'fuse',   x:41,  y:73,  n:'1', name:'Fuse' },
+  { id:'bridge', x:140, y:75,  n:'2', name:'Bridge rectifier output' },
+  { id:'maincap',x:245, y:80,  n:'3', name:'Main filter cap (160V rail)' },
+  { id:'mosfet', x:362, y:76,  n:'4', name:'MOSFET drain' },
+  { id:'stby',   x:176, y:227, n:'5', name:'5V standby rail' },
+  { id:'rail12', x:330, y:228, n:'6', name:'12V main rail' }
+];
+
+// Each fault defines readings per test point per meter mode, plus the correct diagnosis id.
+const FAULTS = [
+  {
+    id:'blownfuse',
+    symptom:'TV is completely dead — no standby light, no click, nothing. It worked yesterday, then just quit.',
+    correct:'blownfuse',
+    tp:{
+      fuse:   { dcv:'0.0', cont:'---', ohm:'OL',  diode:'OL',  note:'no continuity!' },
+      bridge: { dcv:'0.0', cont:'---', ohm:'0.4', diode:'0.5', note:'dead — no voltage' },
+      maincap:{ dcv:'0.0', cont:'---', ohm:'high',diode:'--',  note:'no voltage on 160V rail' },
+      mosfet: { dcv:'0.0', cont:'---', ohm:'high',diode:'--',  note:'nothing here' },
+      stby:   { dcv:'0.0', cont:'---', ohm:'--',  diode:'--',  note:'standby dead' },
+      rail12: { dcv:'0.0', cont:'---', ohm:'--',  diode:'--',  note:'no 12V' }
+    }
+  },
+  {
+    id:'deadbridge',
+    symptom:'TV completely dead. You already checked the fuse — it’s good. Still nothing.',
+    correct:'deadbridge',
+    tp:{
+      fuse:   { dcv:'~AC', cont:'BEEP', ohm:'0.0', diode:'0.0', note:'fuse is good' },
+      bridge: { dcv:'0.0', cont:'---', ohm:'OL',  diode:'OL',  note:'open — no DC out either way!' },
+      maincap:{ dcv:'0.0', cont:'---', ohm:'high',diode:'--',  note:'160V rail is dead' },
+      mosfet: { dcv:'0.0', cont:'---', ohm:'high',diode:'--',  note:'nothing downstream' },
+      stby:   { dcv:'0.0', cont:'---', ohm:'--',  diode:'--',  note:'standby dead' },
+      rail12: { dcv:'0.0', cont:'---', ohm:'--',  diode:'--',  note:'no 12V' }
+    }
+  },
+  {
+    id:'shortmosfet',
+    symptom:'TV dead, and the fuse is blown. You replaced the fuse and it blew again instantly.',
+    correct:'shortmosfet',
+    tp:{
+      fuse:   { dcv:'0.0', cont:'---', ohm:'OL',  diode:'OL',  note:'blown again' },
+      bridge: { dcv:'0.0', cont:'BEEP',ohm:'0.0', diode:'0.0', note:'reads a dead short!' },
+      maincap:{ dcv:'0.0', cont:'BEEP',ohm:'0.1', diode:'0.0', note:'shorted to ground — 0Ω' },
+      mosfet: { dcv:'0.0', cont:'BEEP',ohm:'0.0', diode:'0.0', note:'drain-source SHORTED both ways' },
+      stby:   { dcv:'0.0', cont:'---', ohm:'--',  diode:'--',  note:'dead' },
+      rail12: { dcv:'0.0', cont:'---', ohm:'--',  diode:'--',  note:'dead' }
+    }
+  },
+  {
+    id:'badstandby',
+    symptom:'Totally dead — no response to the remote at all. But you measure a healthy 160V on the big cap.',
+    correct:'badstandby',
+    tp:{
+      fuse:   { dcv:'~AC', cont:'BEEP', ohm:'0.0', diode:'0.0', note:'fuse good' },
+      bridge: { dcv:'160', cont:'---', ohm:'0.4', diode:'0.5', note:'good' },
+      maincap:{ dcv:'160', cont:'---', ohm:'high',diode:'--',  note:'160V present — primary side is fine!' },
+      mosfet: { dcv:'160', cont:'---', ohm:'high',diode:'--',  note:'has its supply' },
+      stby:   { dcv:'0.0', cont:'---', ohm:'high',diode:'--',  note:'5V standby is DEAD' },
+      rail12: { dcv:'0.0', cont:'---', ohm:'--',  diode:'--',  note:'no 12V (never started)' }
+    }
+  },
+  {
+    id:'badrailcap',
+    symptom:'Standby light is ON and it tries to turn on — but the picture flashes and it restarts over and over.',
+    correct:'badrailcap',
+    tp:{
+      fuse:   { dcv:'~AC', cont:'BEEP', ohm:'0.0', diode:'0.0', note:'fuse good' },
+      bridge: { dcv:'160', cont:'---', ohm:'0.4', diode:'0.5', note:'good' },
+      maincap:{ dcv:'160', cont:'---', ohm:'high',diode:'--',  note:'160V solid' },
+      mosfet: { dcv:'160', cont:'---', ohm:'high',diode:'--',  note:'switching fine' },
+      stby:   { dcv:'5.0', cont:'---', ohm:'high',diode:'--',  note:'standby is healthy 5V' },
+      rail12: { dcv:'7.8', cont:'---', ohm:'low', diode:'--',  note:'should be 12V — reads low & unstable!' }
+    }
+  }
+];
+
+let currentFault = null;
+let labSolved = 0;
+let probedSet = new Set();
+let labMode = 'dcv';
+
+const DIAGNOSES = [
+  { id:'blownfuse',   text:'Blown fuse — replace it (and check downstream for the cause)' },
+  { id:'deadbridge',  text:'Open bridge rectifier — no DC output, fuse intact' },
+  { id:'shortmosfet', text:'Shorted MOSFET — dead short blowing the fuse repeatedly' },
+  { id:'badstandby',  text:'Dead standby supply — 160V present but no 5V standby' },
+  { id:'badrailcap',  text:'Failed 12V rail capacitor — low, unstable main rail causing reboot loop' }
+];
+
+const VERDICT_DETAIL = {
+  blownfuse:  'The fuse showed no continuity (OL) while everything downstream was dead. With nothing else reading shorted, the fuse itself was the break. Always eyeball downstream for a short before assuming a fuse “just blew,” but here the board was clean.',
+  deadbridge: 'The fuse was good, yet there was no 160V on the main cap and the bridge read open (OL) both ways on the diode test. An open bridge passes no DC — classic dead-board-with-good-fuse.',
+  shortmosfet:'The fuse blew instantly on replacement, and the MOSFET drain-source read a dead short (0Ω, beeps both ways). That short pulls massive current the moment you power up — so the fuse sacrifices itself again. Replace the MOSFET, THEN the fuse.',
+  badstandby: 'A healthy 160V on the big cap proves the whole primary (mains) side is fine — fuse, bridge, cap all good. Yet the 5V standby rail was dead, so the set can’t even hear the remote. The fault is in the standby/secondary section.',
+  badrailcap: 'Standby was a healthy 5V and the primary side was solid, but the 12V rail sagged to ~8V and was unstable — the signature of a tired filter cap on that rail. It can’t hold the rail up under load, so the TV browns out and reboots. Look for a bulging cap.'
+};
+
+function renderTestPoints() {
+  const g = document.getElementById('tpGroup');
+  g.innerHTML = '';
+  TEST_POINTS.forEach(tp => {
+    const el = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    el.setAttribute('class', 'tp-dot');
+    el.dataset.tp = tp.id;
+    el.innerHTML =
+      '<circle class="tp-hit" cx="'+tp.x+'" cy="'+tp.y+'" r="11" fill="#c0392b" stroke="#fff" stroke-width="2"/>' +
+      '<text x="'+tp.x+'" y="'+(tp.y+4)+'" fill="#fff" font-size="12" font-family="Barlow Condensed" text-anchor="middle" font-weight="700">'+tp.n+'</text>';
+    el.addEventListener('click', () => probe(tp));
+    g.appendChild(el);
+  });
+}
+
+function probe(tp) {
+  if (!currentFault) return;
+  const r = currentFault.tp[tp.id][labMode];
+  const unitMap = { dcv:'V DC', cont:'·))) CONT', ohm:'Ω OHMS', diode:'▼| DIODE' };
+  document.getElementById('labReading').textContent = r;
+  document.getElementById('labUnit').textContent = unitMap[labMode];
+  probedSet.add(tp.id);
+  document.querySelector('#tpGroup [data-tp="'+tp.id+'"]').classList.add('probed');
+
+  const note = currentFault.tp[tp.id].note;
+  const cls = (r === '0.0' || r === '---' || r === 'OL') ? 'warn' : 'ok';
+  logLine('<span class="t">TP'+tp.n+' '+tp.name+'</span> → <b>'+r+'</b> <span class="'+cls+'">('+note+')</span>');
+}
+
+function logLine(html) {
+  const log = document.getElementById('labLog');
+  if (log.querySelector('.muted')) log.innerHTML = '';
+  const div = document.createElement('div');
+  div.innerHTML = html;
+  log.appendChild(div);
+  log.scrollTop = log.scrollHeight;
+}
+
+function newCase() {
+  // pick a random fault different from current
+  let pick;
+  do { pick = FAULTS[Math.floor(Math.random() * FAULTS.length)]; }
+  while (FAULTS.length > 1 && currentFault && pick.id === currentFault.id);
+  currentFault = pick;
+  probedSet = new Set();
+  document.getElementById('symptomText').textContent = pick.symptom;
+  document.getElementById('labReading').textContent = '—';
+  document.getElementById('labUnit').textContent = 'select mode';
+  document.getElementById('labLog').innerHTML = '<span class="muted">&mdash; probe log &mdash;</span>';
+  document.getElementById('verdict').className = 'verdict';
+  document.getElementById('verdict').innerHTML = '';
+  document.getElementById('newCaseBtn').style.display = 'none';
+  renderTestPoints();
+  renderDiagOptions();
+}
+
+function renderDiagOptions() {
+  const host = document.getElementById('diagOptions');
+  host.innerHTML = '';
+  // shuffle a copy
+  const opts = DIAGNOSES.slice().sort(() => Math.random() - 0.5);
+  opts.forEach(d => {
+    const b = document.createElement('button');
+    b.className = 'diag-opt';
+    b.textContent = d.text;
+    b.addEventListener('click', () => commitDiagnosis(d.id, host));
+    host.appendChild(b);
+  });
+}
+
+function commitDiagnosis(chosenId, host) {
+  const correct = currentFault.correct;
+  const buttons = host.querySelectorAll('.diag-opt');
+  buttons.forEach(b => {
+    b.disabled = true;
+    const dText = DIAGNOSES.find(d => d.text === b.textContent);
+    if (dText && dText.id === correct) b.classList.add('correct');
+    if (dText && dText.id === chosenId && chosenId !== correct) b.classList.add('wrong');
+  });
+  const v = document.getElementById('verdict');
+  const probedCount = probedSet.size;
+  if (chosenId === correct) {
+    labSolved++;
+    document.getElementById('labScore').textContent = labSolved;
+    v.className = 'verdict good show';
+    v.innerHTML = '<h4>✔ Correct diagnosis</h4><p>' + VERDICT_DETAIL[correct] + '</p>' +
+      '<p style="margin-top:0.5rem;font-size:0.85rem;color:var(--muted);">You probed ' + probedCount + ' test point' + (probedCount===1?'':'s') + ' before calling it.</p>';
+  } else {
+    v.className = 'verdict bad show';
+    v.innerHTML = '<h4>✗ Not quite</h4><p>The correct call was: <b>' +
+      DIAGNOSES.find(d => d.id === correct).text + '</b></p><p style="margin-top:0.4rem;">' +
+      VERDICT_DETAIL[correct] + '</p><p style="margin-top:0.5rem;font-size:0.88rem;color:var(--muted);">Tip: re-read what the readings were telling you — the pattern of which rails are alive vs dead points straight at the stage that failed.</p>';
+  }
+  document.getElementById('newCaseBtn').style.display = 'inline-block';
+}
+
+document.querySelectorAll('#lab .dial button').forEach(b => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('#lab .dial button').forEach(x => x.classList.remove('sel'));
+    b.classList.add('sel');
+    labMode = b.dataset.labmode;
+    const unitMap = { dcv:'V DC', cont:'·))) CONT', ohm:'Ω OHMS', diode:'▼| DIODE' };
+    document.getElementById('labUnit').textContent = unitMap[labMode];
+    document.getElementById('labReading').textContent = '—';
+  });
+});
+document.getElementById('newCaseBtn').addEventListener('click', newCase);
+newCase();
+
+/* ---------------- QUIZ ---------------- */
+const QUIZ = [
+  { q:'A TV is completely dead — no standby light at all. Statistically, which side is the fault most likely on?',
+    opts:['The primary / mains side (fuse, bridge, standby supply)','The screen panel itself','The remote control','The HDMI board'],
+    a:0, e:'No standby light means the small always-on supply never comes up — that lives on the primary side. Start there.' },
+  { q:'Your continuity beeper stays SILENT when you test a fuse. What does that tell you?',
+    opts:['The fuse is good','The fuse is blown (open)','The fuse is shorted','Nothing — continuity doesn’t test fuses'],
+    a:1, e:'A good fuse is a solid wire and beeps. Silence = the link is broken = blown. Simple and fast.' },
+  { q:'You replace a blown fuse and it blows again instantly. What’s the smart next move?',
+    opts:['Fit a bigger fuse','Find the short downstream before powering up again','Replace the fuse twice more to be sure','Ignore it — fuses are unreliable'],
+    a:1, e:'A fuse blowing instantly means something downstream is shorted (often the MOSFET or bridge). Fix the short first — never up-size a fuse to “solve” it.' },
+  { q:'The big filter capacitor can be dangerous even after unplugging because it…',
+    opts:['Gets physically hot','Stores a high-voltage charge for a long time','Leaks toxic gas','Emits radiation'],
+    a:1, e:'It can hold 160V+ for minutes to hours. Always discharge it through a resistor and confirm ~0V before touching the primary side.' },
+  { q:'On the diode setting, a healthy diode should read…',
+    opts:['~0.5V one way, OL (open) the other','0V both directions','OL both directions','12V both directions'],
+    a:0, e:'A one-way valve: it conducts (shows a ~0.5V drop) in one direction and blocks (OL) in the other. Same reading both ways = it’s failed.' },
+  { q:'Standby light is on but the TV keeps flashing on and rebooting. The 160V rail is solid. Where do you look?',
+    opts:['The AC cord','The primary-side bridge rectifier','The secondary low-voltage rails (e.g. a tired 12V cap)','The fuse'],
+    a:2, e:'A solid 160V proves the primary side is fine. A reboot loop with good standby points to a secondary rail that can’t hold up under load — classically a bulging output cap.' },
+  { q:'Which failure is the single most common in aging consumer electronics?',
+    opts:['Cracked circuit board','Bulging / dried-out electrolytic capacitors','Melted transformers','Corroded ICs'],
+    a:1, e:'Electrolytic caps dry out and bulge with heat and age. A domed top instead of flat is your #1 thing to look for — cheap to replace, huge hit rate.' },
+  { q:'Best-practice order of operations when you open a power board:',
+    opts:['Power on, then probe everything live','Visual + continuity/resistance checks unplugged first, live voltage tests only when needed','Only ever test live','Never use a meter'],
+    a:1, e:'Do everything you safely can with the board unplugged and discharged — look for burnt/bulging parts, check the fuse and bridge. Reserve live tests for the few readings that require power.' }
+];
+
+const quizHost = document.getElementById('quizHost');
+let quizScore = 0, quizAnswered = 0;
+document.getElementById('quizTotal').textContent = QUIZ.length;
+QUIZ.forEach((item, qi) => {
+  const block = document.createElement('div');
+  block.className = 'q-block';
+  block.innerHTML = '<div class="qtext"><span class="n">Q'+(qi+1)+'.</span>'+item.q+'</div>';
+  item.opts.forEach((opt, oi) => {
+    const b = document.createElement('button');
+    b.className = 'opt';
+    b.textContent = opt;
+    b.addEventListener('click', () => {
+      if (block.dataset.done) return;
+      block.dataset.done = '1';
+      quizAnswered++;
+      const btns = block.querySelectorAll('.opt');
+      btns.forEach((x, xi) => {
+        x.disabled = true;
+        if (xi === item.a) x.classList.add('correct');
+        if (xi === oi && oi !== item.a) x.classList.add('wrong');
+      });
+      if (oi === item.a) { quizScore++; document.getElementById('quizScore').textContent = quizScore; }
+      const ex = block.querySelector('.qexplain');
+      ex.classList.add('show');
+    });
+    block.appendChild(b);
+  });
+  const ex = document.createElement('div');
+  ex.className = 'qexplain';
+  ex.textContent = item.e;
+  block.appendChild(ex);
+  quizHost.appendChild(block);
+});
+</script>
+</body>
+</html>
