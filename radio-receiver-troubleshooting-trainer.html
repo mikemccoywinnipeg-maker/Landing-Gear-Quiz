@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Modern Radio Receiver Troubleshooting Trainer</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #0d1b2a;
+    --steel: #1e3a5f;
+    --sky: #2a6496;
+    --accent: #e8a838;
+    --rf: #38bda8;          /* teal signal accent */
+    --light: #f4f7fb;
+    --text: #1a2332;
+    --muted: #6b7c93;
+    --green: #1a8a4a;
+    --red: #c0392b;
+    --card: #ffffff;
+    --border: #d0dde8;
+    --board: #123040;
+    --board-hi: #1c4a5e;
+    --font-body: 'Barlow', sans-serif;
+    --font-display: 'Barlow Condensed', sans-serif;
+    --font-mono: 'Barlow Condensed', ui-monospace, monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--font-body);
+    background: var(--light);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  header {
+    background: linear-gradient(135deg, var(--navy) 0%, var(--steel) 100%);
+    color: #fff;
+    padding: 1.8rem 1.5rem 1.3rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    top: -50px; right: -30px;
+    width: 220px; height: 220px;
+    border-radius: 50%;
+    background: rgba(56,189,168,0.12);
+  }
+  header h1 {
+    font-family: var(--font-display);
+    font-size: 2.1rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    position: relative;
+  }
+  header h1 span { color: var(--rf); }
+  header p { margin-top: 0.35rem; font-size: 0.92rem; opacity: 0.82; position: relative; }
+
+  .tabs { background: var(--navy); display: flex; overflow-x: auto; scrollbar-width: none; }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab {
+    flex: 0 0 auto; padding: 0.75rem 1.0rem; color: #b9c6d6; background: none; border: none;
+    border-bottom: 3px solid transparent; font-family: var(--font-display); font-weight: 600;
+    font-size: 0.88rem; letter-spacing: 0.5px; text-transform: uppercase; cursor: pointer;
+    white-space: nowrap; transition: color 0.15s, border-color 0.15s, background 0.15s;
+  }
+  .tab:hover { color: #fff; background: rgba(255,255,255,0.05); }
+  .tab.active { color: var(--rf); border-bottom-color: var(--rf); }
+  .tab .num {
+    display: inline-block; width: 20px; height: 20px; line-height: 20px; border-radius: 50%;
+    background: rgba(255,255,255,0.12); font-size: 0.75rem; text-align: center; margin-right: 0.4rem;
+  }
+  .tab.active .num { background: var(--rf); color: var(--navy); }
+
+  .container { max-width: 940px; margin: 0 auto; padding: 1.5rem 1rem 4rem; }
+
+  .panel { display: none; }
+  .panel.active { display: block; animation: fade 0.25s ease; }
+  @keyframes fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+  h2.section {
+    font-family: var(--font-display); font-size: 1.6rem; font-weight: 700; color: var(--steel);
+    text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.3rem;
+  }
+  .lead { color: var(--muted); font-size: 0.97rem; margin-bottom: 1.3rem; line-height: 1.5; }
+
+  .card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+    padding: 1.4rem 1.5rem; box-shadow: 0 2px 12px rgba(13,27,42,0.06); margin-bottom: 1.1rem;
+  }
+  .card h3 {
+    font-family: var(--font-display); font-size: 1.15rem; color: var(--steel);
+    text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.6rem;
+  }
+  .card p { font-size: 0.96rem; line-height: 1.6; margin-bottom: 0.7rem; }
+  .card p:last-child { margin-bottom: 0; }
+  .card ul { margin: 0.4rem 0 0.7rem 1.1rem; }
+  .card li { font-size: 0.94rem; line-height: 1.55; margin-bottom: 0.35rem; }
+  strong { color: var(--steel); }
+  .k { color: var(--sky); font-weight: 600; }
+  .rfk { color: #1a8f7d; font-weight: 600; }
+
+  .callout {
+    border-left: 4px solid var(--accent); background: #fdf7ea; padding: 0.8rem 1rem;
+    border-radius: 0 6px 6px 0; font-size: 0.92rem; line-height: 1.55; margin: 0.7rem 0;
+  }
+  .callout.danger { border-left-color: var(--red); background: #fdeeec; }
+  .callout.tip { border-left-color: var(--green); background: #ecf7f0; }
+  .callout.rf { border-left-color: var(--rf); background: #e9f8f5; }
+  .callout b { color: var(--steel); }
+
+  /* Superhet playground */
+  .ohm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; align-items: center; }
+  @media (max-width: 640px) { .ohm-grid { grid-template-columns: 1fr; } }
+  .slider-row { margin-bottom: 1rem; }
+  .slider-row label { display: flex; justify-content: space-between; font-weight: 600; font-size: 0.9rem; color: var(--steel); margin-bottom: 0.3rem; }
+  .slider-row label .val { color: var(--sky); font-family: var(--font-display); font-size: 1.05rem; }
+  input[type=range] { width: 100%; accent-color: var(--rf); }
+  .freqbars { margin-top: 0.4rem; }
+  .fbar { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.5rem; }
+  .fbar .name { width: 74px; font-size: 0.8rem; font-weight: 600; color: var(--muted); text-transform: uppercase; }
+  .fbar .track { flex: 1; height: 14px; background: #e4ecf3; border-radius: 7px; position: relative; overflow: hidden; }
+  .fbar .fill { position: absolute; top: 0; left: 0; height: 100%; border-radius: 7px; transition: width 0.15s; }
+  .fbar .fill.station { background: var(--sky); }
+  .fbar .fill.lo { background: var(--accent); }
+  .fbar .fill.if { background: var(--rf); }
+  .fbar .num { width: 78px; text-align: right; font-family: var(--font-display); font-size: 1rem; color: var(--steel); }
+  .result-box { background: var(--navy); color: #fff; border-radius: 8px; padding: 1.1rem; text-align: center; }
+  .result-box .big { font-family: var(--font-display); font-size: 2.2rem; font-weight: 700; color: var(--rf); line-height: 1; }
+  .result-box .lbl { font-size: 0.78rem; opacity: 0.8; text-transform: uppercase; letter-spacing: 1px; margin-top: 0.3rem; }
+  .flow-note { font-size: 0.85rem; color: var(--muted); margin-top: 0.5rem; }
+
+  .board-wrap { text-align: center; }
+  svg { max-width: 100%; height: auto; }
+  .hot { cursor: pointer; }
+  .hot:hover .comp-body { stroke: var(--rf); stroke-width: 3; }
+  .comp-info {
+    background: var(--card); border: 1px solid var(--border); border-left: 4px solid var(--rf);
+    border-radius: 8px; padding: 1rem 1.2rem; margin-top: 1rem; min-height: 96px; text-align: left;
+  }
+  .comp-info h4 { font-family: var(--font-display); font-size: 1.1rem; color: var(--steel); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.3rem; }
+  .comp-info .role { font-size: 0.94rem; line-height: 1.55; margin-bottom: 0.5rem; }
+  .comp-info .fail { font-size: 0.88rem; color: var(--red); font-weight: 500; }
+  .comp-info .fail b { color: var(--red); }
+  .comp-info .placeholder { color: var(--muted); font-style: italic; }
+
+  /* Meter / probe */
+  .meter { background: #1f9c8a; border-radius: 14px; padding: 1rem; max-width: 270px; margin: 0 auto; box-shadow: 0 6px 18px rgba(0,0,0,0.18); border: 2px solid #17786a; }
+  .meter .screen { background: #cfe9df; border: 3px solid #16302a; border-radius: 6px; padding: 0.6rem 0.8rem; font-family: var(--font-mono); text-align: right; color: #10241d; }
+  .meter .reading { font-size: 1.8rem; font-weight: 700; line-height: 1.1; letter-spacing: 1px; min-height: 1.9rem; }
+  .meter .mode-lbl { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 1px; opacity: 0.75; }
+  .dial { margin: 0.9rem auto 0.4rem; display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.4rem; }
+  .dial button { background: #16302a; color: #7fe6d2; border: none; border-radius: 6px; padding: 0.45rem; font-family: var(--font-display); font-weight: 600; font-size: 0.8rem; letter-spacing: 0.5px; cursor: pointer; transition: background 0.15s; }
+  .dial button:hover { background: #22493f; }
+  .dial button.sel { background: var(--accent); color: #16302a; }
+
+  /* Lab */
+  .lab-top { display: grid; grid-template-columns: 1fr 288px; gap: 1.2rem; align-items: start; }
+  @media (max-width: 800px) { .lab-top { grid-template-columns: 1fr; } }
+  .tp-dot { cursor: pointer; }
+  .tp-dot circle.tp-hit { transition: fill 0.1s; }
+  .tp-dot:hover circle.tp-hit { fill: var(--accent); }
+  .tp-dot.probed circle.tp-hit { fill: var(--rf); }
+  .symptom-box { background: var(--navy); color: #fff; border-radius: 8px; padding: 0.9rem 1.1rem; margin-bottom: 1rem; }
+  .symptom-box .tag { font-size: 0.72rem; letter-spacing: 1px; text-transform: uppercase; color: var(--rf); font-weight: 700; }
+  .symptom-box p { font-size: 0.95rem; line-height: 1.5; margin-top: 0.25rem; }
+  .log { background: #08181a; color: #9fe6d5; border-radius: 8px; padding: 0.8rem 1rem; font-family: var(--font-mono); font-size: 0.9rem; line-height: 1.7; min-height: 130px; max-height: 220px; overflow-y: auto; margin-top: 0.8rem; }
+  .log .t { color: var(--accent); }
+  .log .warn { color: #ff9c8a; }
+  .log .ok { color: #7fdca0; }
+  .log .muted { color: #5f7f78; }
+
+  .btn { display: inline-block; background: var(--sky); color: #fff; border: none; border-radius: 7px; padding: 0.65rem 1.3rem; font-family: var(--font-display); font-weight: 600; font-size: 0.95rem; letter-spacing: 0.5px; text-transform: uppercase; cursor: pointer; transition: background 0.15s; margin: 0.3rem 0.3rem 0.3rem 0; }
+  .btn:hover { background: var(--steel); }
+  .btn.accent { background: var(--rf); color: var(--navy); }
+  .btn.accent:hover { background: #2aa08d; }
+  .btn.ghost { background: none; color: var(--sky); border: 2px solid var(--border); }
+  .btn.ghost:hover { background: var(--light); border-color: var(--sky); }
+
+  .diag-options { display: flex; flex-direction: column; gap: 0.55rem; margin-top: 0.8rem; }
+  .diag-opt { background: var(--light); border: 2px solid var(--border); border-radius: 8px; padding: 0.75rem 1rem; text-align: left; cursor: pointer; font-family: var(--font-body); font-size: 0.93rem; font-weight: 500; color: var(--text); transition: border-color 0.15s, background 0.15s; }
+  .diag-opt:hover:not(:disabled) { border-color: var(--sky); background: #e8f1fa; }
+  .diag-opt.correct { border-color: var(--green); background: #e8f8ee; }
+  .diag-opt.wrong { border-color: var(--red); background: #fdf0ee; }
+  .diag-opt:disabled { cursor: default; }
+
+  .verdict { margin-top: 1rem; padding: 1rem 1.2rem; border-radius: 8px; display: none; font-size: 0.95rem; line-height: 1.6; }
+  .verdict.show { display: block; }
+  .verdict.good { background: #e8f8ee; border: 1px solid var(--green); }
+  .verdict.bad { background: #fdf0ee; border: 1px solid var(--red); }
+  .verdict h4 { font-family: var(--font-display); font-size: 1.1rem; margin-bottom: 0.35rem; text-transform: uppercase; }
+  .verdict.good h4 { color: var(--green); }
+  .verdict.bad h4 { color: var(--red); }
+
+  .scorepill { display: inline-block; background: var(--navy); color: #fff; border-radius: 20px; padding: 0.3rem 0.9rem; font-size: 0.85rem; font-weight: 600; margin-left: 0.5rem; }
+  .scorepill span { color: var(--rf); }
+
+  table.ref { width: 100%; border-collapse: collapse; font-size: 0.86rem; margin-top: 0.4rem; }
+  table.ref th, table.ref td { border: 1px solid var(--border); padding: 0.4rem 0.55rem; text-align: left; }
+  table.ref th { background: var(--navy); color: #fff; font-family: var(--font-display); font-weight: 600; letter-spacing: 0.3px; }
+  table.ref td:first-child { font-weight: 600; color: var(--steel); }
+  .ref-wrap { overflow-x: auto; }
+
+  .q-block { margin-bottom: 1.3rem; }
+  .q-block .qtext { font-weight: 600; font-size: 1rem; margin-bottom: 0.6rem; line-height: 1.5; }
+  .q-block .qtext .n { color: var(--sky); font-family: var(--font-display); margin-right: 0.4rem; }
+  .opt { display: block; width: 100%; text-align: left; background: var(--light); border: 2px solid var(--border); border-radius: 8px; padding: 0.7rem 0.95rem; margin-bottom: 0.5rem; cursor: pointer; font-family: var(--font-body); font-size: 0.93rem; color: var(--text); transition: border-color 0.15s, background 0.15s; }
+  .opt:hover:not(:disabled) { border-color: var(--sky); background: #e8f1fa; }
+  .opt.correct { border-color: var(--green); background: #e8f8ee; }
+  .opt.wrong { border-color: var(--red); background: #fdf0ee; }
+  .opt:disabled { cursor: default; }
+  .qexplain { font-size: 0.88rem; color: var(--muted); margin-top: 0.3rem; line-height: 1.5; display: none; padding-left: 0.2rem; }
+  .qexplain.show { display: block; }
+
+  .path { display:flex; flex-wrap:wrap; gap:0.4rem; margin:0.8rem 0 0.3rem; }
+  .path .step { background: var(--light); border:1px solid var(--border); border-radius:20px; padding:0.25rem 0.7rem; font-size:0.8rem; font-weight:600; color:var(--steel); }
+  .path .arrow { color: var(--muted); align-self:center; }
+  .footer-note { text-align: center; color: var(--muted); font-size: 0.82rem; margin-top: 2rem; line-height: 1.6; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Radio Receiver <span>Troubleshooting</span> Trainer</h1>
+  <p>Modern superheterodyne receivers &mdash; the components, the signal chain, and how to hunt a fault by tracing the signal</p>
+</header>
+
+<nav class="tabs" id="tabs">
+  <button class="tab active" data-panel="how"><span class="num">1</span>How a Radio Works</button>
+  <button class="tab" data-panel="chain"><span class="num">2</span>The Signal Chain</button>
+  <button class="tab" data-panel="trace"><span class="num">3</span>Signal Tracing</button>
+  <button class="tab" data-panel="lab"><span class="num">4</span>Troubleshooting Lab</button>
+  <button class="tab" data-panel="advanced"><span class="num">5</span>Alignment &amp; Advanced</button>
+  <button class="tab" data-panel="safety"><span class="num">6</span>ESD &amp; Safety</button>
+  <button class="tab" data-panel="quiz"><span class="num">7</span>Quiz</button>
+</nav>
+
+<div class="container">
+
+  <!-- ============ HOW A RADIO WORKS ============ -->
+  <section class="panel active" id="how">
+    <h2 class="section">The Superheterodyne Trick</h2>
+    <p class="lead">Nearly every radio built in the last 90 years &mdash; your car stereo, a police scanner, a Bluetooth speaker's FM chip &mdash; uses one clever idea called the <em>superheterodyne</em>. Understand this one concept and the whole board makes sense.</p>
+
+    <div class="card">
+      <h3>The problem, and the trick</h3>
+      <p>A radio station might be at 98.5&nbsp;MHz. The next one is at 98.7. Building an amplifier and filter sharp enough to grab just one station <em>at those sky-high frequencies</em>, and re-tuning all of it every time you change stations, is really hard.</p>
+      <p>So instead the radio plays a trick: it mixes your station with a home-grown signal from its own <span class="rfk">local oscillator (LO)</span>, and the mixer spits out the <strong>difference</strong> between the two. That difference is always the same fixed frequency &mdash; the <span class="rfk">Intermediate Frequency (IF)</span>, 10.7&nbsp;MHz for FM. Now all the hard work (sharp filtering, big gain, demodulation) happens at <em>one fixed, comfortable frequency</em> no matter what station you tune.</p>
+      <div class="callout rf"><b>That's the whole secret:</b> tuning just changes the LO. The station you pick always gets converted down to the same 10.7&nbsp;MHz IF, so the rest of the radio never has to change. Everything after the mixer is built once, for one frequency.</div>
+    </div>
+
+    <div class="card">
+      <h3>Watch it happen &mdash; tune the dial</h3>
+      <p>Drag to tune across the FM band. Notice the LO moves to stay exactly 10.7&nbsp;MHz above your station, so the IF that comes out of the mixer never changes.</p>
+      <div class="ohm-grid">
+        <div>
+          <div class="slider-row">
+            <label>Tuned station <span class="val" id="stnVal">98.5 MHz</span></label>
+            <input type="range" id="stnSlide" min="88.1" max="107.9" step="0.2" value="98.5">
+          </div>
+          <div class="freqbars">
+            <div class="fbar"><span class="name">Station</span><div class="track"><div class="fill station" id="barStn"></div></div><span class="num" id="numStn">98.5</span></div>
+            <div class="fbar"><span class="name">LO</span><div class="track"><div class="fill lo" id="barLo"></div></div><span class="num" id="numLo">109.2</span></div>
+            <div class="fbar"><span class="name">IF out</span><div class="track"><div class="fill if" id="barIf" style="width:10%"></div></div><span class="num">10.7</span></div>
+          </div>
+          <p class="flow-note">LO = station + 10.7 MHz. Mixer output = LO &minus; station = <b>10.7 MHz, always.</b></p>
+        </div>
+        <div class="result-box">
+          <div class="big" id="ifVal">10.7 MHz</div>
+          <div class="lbl">IF &mdash; stays constant</div>
+          <div style="margin-top:0.7rem; font-size:0.83rem; opacity:0.85;" id="imgVal">Image trap freq: 119.9 MHz</div>
+        </div>
+      </div>
+      <div class="callout"><b>Why you care when troubleshooting:</b> if the LO stops running, the mixer produces <em>no IF at all</em> &mdash; and since everything downstream lives on the IF, the radio goes to full hiss with no stations, even though the antenna and front end are perfectly fine. A dead LO is one of the classic radio faults, and you'd never find it by measuring DC alone.</div>
+    </div>
+
+    <div class="card">
+      <h3>The full signal path (left &rarr; right)</h3>
+      <div class="path">
+        <span class="step">Antenna</span><span class="arrow">&rarr;</span>
+        <span class="step">RF amp (LNA)</span><span class="arrow">&rarr;</span>
+        <span class="step">Mixer</span><span class="arrow">&rarr;</span>
+        <span class="step">IF filter + amp</span><span class="arrow">&rarr;</span>
+        <span class="step">Demodulator</span><span class="arrow">&rarr;</span>
+        <span class="step">Stereo decoder</span><span class="arrow">&rarr;</span>
+        <span class="step">Audio amp</span><span class="arrow">&rarr;</span>
+        <span class="step">Speaker</span>
+      </div>
+      <p style="margin-top:0.5rem;">Off to the side sit the <span class="rfk">local oscillator / PLL synthesizer</span> (feeds the mixer) and the <span class="k">power regulators</span> and <span class="k">microcontroller</span> (run the show). Hit animate to watch the signal change form as it travels.</p>
+      <button class="btn accent" id="animBtn">&#9654; Animate the signal</button>
+      <button class="btn ghost" id="animReset">Reset</button>
+      <div class="board-wrap" style="margin-top:1rem;">
+        <svg id="flowSvg" viewBox="0 0 720 200" role="img" aria-label="Radio signal flow">
+          <rect x="0" y="0" width="720" height="200" rx="10" fill="var(--board)"/>
+          <path id="flowPath" d="M28,100 H694" stroke="#245b52" stroke-width="6" fill="none" stroke-linecap="round"/>
+          <path id="flowPulse" d="M28,100 H694" stroke="var(--rf)" stroke-width="6" fill="none" stroke-linecap="round" stroke-dasharray="14 700" stroke-dashoffset="0" opacity="0"/>
+          <g font-family="Barlow Condensed" font-size="11" text-anchor="middle">
+            <g><path d="M52,72 v-24 M44,54 l8,-6 8,6" stroke="#7fe6d2" stroke-width="2" fill="none"/><circle cx="52" cy="100" r="12" fill="#c0392b"/><text x="52" y="104" fill="#fff">ANT</text><text x="52" y="132" fill="#a9d8cd">RF in</text></g>
+            <g><rect x="120" y="86" width="40" height="28" rx="5" fill="#1c4a5e"/><text x="140" y="104" fill="#7fe6d2">LNA</text><text x="140" y="132" fill="#a9d8cd">amp RF</text></g>
+            <g><rect x="215" y="84" width="42" height="32" rx="5" fill="#3a2d16"/><text x="236" y="104" fill="#e8a838">MIX</text><text x="236" y="132" fill="#a9d8cd">&rarr; IF</text></g>
+            <g><rect x="320" y="86" width="40" height="28" rx="5" fill="#1c4a5e"/><text x="340" y="104" fill="#7fe6d2">IF</text><text x="340" y="132" fill="#a9d8cd">10.7M</text></g>
+            <g><rect x="420" y="86" width="42" height="28" rx="5" fill="#1c4a5e"/><text x="441" y="104" fill="#7fe6d2">DET</text><text x="441" y="132" fill="#a9d8cd">&rarr; audio</text></g>
+            <g><rect x="520" y="86" width="42" height="28" rx="5" fill="#1c4a5e"/><text x="541" y="104" fill="#7fe6d2">MPX</text><text x="541" y="132" fill="#a9d8cd">stereo</text></g>
+            <g><rect x="620" y="84" width="44" height="32" rx="5" fill="#2b2b2b"/><text x="642" y="104" fill="#e8a838">AF</text><text x="642" y="132" fill="#a9d8cd">speaker</text></g>
+            <g><rect x="205" y="150" width="62" height="24" rx="4" fill="#123a55"/><text x="236" y="166" fill="#8fb8d8">LOCAL OSC</text><path d="M236,140 v10" stroke="#e8a838" stroke-width="2"/></g>
+          </g>
+        </svg>
+      </div>
+      <p class="flow-note" id="flowCaption" style="text-align:center;">Hit "Animate" to watch a whisper from the antenna become sound at the speaker.</p>
+    </div>
+  </section>
+
+  <!-- ============ SIGNAL CHAIN COMPONENTS ============ -->
+  <section class="panel" id="chain">
+    <h2 class="section">The Building Blocks</h2>
+    <p class="lead">Click any stage to learn what it does and how it fails. On an RF board, many of these are now inside one or two tuner ICs &mdash; but the <em>stages</em> still exist, and you troubleshoot them the same way.</p>
+
+    <div class="card board-wrap">
+      <svg id="compSvg" viewBox="0 0 720 340" role="img" aria-label="Interactive radio board">
+        <rect x="0" y="0" width="720" height="340" rx="10" fill="var(--board)"/>
+        <rect x="0" y="0" width="720" height="340" rx="10" fill="none" stroke="var(--board-hi)" stroke-width="2"/>
+        <g stroke="#2f6b60" stroke-width="3" fill="none" opacity="0.6">
+          <path d="M60,70 H150 M200,70 H300 M350,70 H450 M500,70 H600"/>
+          <path d="M250,110 V150"/>
+          <path d="M120,210 H300 V250 H520"/>
+        </g>
+
+        <g class="hot" data-comp="antenna">
+          <path class="comp-body" d="M50,80 v-34 M40,50 l10,-8 10,8" stroke="#7fe6d2" stroke-width="3" fill="none"/>
+          <circle cx="50" cy="84" r="6" fill="#123a55"/>
+          <text x="50" y="108" fill="#a9d8cd" font-size="11" text-anchor="middle" font-family="Barlow Condensed">ANTENNA</text>
+        </g>
+        <g class="hot" data-comp="lna">
+          <rect class="comp-body" x="110" y="52" width="54" height="36" rx="5" fill="#1c4a5e" stroke="#0e2b36" stroke-width="2"/>
+          <text x="137" y="75" fill="#7fe6d2" font-size="13" text-anchor="middle" font-family="Barlow Condensed">LNA</text>
+          <text x="137" y="106" fill="#a9d8cd" font-size="11" text-anchor="middle" font-family="Barlow Condensed">RF AMP</text>
+        </g>
+        <g class="hot" data-comp="mixer">
+          <rect class="comp-body" x="215" y="50" width="50" height="40" rx="5" fill="#3a2d16" stroke="#1c150a" stroke-width="2"/>
+          <text x="240" y="76" fill="#e8a838" font-size="16" text-anchor="middle" font-family="Barlow Condensed">&times;</text>
+          <text x="240" y="108" fill="#a9d8cd" font-size="11" text-anchor="middle" font-family="Barlow Condensed">MIXER</text>
+        </g>
+        <g class="hot" data-comp="lo">
+          <rect class="comp-body" x="210" y="150" width="70" height="40" rx="5" fill="#123a55" stroke="#0b2233" stroke-width="2"/>
+          <path d="M222,170 q6,-12 12,0 t12,0 t12,0" stroke="#e8a838" stroke-width="2" fill="none"/>
+          <text x="245" y="208" fill="#a9d8cd" font-size="11" text-anchor="middle" font-family="Barlow Condensed">LOCAL OSC / PLL</text>
+        </g>
+        <g class="hot" data-comp="iffilter">
+          <rect class="comp-body" x="330" y="50" width="54" height="40" rx="4" fill="#5a4a2a" stroke="#2c2414" stroke-width="2"/>
+          <line x1="342" y1="58" x2="342" y2="82" stroke="#d9c27a" stroke-width="3"/>
+          <line x1="357" y1="58" x2="357" y2="82" stroke="#d9c27a" stroke-width="3"/>
+          <line x1="372" y1="58" x2="372" y2="82" stroke="#d9c27a" stroke-width="3"/>
+          <text x="357" y="108" fill="#a9d8cd" font-size="11" text-anchor="middle" font-family="Barlow Condensed">IF FILTER</text>
+        </g>
+        <g class="hot" data-comp="ifamp">
+          <rect class="comp-body" x="410" y="52" width="50" height="36" rx="5" fill="#1c4a5e" stroke="#0e2b36" stroke-width="2"/>
+          <text x="435" y="75" fill="#7fe6d2" font-size="12" text-anchor="middle" font-family="Barlow Condensed">IF</text>
+          <text x="435" y="106" fill="#a9d8cd" font-size="11" text-anchor="middle" font-family="Barlow Condensed">IF AMP</text>
+        </g>
+        <g class="hot" data-comp="detector">
+          <rect class="comp-body" x="505" y="52" width="54" height="36" rx="5" fill="#1c4a5e" stroke="#0e2b36" stroke-width="2"/>
+          <text x="532" y="75" fill="#7fe6d2" font-size="12" text-anchor="middle" font-family="Barlow Condensed">DET</text>
+          <text x="532" y="106" fill="#a9d8cd" font-size="11" text-anchor="middle" font-family="Barlow Condensed">DEMOD</text>
+        </g>
+        <g class="hot" data-comp="mpx">
+          <rect class="comp-body" x="600" y="52" width="66" height="36" rx="5" fill="#1c4a5e" stroke="#0e2b36" stroke-width="2"/>
+          <text x="633" y="75" fill="#7fe6d2" font-size="12" text-anchor="middle" font-family="Barlow Condensed">MPX</text>
+          <text x="633" y="106" fill="#a9d8cd" font-size="11" text-anchor="middle" font-family="Barlow Condensed">STEREO DEC</text>
+        </g>
+        <g class="hot" data-comp="audioamp">
+          <rect class="comp-body" x="470" y="228" width="70" height="44" rx="5" fill="#2b2b2b" stroke="#000" stroke-width="2"/>
+          <text x="505" y="254" fill="#e8a838" font-size="13" text-anchor="middle" font-family="Barlow Condensed">AF AMP</text>
+          <text x="505" y="290" fill="#a9d8cd" font-size="11" text-anchor="middle" font-family="Barlow Condensed">AUDIO POWER</text>
+        </g>
+        <g class="hot" data-comp="crystal">
+          <rect class="comp-body" x="330" y="230" width="46" height="26" rx="10" fill="#8892a0" stroke="#4a5058" stroke-width="2"/>
+          <text x="353" y="248" fill="#1a2332" font-size="10" text-anchor="middle" font-family="Barlow Condensed">XTAL</text>
+          <text x="353" y="276" fill="#a9d8cd" font-size="11" text-anchor="middle" font-family="Barlow Condensed">REFERENCE</text>
+        </g>
+        <g class="hot" data-comp="regulator">
+          <rect class="comp-body" x="120" y="228" width="60" height="40" rx="4" fill="#243a1a" stroke="#0f1c0a" stroke-width="2"/>
+          <text x="150" y="252" fill="#9ad17a" font-size="12" text-anchor="middle" font-family="Barlow Condensed">3.3V</text>
+          <text x="150" y="286" fill="#a9d8cd" font-size="11" text-anchor="middle" font-family="Barlow Condensed">REGULATOR</text>
+        </g>
+      </svg>
+
+      <div class="comp-info" id="compInfo">
+        <p class="placeholder">&#128071; Click a stage above to learn what it does &mdash; and how it fails.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SIGNAL TRACING ============ -->
+  <section class="panel" id="trace">
+    <h2 class="section">Signal Tracing &mdash; the RF Mindset</h2>
+    <p class="lead">On a power board you follow DC voltage. On a radio, DC voltage tells you only half the story &mdash; a stage can be perfectly powered and still pass no signal. The real skill is following the <strong>signal</strong> from antenna to speaker and finding where it dies, weakens, or distorts.</p>
+
+    <div class="card">
+      <h3>Your four questions at every stage</h3>
+      <ul>
+        <li><span class="k">Does it have power?</span> &mdash; DC volts. A stage with no supply or wrong bias can't work. Always the first check.</li>
+        <li><span class="rfk">Is the signal getting through?</span> &mdash; a <strong>signal tracer</strong> or RF probe tells you if RF/IF/audio is present at that point. This is the big one.</li>
+        <li><span class="rfk">Is the local oscillator actually running?</span> &mdash; no LO means no IF, means no stations. Check it directly.</li>
+        <li><span class="k">What does the audio sound like?</span> &mdash; at the back end, your ear (or a scope) tells silent vs. distorted vs. mono &mdash; each points to a different stage.</li>
+      </ul>
+      <div class="callout rf"><b>Divide and conquer:</b> the chain is long, so don't probe end-to-end blindly. Probe the <em>middle</em> (say the detector output) first. Signal good there? The fault is in the back half. Signal already gone? It's in the front half. Each probe halves what's left &mdash; you'll corner most faults in three or four measurements.</div>
+    </div>
+
+    <div class="card">
+      <h3>The tools that make it possible</h3>
+      <ul>
+        <li><strong>Signal tracer</strong> &mdash; an amplifier + speaker you touch to each stage; you literally <em>hear</em> how far the audio makes it down the chain.</li>
+        <li><strong>Signal injector</strong> &mdash; the reverse: it puts a test tone <em>into</em> a stage. Inject at the audio amp: sound? Back end works. Move earlier until it goes quiet &mdash; that stage is your fault.</li>
+        <li><strong>RF probe</strong> &mdash; a diode-detector tip for a normal meter, so it can sense whether RF/IF energy is present at a point.</li>
+        <li><strong>A second radio or frequency counter</strong> &mdash; the trick for checking a dead local oscillator: a nearby receiver can often hear the LO leaking, proving it's alive.</li>
+        <li><strong>Oscilloscope</strong> &mdash; when you need to actually <em>see</em> the waveform: is the LO a clean sine? Is the recovered audio clipping? The professional's eyes on the signal.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3>What a healthy board reads &mdash; your reference</h3>
+      <p>Keep this in mind in the Lab. When a reading doesn't match "normal," you've found a clue.</p>
+      <div class="ref-wrap">
+        <table class="ref">
+          <tr><th>Test point</th><th>Power (DC)</th><th>Signal</th><th>Audio</th></tr>
+          <tr><td>Antenna</td><td>&mdash;</td><td>RF present</td><td>&mdash;</td></tr>
+          <tr><td>RF amp (LNA)</td><td>~3.3 V</td><td>amplified RF</td><td>&mdash;</td></tr>
+          <tr><td>Mixer out</td><td>~3.3 V</td><td>IF present</td><td>&mdash;</td></tr>
+          <tr><td>Local osc / PLL</td><td>~3.3 V</td><td>oscillating &amp; locked</td><td>&mdash;</td></tr>
+          <tr><td>IF filter/amp out</td><td>~3.3 V</td><td>strong IF</td><td>&mdash;</td></tr>
+          <tr><td>Demodulator out</td><td>~3.3 V</td><td>&mdash;</td><td>clean audio</td></tr>
+          <tr><td>Stereo decoder</td><td>~3.3 V</td><td>&mdash;</td><td>stereo (L+R)</td></tr>
+          <tr><td>Audio amp out</td><td>~5 V</td><td>&mdash;</td><td>strong &amp; clear</td></tr>
+          <tr><td>Regulator rail</td><td>3.3 V</td><td>&mdash;</td><td>&mdash;</td></tr>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ TROUBLESHOOTING LAB ============ -->
+  <section class="panel" id="lab">
+    <h2 class="section">Troubleshooting Lab <span class="scorepill">Solved: <span id="labScore">0</span></span></h2>
+    <p class="lead">A modern FM receiver is on the bench with a fault. Read the symptom, then use your probe &mdash; four modes: <b>DC volts</b>, <b>signal</b>, <b>OSC/RF activity</b>, and <b>audio</b> &mdash; to trace the signal and pin the failed stage. Several faults look alike at a glance; the readings tell them apart. Randomized each time.</p>
+
+    <div class="symptom-box">
+      <div class="tag">Symptom on the bench</div>
+      <p id="symptomText">Loading a case&hellip;</p>
+    </div>
+
+    <div class="lab-top">
+      <div>
+        <div class="card" style="margin-bottom:0.8rem;">
+          <div class="board-wrap">
+            <svg id="labSvg" viewBox="0 0 580 300" role="img" aria-label="Radio test board">
+              <rect x="0" y="0" width="580" height="300" rx="10" fill="var(--board)"/>
+              <g stroke="#2f6b60" stroke-width="3" fill="none" opacity="0.55">
+                <path d="M40,70 H110 M150,70 H220 M260,70 H330 M370,70 H440 M480,70 H540"/>
+                <path d="M190,90 V150"/>
+                <path d="M300,90 V210 H430"/>
+              </g>
+              <g font-family="Barlow Condensed" font-size="10" text-anchor="middle" fill="#a9d8cd">
+                <path d="M40,54 v-16 M33,42 l7,-6 7,6" stroke="#7fe6d2" stroke-width="2" fill="none"/>
+                <rect x="120" y="56" width="40" height="28" rx="4" fill="#1c4a5e"/><text x="140" y="100">LNA</text>
+                <rect x="215" y="54" width="38" height="32" rx="4" fill="#3a2d16"/><text x="234" y="100">MIXER</text>
+                <rect x="165" y="150" width="58" height="30" rx="4" fill="#123a55"/><text x="194" y="196">LOCAL OSC</text>
+                <rect x="315" y="56" width="40" height="28" rx="4" fill="#1c4a5e"/><text x="335" y="100">IF AMP</text>
+                <rect x="410" y="56" width="40" height="28" rx="4" fill="#1c4a5e"/><text x="430" y="100">DET</text>
+                <rect x="505" y="56" width="46" height="28" rx="4" fill="#1c4a5e"/><text x="528" y="100">MPX</text>
+                <rect x="395" y="196" width="60" height="34" rx="4" fill="#2b2b2b"/><text x="425" y="248">AF AMP</text>
+                <rect x="70" y="196" width="54" height="34" rx="4" fill="#243a1a"/><text x="97" y="248">REG 3.3V</text>
+              </g>
+              <g id="tpGroup"></g>
+            </svg>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Your diagnosis</h3>
+          <p style="font-size:0.9rem; color:var(--muted); margin-bottom:0.2rem;">Probe enough to be sure, then commit to a call:</p>
+          <div class="diag-options" id="diagOptions"></div>
+          <div class="verdict" id="verdict"></div>
+          <div style="margin-top:0.9rem;">
+            <button class="btn accent" id="newCaseBtn" style="display:none;">&#8635; Next case</button>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="meter">
+          <div class="screen">
+            <div class="reading" id="labReading">&mdash;</div>
+            <div class="mode-lbl" id="labUnit">select mode</div>
+          </div>
+          <div class="dial">
+            <button data-labmode="dcv" class="sel">V&#8250; DC VOLTS</button>
+            <button data-labmode="sig">&#8767; SIGNAL</button>
+            <button data-labmode="osc">((&bull;)) OSC/RF</button>
+            <button data-labmode="af">&#9834; AUDIO</button>
+          </div>
+        </div>
+        <p class="flow-note" style="text-align:center; margin:0.5rem 0;">Pick a mode, then click a test point &#9312;&ndash;&#9320; on the board.</p>
+        <div class="log" id="labLog"><span class="muted">&mdash; probe log &mdash;</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ADVANCED ============ -->
+  <section class="panel" id="advanced">
+    <h2 class="section">Alignment &amp; the Tricky Stuff</h2>
+    <p class="lead">Once you're comfortable tracing the chain, these are the things that trip people up on real radios.</p>
+
+    <div class="card">
+      <h3>Alignment &mdash; when the radio is "tuned" wrong</h3>
+      <p>Older radios have adjustable coils and trimmer capacitors that must be <strong>aligned</strong> so the front end tracks the oscillator and the IF is centered on 10.7&nbsp;MHz. A radio that's weak or distorted <em>across the whole band</em> &mdash; with no dead stage &mdash; may just be out of alignment, not broken. Alignment needs a signal generator and patience; done in the wrong order it makes things worse, so it's an advanced move.</p>
+      <div class="callout tip"><b>Modern reality:</b> most receivers built in the last 20 years are built around a tuner IC (Silicon Labs, NXP, etc.) with <em>no user alignment at all</em> &mdash; the IF filtering is done digitally inside the chip. That's good news: it removes a whole class of drift faults. It also means "the fault is in the tuner IC or its support parts" more often than "it needs alignment."</p></div>
+    </div>
+
+    <div class="card">
+      <h3>The image frequency &mdash; a ghost you should know</h3>
+      <p>The mixer can't tell the difference between a station 10.7&nbsp;MHz <em>below</em> the LO and one 10.7&nbsp;MHz <em>above</em> it &mdash; both produce a 10.7&nbsp;MHz IF. That second, unwanted one is the <strong>image frequency</strong>, sitting <strong>2 &times; IF (21.4&nbsp;MHz)</strong> away from your station. The job of the front-end preselector filter is to reject it. A symptom of "I hear a station where there shouldn't be one" can be an image getting through a weak front end.</p>
+    </div>
+
+    <div class="card">
+      <h3>Where modern boards actually fail</h3>
+      <ul>
+        <li><strong>Power &amp; regulators</strong> &mdash; the single most common dead-radio cause, same as any board. Check the rails first, always.</li>
+        <li><strong>Bad solder joints on the RF cans &amp; connectors</strong> &mdash; vibration and heat crack joints; a radio that works when you press on it is screaming "cold joint."</li>
+        <li><strong>Electrolytic caps in the audio and power sections</strong> &mdash; the usual aging-cap story: hum, weak audio, distortion.</li>
+        <li><strong>The tuner / DSP IC losing its clock or supply</strong> &mdash; no reference crystal = no LO = no reception, even though everything looks powered.</li>
+        <li><strong>Antenna &amp; matching network</strong> &mdash; the boring one everyone skips. Always confirm the antenna and its connector before condemning the board.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ============ SAFETY / ESD ============ -->
+  <section class="panel" id="safety">
+    <h2 class="section">ESD &amp; Practical Safety</h2>
+    <p class="lead">A radio board is far less dangerous than a mains power board &mdash; but it fails you in a quieter way: static electricity you can't even feel can silently kill the sensitive RF parts.</p>
+
+    <div class="card">
+      <div class="callout danger"><b>Static (ESD) is the real hazard here.</b> The LNA transistors and tuner ICs work with signals a millionth of a volt strong. A static zap from your finger &mdash; thousands of volts, too small to feel &mdash; can degrade or destroy them instantly, sometimes without any visible damage. Wear a grounded wrist strap, work on an anti-static mat, and handle the board by its edges.</div>
+      <div class="callout tip"><b>Good habits for RF work:</b>
+        <ul style="margin:0.5rem 0 0 1.1rem;">
+          <li>Ground yourself (wrist strap) before touching the board, especially the front-end and IC areas.</li>
+          <li>Most tests are done <em>powered but low-voltage</em> &mdash; no lethal mains here on the radio section, but respect any attached power supply.</li>
+          <li>Use a fine-tip iron and good light &mdash; RF parts are small SMD; too much heat lifts pads and detunes coils.</li>
+          <li>Don't touch or "adjust" the RF coils and trimmer caps unless you're deliberately aligning &mdash; a nudge can put a working radio out of tune.</li>
+          <li>Keep a metal-bodied signal generator and your board on the same ground to avoid ground loops confusing your readings.</li>
+        </ul>
+      </div>
+      <p style="margin-top:0.6rem;">Bottom line: the danger to <em>you</em> is low, but the danger to the <em>parts</em> is high. Slow, grounded, gentle hands win.</p>
+    </div>
+  </section>
+
+  <!-- ============ QUIZ ============ -->
+  <section class="panel" id="quiz">
+    <h2 class="section">Knowledge Check <span class="scorepill">Score: <span id="quizScore">0</span>/<span id="quizTotal">0</span></span></h2>
+    <p class="lead">Harder than the power-board quiz &mdash; these need the signal-chain reasoning. Explanations appear after each answer.</p>
+    <div class="card" id="quizHost"></div>
+  </section>
+
+  <p class="footer-note">
+    Radio Receiver Troubleshooting Trainer &mdash; superheterodyne edition.<br>
+    Want to go further? I can add: AM/shortwave front ends, an SDR (software-defined radio) module, oscilloscope waveform reading, or a specific radio you own.
+  </p>
+</div>
+
+<script>
+/* ---------- TABS ---------- */
+const tabs = document.querySelectorAll('.tab');
+const panels = document.querySelectorAll('.panel');
+tabs.forEach(t => t.addEventListener('click', () => {
+  tabs.forEach(x => x.classList.remove('active'));
+  panels.forEach(p => p.classList.remove('active'));
+  t.classList.add('active');
+  document.getElementById(t.dataset.panel).classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}));
+
+/* ---------- SUPERHET PLAYGROUND ---------- */
+const IF_MHZ = 10.7;
+const stnSlide = document.getElementById('stnSlide');
+function fmap(f) { return ((f - 80) / (135 - 80)) * 100; } // 80..135 MHz -> 0..100%
+function updateSuperhet() {
+  const stn = +stnSlide.value;
+  const lo = stn + IF_MHZ;
+  const image = stn + 2 * IF_MHZ;
+  document.getElementById('stnVal').textContent = stn.toFixed(1) + ' MHz';
+  document.getElementById('numStn').textContent = stn.toFixed(1);
+  document.getElementById('numLo').textContent = lo.toFixed(1);
+  document.getElementById('barStn').style.width = fmap(stn) + '%';
+  document.getElementById('barLo').style.width = fmap(lo) + '%';
+  document.getElementById('ifVal').textContent = IF_MHZ.toFixed(1) + ' MHz';
+  document.getElementById('imgVal').textContent = 'Image freq to reject: ' + image.toFixed(1) + ' MHz';
+}
+stnSlide.addEventListener('input', updateSuperhet);
+updateSuperhet();
+
+/* ---------- SIGNAL FLOW ANIMATION ---------- */
+const flowPulse = document.getElementById('flowPulse');
+let flowTimer = null;
+const flowStages = [
+  'A faint RF whisper arrives at the antenna…',
+  'the LNA boosts that weak RF without adding noise…',
+  'the mixer beats it against the local oscillator — out comes a 10.7 MHz IF…',
+  'the IF filter throws away everything but your station, and the IF amp gives it big gain…',
+  'the demodulator strips the audio back off the carrier…',
+  'the stereo decoder splits it into left and right…',
+  'the audio amp drives it out the speaker as sound!'
+];
+document.getElementById('animBtn').addEventListener('click', () => {
+  if (flowTimer) return;
+  flowPulse.style.opacity = '1';
+  let offset = 720, stage = -1;
+  const cap = document.getElementById('flowCaption');
+  flowTimer = setInterval(() => {
+    offset -= 8;
+    flowPulse.setAttribute('stroke-dashoffset', offset);
+    const prog = (720 - offset) / 720;
+    const s = Math.min(flowStages.length - 1, Math.floor(prog * flowStages.length));
+    if (s !== stage) { stage = s; cap.textContent = flowStages[s]; }
+    if (offset <= 0) { clearInterval(flowTimer); flowTimer = null; cap.textContent = flowStages[flowStages.length - 1]; }
+  }, 30);
+});
+document.getElementById('animReset').addEventListener('click', () => {
+  if (flowTimer) { clearInterval(flowTimer); flowTimer = null; }
+  flowPulse.style.opacity = '0';
+  flowPulse.setAttribute('stroke-dashoffset', '0');
+  document.getElementById('flowCaption').textContent = 'Hit "Animate" to watch a whisper from the antenna become sound at the speaker.';
+});
+
+/* ---------- COMPONENTS ---------- */
+const COMPONENTS = {
+  antenna: { name:'Antenna & Matching', role:'Catches the radio waves and hands the tiny RF signal to the board. A matching network makes sure the antenna’s impedance suits the front end so the maximum signal transfers.', fail:'Broken element, corroded or loose connector, or a detuned matching network. Passive, so it always “has” signal even on a dead board — but a bad antenna/connector is the #1 skipped cause of poor reception. Check it first.' },
+  lna: { name:'RF Amplifier (LNA)', role:'A low-noise amplifier that boosts the faint antenna signal early, before noise can swamp it. It sets the radio’s sensitivity — how weak a station it can still pull in.', fail:'Loss of transistor bias or a failed device makes it stop amplifying: only strong local stations get through, everything else is dead air. Check its DC bias and whether signal grows across it.' },
+  mixer: { name:'Mixer', role:'Multiplies the incoming RF by the local oscillator and outputs the difference — the fixed 10.7 MHz IF. This is where every station gets converted down to the same frequency.', fail:'Rarely fails alone, but with no LO feeding it, it produces no IF at all. If RF is present at its input but no IF at its output, check the LO before blaming the mixer.' },
+  lo: { name:'Local Oscillator / PLL', role:'Generates the clean, precise frequency the mixer needs — always 10.7 MHz above your station. In modern sets a PLL synthesizer locks it to a crystal reference so it never drifts.', fail:'If it stops oscillating or won’t lock, there is NO IF and NO reception — just full-scale hiss — even though the front end is fine. A drifting/unlocked LO makes stations wander. Check it directly with OSC/RF mode; DC alone won’t reveal it.' },
+  iffilter: { name:'IF Filter (ceramic/SAW)', role:'A sharp fixed filter at 10.7 MHz that keeps your station and rejects the neighbors. Because it only ever works at one frequency, it can be made very selective.', fail:'Can crack or drift, cutting the signal off after the mixer. Classic clue: IF present at the mixer output but gone right after the filter. That narrows it to this stage.' },
+  ifamp: { name:'IF Amplifier', role:'Provides most of the receiver’s gain, all at the comfortable fixed IF. Also feeds the AGC (automatic gain control) that keeps loud and weak stations at a similar volume.', fail:'Loss of supply or bias kills gain — weak or no audio despite a good front end and LO. Check power and whether IF grows across it.' },
+  detector: { name:'Demodulator / Detector', role:'Strips the audio back off the IF carrier (FM detector for FM, diode/envelope for AM). What comes out is the recovered audio — or the stereo composite (MPX) signal for FM.', fail:'A failed or mistuned detector gives distorted or garbled audio even when the IF is strong. Clue: strong signal on the meter, but the audio is already bad at the detector output.' },
+  mpx: { name:'Stereo Decoder (MPX)', role:'Takes the FM composite signal and, using the 19 kHz pilot tone, splits it back into separate left and right channels. Lights the “stereo” indicator when it locks.', fail:'If it fails or loses pilot lock, you still get sound — but only in mono, and the stereo light stays off. Everything else can be perfect. A very specific, easy-to-spot signature.' },
+  audioamp: { name:'Audio Power Amplifier', role:'The last stage: boosts the recovered line-level audio to enough power to drive the speaker. Often a single power-amp IC.', fail:'Fails silent (dead output) or distorted/hummy. Tell-tale: clean audio present at its input but nothing/garbage at the speaker, while the amp still has its supply. Also check the mute line — a stuck mute mimics a dead amp.' },
+  crystal: { name:'Reference Crystal', role:'A quartz crystal that gives the PLL synthesizer its rock-steady reference frequency. Everything the radio tunes is derived from this one clock.', fail:'If the crystal or its tiny load caps fail, the PLL can’t lock — so the LO is dead or wrong, and reception vanishes. A subtle root cause of a “dead LO.” Worth checking when the oscillator won’t run.' },
+  regulator: { name:'Voltage Regulator', role:'Turns the raw input voltage into the clean, steady rails (often 3.3 V and 5 V) every stage runs on. RF stages are especially fussy about clean, quiet supply.', fail:'The most common dead-radio cause. No rail = nothing works. A noisy or sagging rail causes weird intermittent faults across many stages at once. Always measure the rails first.' }
+};
+document.querySelectorAll('#compSvg .hot').forEach(g => {
+  g.addEventListener('click', () => {
+    const c = COMPONENTS[g.dataset.comp];
+    document.getElementById('compInfo').innerHTML =
+      '<h4>' + c.name + '</h4><p class="role">' + c.role + '</p><p class="fail"><b>How it fails:</b> ' + c.fail + '</p>';
+  });
+});
+
+/* ---------- TROUBLESHOOTING LAB ---------- */
+const TEST_POINTS = [
+  { id:'ant',  x:40,  y:54,  n:'1', name:'Antenna input' },
+  { id:'lna',  x:140, y:70,  n:'2', name:'RF amp (LNA) output' },
+  { id:'mix',  x:234, y:70,  n:'3', name:'Mixer output' },
+  { id:'lo',   x:194, y:165, n:'4', name:'Local oscillator' },
+  { id:'if',   x:335, y:70,  n:'5', name:'IF amp output' },
+  { id:'det',  x:430, y:70,  n:'6', name:'Demodulator output' },
+  { id:'mpx',  x:528, y:70,  n:'7', name:'Stereo decoder output' },
+  { id:'af',   x:425, y:213, n:'8', name:'Audio amp output' },
+  { id:'reg',  x:97,  y:213, n:'9', name:'Regulator rail' }
+];
+
+// Healthy baseline (a good board receiving a good station)
+const GOOD = {
+  ant: { dcv:'n/a', sig:'RF',   osc:'n/a',    af:'n/a',    note:'RF from antenna present' },
+  lna: { dcv:'3.3', sig:'RF+',  osc:'n/a',    af:'n/a',    note:'amplified RF — front end OK' },
+  mix: { dcv:'3.3', sig:'IF',   osc:'n/a',    af:'n/a',    note:'10.7 MHz IF produced' },
+  lo:  { dcv:'3.3', sig:'n/a',  osc:'LOCKED', af:'n/a',    note:'oscillating & PLL locked' },
+  if:  { dcv:'3.3', sig:'IF+',  osc:'n/a',    af:'n/a',    note:'strong filtered IF' },
+  det: { dcv:'3.3', sig:'n/a',  osc:'n/a',    af:'CLEAR',  note:'clean recovered audio' },
+  mpx: { dcv:'3.3', sig:'n/a',  osc:'n/a',    af:'STEREO', note:'L+R stereo decoded' },
+  af:  { dcv:'5.0', sig:'n/a',  osc:'n/a',    af:'CLEAR',  note:'strong audio to speaker' },
+  reg: { dcv:'3.3', sig:'n/a',  osc:'n/a',    af:'n/a',    note:'supply rail nominal' }
+};
+
+const FAULTS = [
+  { id:'power', symptom:'Completely dead — no display lights, no hiss, nothing at all when powered on.',
+    ov:{
+      lna:{dcv:'0.0',sig:'—',note:'no supply — dead'},
+      mix:{dcv:'0.0',sig:'—',note:'no supply'},
+      lo:{dcv:'0.0',osc:'DEAD',note:'no supply — not oscillating'},
+      if:{dcv:'0.0',sig:'—',note:'no supply'},
+      det:{dcv:'0.0',af:'SILENT',note:'no supply'},
+      mpx:{dcv:'0.0',af:'SILENT',note:'no supply'},
+      af:{dcv:'0.0',af:'SILENT',note:'no supply'},
+      reg:{dcv:'0.0',note:'⚠ regulator output DEAD (should be 3.3V)'}
+    } },
+  { id:'lo', symptom:'Loud steady hiss on every frequency — no stations anywhere — but the display and volume work normally.',
+    ov:{
+      mix:{sig:'noise',note:'no IF — nothing to convert without an LO'},
+      lo:{osc:'DEAD',note:'⚠ local oscillator NOT oscillating'},
+      if:{sig:'noise',note:'only noise passing through'},
+      det:{af:'HISS',note:'just hiss'},
+      mpx:{af:'HISS',note:'hiss'},
+      af:{af:'HISS',note:'loud hiss out the speaker'}
+    } },
+  { id:'ifstage', symptom:'Dead — no stations, only faint hiss — even though tuning and volume respond normally.',
+    ov:{
+      if:{sig:'—',dcv:'0.0',note:'⚠ IF disappears here — filter/amp not passing it'},
+      det:{af:'SILENT',note:'nothing to demodulate'},
+      mpx:{af:'SILENT',note:'silent'},
+      af:{af:'HISS',note:'faint hiss only'}
+    } },
+  { id:'audioamp', symptom:'Tuning works, the signal-strength meter shows a strong station — but total silence from the speaker.',
+    ov:{
+      af:{af:'SILENT',dcv:'5.0',note:'⚠ has supply but NO output — amp dead (or muted)'}
+    } },
+  { id:'frontend', symptom:'Only the two or three strongest local stations come in, and they’re noisy. Everything else is dead air.',
+    ov:{
+      lna:{sig:'weak',dcv:'0.5',note:'⚠ barely amplifying — bias/LNA fault'},
+      mix:{sig:'weak',note:'weak IF'},
+      if:{sig:'weak',note:'weak IF'},
+      det:{af:'weak',note:'weak, noisy audio'},
+      mpx:{af:'weak',note:'weak'},
+      af:{af:'weak',note:'faint, noisy audio'}
+    } },
+  { id:'stereo', symptom:'Sounds fine and clear — but it only ever plays in mono, and the stereo light never comes on.',
+    ov:{
+      mpx:{af:'MONO',note:'⚠ decoding mono only — no stereo separation'},
+      af:{af:'MONO',note:'clear, but mono'}
+    } },
+  { id:'detector', symptom:'Stations come in strong on the meter, but the audio is badly distorted and garbled.',
+    ov:{
+      det:{af:'DISTORT',note:'⚠ recovered audio already distorted here'},
+      mpx:{af:'DISTORT',note:'distorted'},
+      af:{af:'DISTORT',note:'garbled audio out the speaker'}
+    } }
+];
+
+const DIAGNOSES = [
+  { id:'power',    text:'Power regulator / supply failure — no operating voltage on the board' },
+  { id:'lo',       text:'Local oscillator / PLL not running — no frequency conversion' },
+  { id:'ifstage',  text:'IF filter / amplifier fault — IF lost after the mixer' },
+  { id:'audioamp', text:'Audio power amplifier dead — signal reaches it but no output' },
+  { id:'frontend', text:'RF front-end / LNA failure — poor sensitivity, weak signal from the antenna stage' },
+  { id:'stereo',   text:'Stereo (MPX) decoder fault — audio fine but stuck in mono' },
+  { id:'detector', text:'Demodulator / detector fault — strong IF but distorted audio' }
+];
+
+const VERDICT_DETAIL = {
+  power:'The regulator rail read 0 V when it should be 3.3 V, and every powered stage was dead — while the antenna still showed RF (it’s passive). No rail means nothing downstream can work. Always measure the rails first; it’s the most common dead-board cause.',
+  lo:'The front end had good RF, but the mixer produced no IF and the OSC/RF check showed the local oscillator wasn’t running. With no LO there’s no frequency conversion, so the whole radio hears only noise — classic full-hiss-no-stations. You can only catch this by checking the oscillator directly; DC looks fine.',
+  ifstage:'RF and the LO were both good and IF was present at the mixer output — but it vanished right after the IF stage. That pins the fault between the mixer and the demodulator: the IF filter or amp isn’t passing the signal. The key was probing the mixer AND the IF output to see where it dropped.',
+  audioamp:'Signal was clean all the way to the audio amp’s input (good IF, clean audio at the detector and MPX), the amp had its supply — yet nothing came out. That isolates it to the audio power amp itself (or a stuck mute line). Signal good up to it, dead after it: the fault is the stage in between.',
+  frontend:'Signal was weak starting at the RF-amp output and stayed weak all the way down, while the LO was fine. Weak everywhere downstream but a healthy oscillator points to lost gain in the front end — an LNA bias fault (its DC bias was off) or antenna/matching problem. Only strong stations punch through.',
+  stereo:'Everything was healthy and the audio was clean — but the stereo decoder output only mono. With the rest of the chain perfect, mono-only audio and no stereo light isolates the fault to the MPX decoder or its pilot lock. A very specific signature.',
+  detector:'IF was strong right up to the detector, but the recovered audio was already distorted at the detector output and stayed distorted downstream. Strong signal with garbled audio starting at the demodulator points at the detector (or its tuning), not the audio amp — which would give silence, not distortion.'
+};
+
+let currentFault = null, labSolved = 0, probedSet = new Set(), labMode = 'dcv';
+
+function reading(tpId) {
+  return Object.assign({}, GOOD[tpId], (currentFault.ov[tpId] || {}));
+}
+
+function renderTestPoints() {
+  const g = document.getElementById('tpGroup');
+  g.innerHTML = '';
+  TEST_POINTS.forEach(tp => {
+    const el = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    el.setAttribute('class', 'tp-dot');
+    el.dataset.tp = tp.id;
+    el.innerHTML =
+      '<circle class="tp-hit" cx="'+tp.x+'" cy="'+tp.y+'" r="11" fill="#c0392b" stroke="#fff" stroke-width="2"/>' +
+      '<text x="'+tp.x+'" y="'+(tp.y+4)+'" fill="#fff" font-size="12" font-family="Barlow Condensed" text-anchor="middle" font-weight="700">'+tp.n+'</text>';
+    el.addEventListener('click', () => probe(tp));
+    g.appendChild(el);
+  });
+}
+
+const UNITS = { dcv:'V DC', sig:'SIGNAL', osc:'OSC / RF', af:'AUDIO' };
+function probe(tp) {
+  if (!currentFault) return;
+  const r = reading(tp.id);
+  const val = r[labMode];
+  document.getElementById('labReading').textContent = (labMode === 'dcv' && val !== 'n/a') ? val + ' V' : val;
+  document.getElementById('labUnit').textContent = UNITS[labMode];
+  probedSet.add(tp.id);
+  document.querySelector('#tpGroup [data-tp="'+tp.id+'"]').classList.add('probed');
+  const bad = ['0.0','—','DEAD','noise','SILENT','HISS','weak','MONO','DISTORT'];
+  const cls = (val === 'n/a') ? 'muted' : (bad.indexOf(val) >= 0 ? 'warn' : 'ok');
+  const shown = (labMode === 'dcv' && val !== 'n/a') ? val + ' V' : val;
+  logLine('<span class="t">TP'+tp.n+' '+tp.name+'</span> [' + UNITS[labMode] + '] → <b>'+shown+'</b> <span class="'+cls+'">('+r.note+')</span>');
+}
+
+function logLine(html) {
+  const log = document.getElementById('labLog');
+  if (log.querySelector('.muted')) log.innerHTML = '';
+  const div = document.createElement('div');
+  div.innerHTML = html;
+  log.appendChild(div);
+  log.scrollTop = log.scrollHeight;
+}
+
+function newCase() {
+  let pick;
+  do { pick = FAULTS[Math.floor(Math.random() * FAULTS.length)]; }
+  while (FAULTS.length > 1 && currentFault && pick.id === currentFault.id);
+  currentFault = pick;
+  probedSet = new Set();
+  document.getElementById('symptomText').textContent = pick.symptom;
+  document.getElementById('labReading').textContent = '—';
+  document.getElementById('labUnit').textContent = 'select mode';
+  document.getElementById('labLog').innerHTML = '<span class="muted">&mdash; probe log &mdash;</span>';
+  document.getElementById('verdict').className = 'verdict';
+  document.getElementById('verdict').innerHTML = '';
+  document.getElementById('newCaseBtn').style.display = 'none';
+  renderTestPoints();
+  renderDiagOptions();
+}
+
+function renderDiagOptions() {
+  const host = document.getElementById('diagOptions');
+  host.innerHTML = '';
+  DIAGNOSES.slice().sort(() => Math.random() - 0.5).forEach(d => {
+    const b = document.createElement('button');
+    b.className = 'diag-opt';
+    b.textContent = d.text;
+    b.dataset.id = d.id;
+    b.addEventListener('click', () => commitDiagnosis(d.id, host));
+    host.appendChild(b);
+  });
+}
+
+function commitDiagnosis(chosenId, host) {
+  const correct = currentFault.id;
+  host.querySelectorAll('.diag-opt').forEach(b => {
+    b.disabled = true;
+    if (b.dataset.id === correct) b.classList.add('correct');
+    if (b.dataset.id === chosenId && chosenId !== correct) b.classList.add('wrong');
+  });
+  const v = document.getElementById('verdict');
+  const n = probedSet.size;
+  if (chosenId === correct) {
+    labSolved++;
+    document.getElementById('labScore').textContent = labSolved;
+    v.className = 'verdict good show';
+    v.innerHTML = '<h4>✔ Correct diagnosis</h4><p>' + VERDICT_DETAIL[correct] + '</p>' +
+      '<p style="margin-top:0.5rem;font-size:0.85rem;color:var(--muted);">You probed ' + n + ' test point' + (n===1?'':'s') + ' before calling it.</p>';
+  } else {
+    v.className = 'verdict bad show';
+    v.innerHTML = '<h4>✗ Not quite</h4><p>The correct call was: <b>' +
+      DIAGNOSES.find(d => d.id === correct).text + '</b></p><p style="margin-top:0.4rem;">' + VERDICT_DETAIL[correct] +
+      '</p><p style="margin-top:0.5rem;font-size:0.88rem;color:var(--muted);">Re-trace it: find the last point where the signal was still healthy and the first where it wasn’t — the failed stage sits between them. And always confirm the LO and the power rail.</p>';
+  }
+  document.getElementById('newCaseBtn').style.display = 'inline-block';
+}
+
+document.querySelectorAll('#lab .dial button').forEach(b => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('#lab .dial button').forEach(x => x.classList.remove('sel'));
+    b.classList.add('sel');
+    labMode = b.dataset.labmode;
+    document.getElementById('labUnit').textContent = UNITS[labMode];
+    document.getElementById('labReading').textContent = '—';
+  });
+});
+document.getElementById('newCaseBtn').addEventListener('click', newCase);
+newCase();
+
+/* ---------- QUIZ ---------- */
+const QUIZ = [
+  { q:'A superheterodyne radio converts every station down to the same fixed frequency (10.7 MHz for FM). Why?',
+    opts:['To make the antenna smaller','So the hard work — sharp filtering and big gain — can be done once, at one frequency','To save battery power','To make it receive more stations at once'],
+    a:1, e:'The whole point: instead of building tunable sharp filters at every station frequency, you convert to one fixed IF and do all the selective, high-gain work there. Tuning just moves the local oscillator.' },
+  { q:'The radio produces loud hiss on every frequency and picks up no stations, but the display and volume work. Front-end RF is present. Most likely?',
+    opts:['Dead speaker','Local oscillator not running','Blown fuse','Bad antenna'],
+    a:1, e:'No LO means the mixer makes no IF, so nothing downstream has a station to work with — just noise. A dead LO gives exactly this full-hiss-no-stations signature even with a perfect front end.' },
+  { q:'You measure a strong IF at the mixer output, but no IF just after the IF filter/amp. What does that tell you?',
+    opts:['The antenna is disconnected','The fault is in the IF stage, between the mixer and the demodulator','The power supply is dead','The stereo decoder failed'],
+    a:1, e:'Signal healthy at the mixer, gone right after the IF stage = the fault sits in that IF filter/amp section. Finding where the signal drops is the essence of tracing.' },
+  { q:'Why is checking DC voltage alone not enough on a radio, when it often is on a power board?',
+    opts:['Radios use no DC','A stage can be perfectly powered yet still pass no signal','Meters can’t read RF at all','DC is dangerous on radios'],
+    a:1, e:'A stage can have correct supply and bias and still be dead to the signal — a cracked filter, a dead oscillator. You must trace the signal itself, not just confirm power.' },
+  { q:'Clean audio is present at the audio amplifier’s input and the amp has its supply voltage — but the speaker is silent. Where’s the fault?',
+    opts:['The mixer','The audio power amplifier (or a stuck mute)','The local oscillator','The IF filter'],
+    a:1, e:'Signal good going in, dead coming out, power present — the failed stage is the amp itself (or its mute line is stuck on). Signal-in-vs-signal-out across one stage localizes it.' },
+  { q:'The radio plays clearly but only in mono, and the stereo light never lights. Everything else checks out. Suspect?',
+    opts:['Antenna','Stereo (MPX) decoder','Power regulator','RF amplifier'],
+    a:1, e:'Good audio but no stereo separation and no stereo indicator isolates the MPX decoder (or loss of its 19 kHz pilot lock). The rest of the chain is clearly fine.' },
+  { q:'Stations read strong on the signal meter, but the audio is badly distorted right from the demodulator output onward. Best first suspect?',
+    opts:['Audio amplifier','Demodulator / detector','Antenna','Local oscillator'],
+    a:1, e:'Strong IF but distortion that begins at the detector points at the demodulator (or its tuning). A bad audio amp would give silence or its own distortion — but the audio is already bad before it here.' },
+  { q:'On the RF front end, the biggest hazard to the components (not to you) is:',
+    opts:['Mains voltage','Electrostatic discharge (ESD) from your hands','Excessive light','Magnetism'],
+    a:1, e:'The tiny-signal LNA and tuner ICs can be silently killed by static you can’t even feel. Ground yourself, use a mat, handle by the edges — the danger here is to the parts, not to you.' },
+  { q:'Applying divide-and-conquer to this long chain, the smartest first probe is usually:',
+    opts:['The antenna','Somewhere in the middle, like the detector output','The speaker','A random stage'],
+    a:1, e:'Probing the middle first tells you which half the fault is in, halving the search. Good there? Back half. Dead there? Front half. Far faster than crawling end to end.' }
+];
+const quizHost = document.getElementById('quizHost');
+let quizScore = 0;
+document.getElementById('quizTotal').textContent = QUIZ.length;
+QUIZ.forEach((item, qi) => {
+  const block = document.createElement('div');
+  block.className = 'q-block';
+  block.innerHTML = '<div class="qtext"><span class="n">Q'+(qi+1)+'.</span>'+item.q+'</div>';
+  item.opts.forEach((opt, oi) => {
+    const b = document.createElement('button');
+    b.className = 'opt';
+    b.textContent = opt;
+    b.addEventListener('click', () => {
+      if (block.dataset.done) return;
+      block.dataset.done = '1';
+      block.querySelectorAll('.opt').forEach((x, xi) => {
+        x.disabled = true;
+        if (xi === item.a) x.classList.add('correct');
+        if (xi === oi && oi !== item.a) x.classList.add('wrong');
+      });
+      if (oi === item.a) { quizScore++; document.getElementById('quizScore').textContent = quizScore; }
+      block.querySelector('.qexplain').classList.add('show');
+    });
+    block.appendChild(b);
+  });
+  const ex = document.createElement('div');
+  ex.className = 'qexplain';
+  ex.textContent = item.e;
+  block.appendChild(ex);
+  quizHost.appendChild(block);
+});
+</script>
+</body>
+</html>
