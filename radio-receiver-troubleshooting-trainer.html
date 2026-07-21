@@ -121,7 +121,13 @@
   .slider-row { margin-bottom: 1rem; }
   .slider-row label { display: flex; justify-content: space-between; font-weight: 600; font-size: 0.9rem; color: var(--steel); margin-bottom: 0.3rem; }
   .slider-row label .val { color: var(--sky); font-family: var(--font-display); font-size: 1.05rem; }
-  input[type=range] { width: 100%; accent-color: var(--rf); }
+  input[type=range] { width: 100%; accent-color: var(--rf); touch-action: pan-y; height: 26px; }
+  .tuner { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.65rem; }
+  .tuner .cap { flex-basis: 100%; font-size: 0.78rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; margin-bottom: 0.1rem; }
+  .tbtn { background: var(--card); border: 2px solid var(--border); border-radius: 7px; padding: 0.42rem 0.72rem; font-family: var(--font-display); font-weight: 600; font-size: 0.92rem; color: var(--steel); cursor: pointer; transition: background 0.12s, border-color 0.12s, color 0.12s; min-width: 2.6rem; }
+  .tbtn:hover { border-color: var(--rf); }
+  .tbtn.on { background: var(--rf); color: #08201c; border-color: var(--rf); }
+  .tbtn.step { color: var(--sky); font-size: 1.15rem; line-height: 1; padding: 0.42rem 0.85rem; }
   .freqbars { margin-top: 0.4rem; }
   .fbar { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.5rem; }
   .fbar .name { width: 74px; font-size: 0.8rem; font-weight: 600; color: var(--muted); text-transform: uppercase; }
@@ -263,6 +269,17 @@
           <div class="slider-row">
             <label>Tuned station <span class="val" id="stnVal">98.5 MHz</span></label>
             <input type="range" id="stnSlide" min="88.1" max="107.9" step="0.2" value="98.5">
+          </div>
+          <div class="tuner" id="tuner">
+            <span class="cap">Tap to tune &mdash; presets or nudge &minus;/+</span>
+            <button class="tbtn step" data-adj="-0.2" aria-label="down">&minus;</button>
+            <button class="tbtn preset" data-freq="88.5">88.5</button>
+            <button class="tbtn preset" data-freq="94.3">94.3</button>
+            <button class="tbtn preset" data-freq="98.5">98.5</button>
+            <button class="tbtn preset" data-freq="101.1">101.1</button>
+            <button class="tbtn preset" data-freq="104.7">104.7</button>
+            <button class="tbtn preset" data-freq="107.9">107.9</button>
+            <button class="tbtn step" data-adj="0.2" aria-label="up">+</button>
           </div>
           <div class="freqbars">
             <div class="fbar"><span class="name">Station</span><div class="track"><div class="fill station" id="barStn"></div></div><span class="num" id="numStn">98.5</span></div>
@@ -599,8 +616,26 @@ function updateSuperhet() {
   document.getElementById('ifVal').textContent = IF_MHZ.toFixed(1) + ' MHz';
   document.getElementById('imgVal').textContent = 'Image freq to reject: ' + image.toFixed(1) + ' MHz';
 }
-stnSlide.addEventListener('input', updateSuperhet);
+function highlightPreset() {
+  const v = (+stnSlide.value).toFixed(1);
+  document.querySelectorAll('#tuner .preset').forEach(b => b.classList.toggle('on', b.dataset.freq === v));
+}
+document.querySelectorAll('#tuner .tbtn').forEach(b => {
+  b.addEventListener('click', () => {
+    if (b.dataset.freq !== undefined) {
+      stnSlide.value = b.dataset.freq;
+    } else {
+      let v = +stnSlide.value + parseFloat(b.dataset.adj);
+      v = Math.max(+stnSlide.min, Math.min(+stnSlide.max, v));
+      stnSlide.value = v.toFixed(1);
+    }
+    updateSuperhet();
+    highlightPreset();
+  });
+});
+stnSlide.addEventListener('input', () => { updateSuperhet(); highlightPreset(); });
 updateSuperhet();
+highlightPreset();
 
 /* ---------- SIGNAL FLOW ANIMATION ---------- */
 const flowPulse = document.getElementById('flowPulse');
