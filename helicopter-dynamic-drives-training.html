@@ -2179,7 +2179,7 @@ try {
   if (saved && typeof saved === 'object') state = Object.assign(state, saved);
 } catch (e) { /* fresh start */ }
 
-function save() { localStorage.setItem(STORE_KEY, JSON.stringify(state)); }
+function save() { try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch (e) { /* storage unavailable — progress won't persist */ } }
 
 /* ---------- navigation ---------- */
 const tabsEl = document.getElementById('tabs');
