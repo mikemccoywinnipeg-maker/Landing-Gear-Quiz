@@ -1,0 +1,2439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Helicopter Dynamic Drives – Instructor Prep Program</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #0d1b2a;
+    --steel: #1e3a5f;
+    --sky: #2a6496;
+    --accent: #e8a838;
+    --light: #f4f7fb;
+    --text: #1a2332;
+    --muted: #6b7c93;
+    --green: #1a8a4a;
+    --red: #c0392b;
+    --card: #ffffff;
+    --border: #d0dde8;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Barlow', sans-serif;
+    background: var(--light);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  header {
+    background: linear-gradient(135deg, var(--navy) 0%, var(--steel) 100%);
+    color: #fff;
+    padding: 2rem 1.5rem 1.5rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 200px; height: 200px;
+    border-radius: 50%;
+    background: rgba(232,168,56,0.12);
+  }
+  header::after {
+    content: '';
+    position: absolute;
+    bottom: -30px; left: -30px;
+    width: 150px; height: 150px;
+    border-radius: 50%;
+    background: rgba(42,100,150,0.2);
+  }
+  header h1 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 2.3rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    position: relative;
+  }
+  header h1 span { color: var(--accent); }
+  header p {
+    margin-top: 0.4rem;
+    font-size: 0.95rem;
+    opacity: 0.85;
+    position: relative;
+  }
+
+  .scorebar {
+    background: var(--navy);
+    color: #fff;
+    padding: 0.6rem 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.9rem;
+    font-weight: 600;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+  .scorebar span { color: var(--accent); }
+
+  .progress-wrap { background: var(--steel); height: 6px; }
+  .progress-bar {
+    height: 6px;
+    background: var(--accent);
+    transition: width 0.4s ease;
+    width: 0%;
+  }
+
+  nav.tabs {
+    background: #fff;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    gap: 0.35rem;
+    overflow-x: auto;
+    padding: 0.6rem 1rem;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    -webkit-overflow-scrolling: touch;
+  }
+  nav.tabs button {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    white-space: nowrap;
+    border: 1px solid var(--border);
+    background: var(--light);
+    color: var(--steel);
+    border-radius: 999px;
+    padding: 0.35rem 0.85rem;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  nav.tabs button:hover { border-color: var(--sky); color: var(--sky); }
+  nav.tabs button.active {
+    background: var(--steel);
+    border-color: var(--steel);
+    color: #fff;
+  }
+  nav.tabs button .done-dot {
+    display: inline-block;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--green);
+    margin-left: 6px;
+    vertical-align: middle;
+  }
+
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 1.5rem 1rem 3rem;
+  }
+
+  section.view { display: none; }
+  section.view.active { display: block; animation: fadein 0.25s ease; }
+  @keyframes fadein { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.2rem 1.3rem;
+    margin-bottom: 1.1rem;
+    box-shadow: 0 1px 3px rgba(13,27,42,0.06);
+  }
+
+  h2.view-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 1.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--steel);
+    letter-spacing: 0.5px;
+    margin-bottom: 0.2rem;
+  }
+  .view-sub {
+    color: var(--muted);
+    font-size: 0.95rem;
+    margin-bottom: 1.1rem;
+  }
+  .week-chip {
+    display: inline-block;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 600;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    background: var(--accent);
+    color: var(--navy);
+    border-radius: 4px;
+    padding: 0.1rem 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .card h3 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 1.25rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--sky);
+    margin-bottom: 0.6rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .card h3 .icon { font-size: 1.1rem; }
+
+  .card p { margin-bottom: 0.7rem; line-height: 1.55; font-size: 0.97rem; }
+  .card p:last-child { margin-bottom: 0; }
+  .card ul, .card ol { margin: 0 0 0.8rem 1.3rem; line-height: 1.55; font-size: 0.97rem; }
+  .card li { margin-bottom: 0.35rem; }
+  .card strong { color: var(--steel); }
+
+  details.topic {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 0.6rem;
+    background: #fbfdff;
+    overflow: hidden;
+  }
+  details.topic summary {
+    cursor: pointer;
+    padding: 0.7rem 0.9rem;
+    font-weight: 600;
+    color: var(--steel);
+    font-size: 1rem;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    user-select: none;
+  }
+  details.topic summary::-webkit-details-marker { display: none; }
+  details.topic summary::before {
+    content: '▸';
+    color: var(--accent);
+    font-size: 1rem;
+    transition: transform 0.15s ease;
+  }
+  details.topic[open] summary::before { transform: rotate(90deg); }
+  details.topic .topic-body { padding: 0.2rem 1rem 0.9rem; }
+  details.topic .topic-body p { margin-bottom: 0.6rem; line-height: 1.55; font-size: 0.95rem; }
+  details.topic .topic-body ul, details.topic .topic-body ol { margin: 0 0 0.7rem 1.2rem; line-height: 1.55; font-size: 0.95rem; }
+
+  .callout {
+    border-left: 4px solid var(--accent);
+    background: #fdf6e8;
+    border-radius: 0 6px 6px 0;
+    padding: 0.6rem 0.9rem;
+    margin: 0.6rem 0 0.8rem;
+    font-size: 0.93rem;
+    line-height: 1.5;
+  }
+  .callout.teach {
+    border-left-color: var(--sky);
+    background: #eaf2f9;
+  }
+  .callout .co-label {
+    display: block;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 0.8rem;
+    color: var(--steel);
+    margin-bottom: 0.15rem;
+  }
+
+  table.data {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.92rem;
+    margin: 0.5rem 0 0.8rem;
+  }
+  table.data th, table.data td {
+    border: 1px solid var(--border);
+    padding: 0.45rem 0.6rem;
+    text-align: left;
+    vertical-align: top;
+  }
+  table.data th {
+    background: var(--steel);
+    color: #fff;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+  }
+  table.data tr:nth-child(even) td { background: #f7fafd; }
+  .table-scroll { overflow-x: auto; }
+
+  label.task {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.6rem;
+    padding: 0.5rem 0.6rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 0.45rem;
+    cursor: pointer;
+    background: #fff;
+    transition: background 0.15s ease, border-color 0.15s ease;
+    font-size: 0.95rem;
+    line-height: 1.45;
+  }
+  label.task:hover { border-color: var(--sky); }
+  label.task input {
+    margin-top: 0.2rem;
+    width: 17px; height: 17px;
+    accent-color: var(--green);
+    flex-shrink: 0;
+  }
+  label.task.done {
+    background: #f0f8f2;
+    border-color: #bfe0cb;
+    color: #3c5a48;
+  }
+  label.task.done .task-text { text-decoration: line-through; text-decoration-color: rgba(26,138,74,0.5); }
+  label.task .hrs {
+    margin-left: auto;
+    flex-shrink: 0;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--muted);
+    background: var(--light);
+    border-radius: 4px;
+    padding: 0.1rem 0.4rem;
+    align-self: center;
+  }
+
+  .quiz-box { margin-top: 0.3rem; }
+  .quiz-status {
+    font-size: 0.92rem;
+    color: var(--muted);
+    margin-bottom: 0.6rem;
+  }
+  .quiz-status .best-pass { color: var(--green); font-weight: 600; }
+  .quiz-status .best-fail { color: var(--red); font-weight: 600; }
+  .q-card {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.9rem 1rem;
+    background: #fff;
+  }
+  .q-num {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 0.82rem;
+    color: var(--muted);
+    margin-bottom: 0.3rem;
+  }
+  .q-text { font-weight: 600; margin-bottom: 0.7rem; line-height: 1.5; }
+  .q-opts { display: flex; flex-direction: column; gap: 0.45rem; }
+  .q-opts button {
+    text-align: left;
+    font-family: 'Barlow', sans-serif;
+    font-size: 0.93rem;
+    line-height: 1.4;
+    padding: 0.55rem 0.75rem;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--light);
+    cursor: pointer;
+    transition: border-color 0.15s ease;
+  }
+  .q-opts button:hover:not(:disabled) { border-color: var(--sky); }
+  .q-opts button:disabled { cursor: default; }
+  .q-opts button.correct { background: #e6f4ea; border-color: var(--green); color: #14532d; font-weight: 600; }
+  .q-opts button.wrong { background: #fdecea; border-color: var(--red); color: #7f1d1d; }
+  .q-expl {
+    margin-top: 0.7rem;
+    border-left: 4px solid var(--sky);
+    background: #eaf2f9;
+    border-radius: 0 6px 6px 0;
+    padding: 0.55rem 0.8rem;
+    font-size: 0.92rem;
+    line-height: 1.5;
+    display: none;
+  }
+  .q-expl.show { display: block; }
+  .q-actions { margin-top: 0.8rem; display: flex; gap: 0.6rem; flex-wrap: wrap; }
+
+  .btn {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    border: none;
+    border-radius: 8px;
+    padding: 0.55rem 1.2rem;
+    cursor: pointer;
+    transition: transform 0.1s ease, box-shadow 0.15s ease;
+  }
+  .btn:active { transform: scale(0.98); }
+  .btn.primary { background: var(--accent); color: var(--navy); }
+  .btn.primary:hover { box-shadow: 0 2px 8px rgba(232,168,56,0.45); }
+  .btn.ghost {
+    background: #fff;
+    color: var(--steel);
+    border: 1px solid var(--border);
+  }
+  .btn.ghost:hover { border-color: var(--sky); color: var(--sky); }
+  .btn.small { font-size: 0.85rem; padding: 0.3rem 0.7rem; }
+
+  .quiz-result {
+    text-align: center;
+    padding: 1rem 0.5rem 0.4rem;
+  }
+  .quiz-result .score-big {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 2.4rem;
+    font-weight: 700;
+    color: var(--steel);
+  }
+  .quiz-result .verdict { font-weight: 600; margin: 0.2rem 0 0.6rem; }
+  .quiz-result .verdict.pass { color: var(--green); }
+  .quiz-result .verdict.fail { color: var(--red); }
+
+  .dash-status {
+    display: inline-block;
+    font-size: 0.78rem;
+    font-weight: 600;
+    border-radius: 999px;
+    padding: 0.12rem 0.6rem;
+    white-space: nowrap;
+  }
+  .dash-status.s-none { background: #eef2f6; color: var(--muted); }
+  .dash-status.s-part { background: #fdf6e8; color: #8a6210; }
+  .dash-status.s-done { background: #e6f4ea; color: var(--green); }
+  td .mini-note { display: block; font-size: 0.8rem; color: var(--muted); margin-top: 0.15rem; }
+  .dash-link { color: var(--sky); font-weight: 600; cursor: pointer; text-decoration: underline; }
+
+  .glossary-search {
+    width: 100%;
+    font-family: 'Barlow', sans-serif;
+    font-size: 0.97rem;
+    padding: 0.6rem 0.8rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 0.9rem;
+  }
+  dl.glossary dt {
+    font-weight: 600;
+    color: var(--steel);
+    margin-top: 0.7rem;
+  }
+  dl.glossary dd {
+    margin-left: 0;
+    padding-left: 0.9rem;
+    border-left: 3px solid var(--border);
+    margin-top: 0.15rem;
+    font-size: 0.94rem;
+    line-height: 1.5;
+    color: #33415c;
+  }
+
+  .bank-q {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: #fff;
+    padding: 0.7rem 0.9rem;
+    margin-bottom: 0.55rem;
+    font-size: 0.94rem;
+    line-height: 1.5;
+  }
+  .bank-q .bq-text { font-weight: 600; }
+  .bank-q .bq-ans {
+    display: none;
+    margin-top: 0.45rem;
+    border-left: 4px solid var(--green);
+    background: #f0f8f2;
+    border-radius: 0 6px 6px 0;
+    padding: 0.45rem 0.7rem;
+  }
+  .bank-q.open .bq-ans { display: block; }
+  .bank-q .bq-toggle {
+    margin-top: 0.4rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--sky);
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 0;
+    font-family: 'Barlow', sans-serif;
+  }
+  .bank-mod-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 1.15rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--steel);
+    margin: 1.1rem 0 0.5rem;
+  }
+
+  footer {
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.85rem;
+    padding: 1.5rem 1rem 2.5rem;
+  }
+
+  @media print {
+    nav.tabs, .scorebar, .progress-wrap, .btn, header::before, header::after { display: none !important; }
+    section.view { display: block !important; page-break-after: always; }
+    details.topic { border: none; }
+    details.topic .topic-body { display: block !important; }
+    body { background: #fff; }
+    .card { box-shadow: none; }
+  }
+</style>
+<script>window.QUIZ = window.QUIZ || {};</script>
+</head>
+<body>
+
+<header>
+  <h1>Helicopter <span>Dynamic Drives</span></h1>
+  <p>Instructor Preparation Program &mdash; 8 weeks from refresher to ready-to-teach</p>
+</header>
+
+<div class="scorebar">
+  <div>Overall readiness: <span id="overall-pct">0%</span></div>
+  <div id="modules-done-label">Modules complete: <span id="modules-done">0 / 9</span></div>
+</div>
+<div class="progress-wrap"><div class="progress-bar" id="overall-bar"></div></div>
+
+<nav class="tabs" id="tabs"></nav>
+
+<main class="container">
+
+<!-- ============================================================ OVERVIEW -->
+<section class="view" id="view-overview">
+  <h2 class="view-title">Program Overview</h2>
+  <p class="view-sub">A self-paced study plan that turns "I've never taught this" into a full set of course materials before day one.</p>
+
+  <div class="card">
+    <h3><span class="icon">🎯</span> How this program works</h3>
+    <p>You already think like an AME &mdash; this program doesn't teach you maintenance from scratch. It rebuilds your helicopter drivetrain knowledge <strong>in the order you'll teach it</strong>, and every week you convert what you studied into an actual teaching asset. By the end you'll have a course outline, lesson skeletons, lab plans, demo scripts, and a question bank &mdash; built gradually instead of in a last-minute panic.</p>
+    <ul>
+      <li><strong>Learn</strong> &mdash; each module has a "core knowledge" section (the refresher itself), plus readings from free references and the maintenance manuals for whatever types your school has.</li>
+      <li><strong>Check</strong> &mdash; a self-check quiz at the end of each module. Aim for 80%+. If you can't hit that, you're not ready to field student questions on it yet.</li>
+      <li><strong>Build</strong> &mdash; every module ends with a "teach-back deliverable": a diagram, handout, demo plan, or exam questions that go straight into your fall course binder.</li>
+    </ul>
+    <p>Budget <strong>5&ndash;8 hours a week</strong>. Your progress (checklists and quiz scores) is saved in this browser automatically.</p>
+    <div class="callout teach">
+      <span class="co-label">The instructor's secret</span>
+      You don't need to know everything &mdash; you need to be one honest week ahead of the class, with a plan. This program keeps you about six weeks ahead.
+    </div>
+  </div>
+
+  <div class="card">
+    <h3><span class="icon">🗓️</span> The schedule</h3>
+    <p>Dates assume a term that starts right after Labour Day (Sept 7, 2026). If your term starts earlier, shift everything left &mdash; the module order is what matters. Weeks 6 and 7 share a slot because Module 7 is mostly regulatory ground you already own as a working AME.</p>
+    <div class="table-scroll">
+    <table class="data" id="dash-table">
+      <thead>
+        <tr><th>Week</th><th>Dates</th><th>Module</th><th>Status</th></tr>
+      </thead>
+      <tbody id="dash-body"></tbody>
+    </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3><span class="icon">📚</span> What "dynamic drives" covers</h3>
+    <p>Everything that carries power from the engine to the rotors &mdash; in ATA chapter terms, mostly <strong>ATA 63 (main rotor drive)</strong> and <strong>ATA 65 (tail rotor drive)</strong>:</p>
+    <ul>
+      <li>Clutches, belt drive systems, and freewheeling (overrunning) units</li>
+      <li>Driveshafts and flexible couplings, engine-to-transmission and down the tailboom</li>
+      <li>The main gearbox: gear stages, mounts, mast, and torque limits</li>
+      <li>Lubrication systems, chip detectors, oil analysis, and health monitoring (HUMS)</li>
+      <li>Intermediate and tail rotor gearboxes, hanger bearings, rotor brakes</li>
+      <li>Vibration fundamentals and drivetrain troubleshooting</li>
+      <li>Inspections, conditional inspections (sudden stoppage, overtorque), life-limited parts, and the airworthiness picture</li>
+    </ul>
+    <p><strong>Not</strong> in scope (usually a separate rotors course, but confirm in Week 0): rotor heads, blade systems, main rotor track &amp; balance, and flight controls. You'll want a clean boundary agreed with whoever teaches rotors.</p>
+  </div>
+
+  <div class="card">
+    <h3><span class="icon">💾</span> Your progress</h3>
+    <p>Checklists and quiz scores are stored in this browser only. Use the same computer/browser through the summer, or print your state before switching.</p>
+    <div class="q-actions">
+      <button class="btn ghost small" id="reset-all">Reset all progress</button>
+      <button class="btn ghost small" onclick="window.print()">Print the whole program</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ WEEK 0 -->
+<section class="view" id="view-w0">
+  <span class="week-chip">Week 0 &middot; Now &ndash; Jul 26</span>
+  <h2 class="view-title">Orientation &amp; Recon</h2>
+  <p class="view-sub">Before studying anything: find out exactly what you're expected to teach, with what, to whom.</p>
+
+  <div class="card">
+    <h3><span class="icon">🧭</span> Why this week matters most</h3>
+    <p>The single biggest mistake a first-time instructor makes is preparing the course they <em>imagine</em> instead of the course that's <em>approved</em>. If this is part of an AME training program, there is a Transport Canada&ndash;approved curriculum (CAR 403 / Standard 566 world) with defined topics, hours, and assessment standards. Your job in Week 0 is to get that document and everything the previous instructor left behind, so the next seven weeks aim at the right target.</p>
+  </div>
+
+  <div class="card">
+    <h3><span class="icon">✅</span> Recon checklist</h3>
+    <label class="task"><input type="checkbox" data-task="w0-1"><span class="task-text"><strong>Get the official course outline / approved curriculum</strong> from your program chair: topic list, allotted hours, required practical tasks, exam format and pass mark.</span><span class="hrs">1 h</span></label>
+    <label class="task"><input type="checkbox" data-task="w0-2"><span class="task-text"><strong>Collect the previous instructor's materials</strong> &mdash; slides, notes, handouts, old exams, lab sheets, marking guides. Even mediocre inherited material tells you the expected depth.</span><span class="hrs">1 h</span></label>
+    <label class="task"><input type="checkbox" data-task="w0-3"><span class="task-text"><strong>Inventory the training aids</strong>: which helicopters, gearboxes, cutaways, driveshafts, clutches, and freewheeling units does the shop actually have? Your examples should match the hardware students will touch.</span><span class="hrs">1 h</span></label>
+    <label class="task"><input type="checkbox" data-task="w0-4"><span class="task-text"><strong>Confirm the scope boundary</strong> with whoever teaches rotors/rigging: where does "dynamic drives" end? (Typically: you own everything up to the mast and the tail rotor gearbox output; heads, blades, and track &amp; balance are theirs.)</span><span class="hrs">0.5 h</span></label>
+    <label class="task"><input type="checkbox" data-task="w0-5"><span class="task-text"><strong>Gather the reference library</strong> (see the Resources tab): the type maintenance manuals for the shop's aircraft, the free FAA handbooks, and ideally a copy of a helicopter maintenance textbook.</span><span class="hrs">1 h</span></label>
+    <label class="task"><input type="checkbox" data-task="w0-6"><span class="task-text"><strong>Set up your course binder</strong> (physical or digital) with 8 dividers matching Modules 1&ndash;8. Every teach-back deliverable you produce gets filed immediately.</span><span class="hrs">0.5 h</span></label>
+    <label class="task"><input type="checkbox" data-task="w0-7"><span class="task-text"><strong>Get the logistics</strong>: class size, timetable (lecture vs. shop split), classroom equipment (whiteboard? projector?), and any student prerequisites.</span><span class="hrs">0.5 h</span></label>
+  </div>
+
+  <div class="card">
+    <h3><span class="icon">🗺️</span> Map the official outline onto this program</h3>
+    <p>Once you have the approved outline, spend 30 minutes mapping each of its topics to Modules 1&ndash;7 here. Anything the outline includes that this program doesn't cover (a specific type, a specific practical task) &mdash; write it into that module's notes now so it gets picked up in the right week.</p>
+    <div class="callout">
+      <span class="co-label">If you can't get the outline yet</span>
+      Don't stall. The module sequence here follows the standard logic of every helicopter drivetrain course (power path &rarr; engagement &rarr; main gearbox &rarr; lubrication &rarr; tail drive &rarr; vibration &rarr; airworthiness). Start Module 1 on schedule and fold the official outline in when it arrives.
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ MODULE 1 -->
+<section class="view" id="view-m1">
+  <span class="week-chip">Week 1 &middot; Jul 27 &ndash; Aug 2</span>
+  <h2 class="view-title">Module 1 — The Powertrain Big Picture</h2>
+  <p class="view-sub">Before any component makes sense, you (and later your students) need the whole power path in your head.</p>
+
+  <div class="card">
+    <h3><span class="icon">🎓</span> Why this is your first lecture</h3>
+    <p>Students who can trace power from the engine to both rotors, and explain <em>why</em> each element exists, learn every later component as "of course that's there." Students who can't are memorizing parts lists. This module rebuilds that map for you first.</p>
+    <p><strong>By the end of this module you can:</strong></p>
+    <ul>
+      <li>Trace the complete power path of a typical single-rotor helicopter and name every element in order.</li>
+      <li>Explain why large speed reduction is unavoidable (tip speed, torque, P = &tau;&omega;).</li>
+      <li>Contrast piston and turbine drivetrains and say why one needs a clutch and the other doesn't.</li>
+      <li>Describe the drive consequences of tandem, coaxial, intermeshing, NOTAR, and Fenestron layouts.</li>
+      <li>Quote ballpark RPM and reduction numbers for common types, and find the exact ones in a maintenance manual.</li>
+      <li>Navigate ATA chapters 62&ndash;65 in a type MM and know what lives where.</li>
+    </ul>
+    <div class="q-actions"><button class="btn ghost small" data-expand>Expand all topics</button></div>
+  </div>
+
+  <div class="card">
+    <h3><span class="icon">📖</span> Core knowledge refresher</h3>
+
+    <details class="topic">
+      <summary>1.1 &nbsp;Why a drive system exists at all</summary>
+      <div class="topic-body">
+        <p>A main rotor is a huge wing that must keep its advancing blade tip comfortably below the speed of sound (drag and vibration climb fast beyond roughly Mach 0.85&ndash;0.9 at the tip). Tip speed = rotor radius &times; rotational speed, so big rotors are <strong>slow</strong> rotors: real machines run roughly <strong>200&ndash;530 main rotor RPM</strong>. Engines are the opposite: piston engines like to make power near 2,500&ndash;3,000 RPM, and free-turbine output shafts spin at 6,000&ndash;21,000 RPM. Something has to bridge that gap.</p>
+        <p>The second half of the story is torque. Power = torque &times; rotational speed (P = &tau;&omega;). Cut the speed by a factor of 15 at constant power and the torque coming out is 15&times; the torque going in. That is why the final gear stage, the mast, and the mounts are the beefiest parts of the drivetrain, and why the gearbox &mdash; not the engine &mdash; often sets the aircraft's power limit.</p>
+        <div class="callout teach">
+          <span class="co-label">Classroom hook</span>
+          Ask: "The engine makes 6,000 RPM. The rotor needs 400. Who votes we just bolt them together?" Then let the class reason their way to tip speed and torque. Ten minutes, no slides, and they've derived the reason the course exists.
+        </div>
+      </div>
+    </details>
+
+    <details class="topic">
+      <summary>1.2 &nbsp;The standard power path (single main rotor + tail rotor)</summary>
+      <div class="topic-body">
+        <p>Memorize this chain until you can draw it cold:</p>
+        <p><strong>Engine &rarr; drive coupling / short shaft &rarr; freewheeling unit &rarr; main gearbox (MGB) &rarr; mast &rarr; main rotor</strong>, with the <strong>tail rotor driveshaft, oil cooler blower, hydraulic pump, rotor tachometer generator</strong> (and on some types a generator and the rotor brake disc) all driven off the <strong>main gearbox</strong>, not the engine.</p>
+        <p>That placement is the single most important design fact in this course: everything tapped off the MGB sits <strong>downstream of the freewheeling unit</strong>. When the engine quits and the freewheel opens, the autorotating main rotor keeps driving the gearbox &mdash; so the tail rotor keeps turning (you keep yaw control), the tach keeps reading rotor RPM, and the pumps keep pumping. An autorotation is only survivable because of where those takeoffs are.</p>
+        <ul>
+          <li><strong>Drive coupling / short shaft</strong> &mdash; connects engine output to the gearbox input across small misalignments and structural flexing.</li>
+          <li><strong>Freewheeling unit (FWU)</strong> &mdash; one-way clutch: engine can drive rotor, rotor can never drive (or drag) a dead engine. Module 2 lives here.</li>
+          <li><strong>Main gearbox</strong> &mdash; two or three stages of reduction, direction change, and every accessory pad. Module 3.</li>
+          <li><strong>Mast</strong> &mdash; carries drive torque up to the head and (on most designs) lift loads down into the airframe.</li>
+        </ul>
+        <div class="callout">
+          <span class="co-label">Common student misconception</span>
+          "In autorotation the tail rotor stops because the engine stopped." False &mdash; and a student who believes it has not understood the drivetrain at all. Put it on every exam you ever write.
+        </div>
+      </div>
+    </details>
+
+    <details class="topic">
+      <summary>1.3 &nbsp;Piston vs. turbine drivetrains</summary>
+      <div class="topic-body">
+        <p><strong>Piston (R22, R44, S300):</strong> the engine cannot start while connected to the inertia of a rotor system, so a <strong>clutch</strong> (belt drive or centrifugal) lets it start unloaded and then pick up the rotor gradually. Piston installations also produce strong torsional pulses, so the belts or couplings double as vibration isolation. RPM is governed at essentially one operating value (correlator/governor).</p>
+        <p><strong>Free-turbine (Bell 206, AS350, most turbine helicopters):</strong> the power turbine is driven by gas flow, not a shaft, from the gas producer &mdash; aerodynamically coupled, mechanically separate. At start, the gas producer spools up while the power turbine and rotor sit still; there is nothing to "disconnect," so <strong>no clutch is needed</strong>. A freewheeling unit is still mandatory for autorotation. Smooth power delivery, but the gearbox sees high input speed (≈6,000+ RPM), so lubrication and gear precision matter more.</p>
+        <p>Either way, every helicopter has a freewheeling unit. Only shaft-loaded engines (pistons, and rare direct-drive turbines) need a clutch as well.</p>
+      </div>
+    </details>
+
+    <details class="topic">
+      <summary>1.4 &nbsp;Configurations and what they do to the drive system</summary>
+      <div class="topic-body">
+        <ul>
+          <li><strong>Single main + tail rotor</strong> (the default): main rotor torque tries to spin the fuselage the other way; the tail rotor cancels it, burning roughly <strong>5&ndash;15% of total power in the hover</strong> (~10% is the classic figure). The whole ATA 65 chapter exists to feed it.</li>
+          <li><strong>Tandem (CH-47):</strong> two rotors turn opposite directions &mdash; torques cancel, no tail rotor. Engines feed a <strong>combining gearbox</strong>, and <strong>synchronizing shafts</strong> tie both rotor gearboxes together so the intermeshing blade arcs stay phased and one engine (or both, in autorotation) always drives both rotors. A sync shaft failure is catastrophic &mdash; which is a great way to teach why shaft inspections matter.</li>
+          <li><strong>Coaxial (Kamov):</strong> two rotors on concentric shafts through one gearbox; torque cancels on the mast itself.</li>
+          <li><strong>Intermeshing (K-MAX):</strong> two close-set masts geared rigidly together &mdash; phasing is life-or-death, same teaching point as the tandem.</li>
+          <li><strong>Fenestron (many Airbus types):</strong> a small many-bladed fan in a duct &mdash; same drive path as a tail rotor but higher shaft and fan RPM.</li>
+          <li><strong>NOTAR (MD):</strong> a gearbox-driven fan pressurizes the tailboom; slots and a rotating thruster do the anti-torque work. Still a drivetrain &mdash; the fan drive is maintained like any tail rotor drive.</li>
+        </ul>
+        <p><strong>Multi-engine types:</strong> each engine input has its own freewheeling unit into a combining section of the MGB, so one engine can fail (or be shut down) while the other drives everything.</p>
+      </div>
+    </details>
+
+    <details class="topic">
+      <summary>1.5 &nbsp;Real numbers to anchor the theory</summary>
+      <div class="topic-body">
+        <p>Approximate, from published figures &mdash; <strong>always verify in the type MM/RFM before you put a number on a slide</strong>. The point is the pattern, not the decimals:</p>
+        <div class="table-scroll">
+        <table class="data">
+          <thead><tr><th>Type</th><th>Input to drive system</th><th>Main rotor RPM</th><th>Overall reduction</th><th>How</th></tr></thead>
+          <tbody>
+            <tr><td>Robinson R22</td><td>Piston, ≈2,650 RPM</td><td>≈510</td><td>≈5:1</td><td>V-belt stage + one spiral-bevel gearbox</td></tr>
+            <tr><td>Bell 206</td><td>Turbine output, 6,016 RPM</td><td>≈394</td><td>≈15:1</td><td>Spiral-bevel stage + planetary stage</td></tr>
+            <tr><td>Airbus AS350</td><td>Turbine output, ≈6,000 RPM</td><td>≈390</td><td>≈15:1</td><td>Bevel stage + epicyclic stage</td></tr>
+            <tr><td>Sikorsky S-92</td><td>Turbine output, ≈20,900 RPM</td><td>≈258</td><td>≈81:1</td><td>Three stages, twin inputs combined</td></tr>
+          </tbody>
+        </table>
+        </div>
+        <p>Notice the design rule: the faster the engine and the bigger the rotor, the more stages you need &mdash; and the last stage is always the big one, because that's where the torque lives.</p>
+      </div>
+    </details>
+
+    <details class="topic">
+      <summary>1.6 &nbsp;Finding your way: the ATA 60-series map</summary>
+      <div class="topic-body">
+        <p>Type manuals organize rotorcraft chapters like this &mdash; your course lives in the bold ones:</p>
+        <ul>
+          <li>ATA 62 &mdash; Main rotor (head, blades) &rarr; the rotors course</li>
+          <li><strong>ATA 63 &mdash; Main rotor drive</strong>: engine-to-MGB shafting, clutch/FWU, main gearbox, mounts, mast, MGB indicating (chip, temp, press)</li>
+          <li>ATA 64 &mdash; Tail rotor (the rotor itself) &rarr; rotors course</li>
+          <li><strong>ATA 65 &mdash; Tail rotor drive</strong>: tail driveshafts, hanger bearings, intermediate and tail gearboxes</li>
+          <li>ATA 66 &mdash; Folding blades/pylon; 67 &mdash; rotors flight control &rarr; elsewhere</li>
+        </ul>
+        <p>Teach students to <em>start</em> every job by finding the right chapter &mdash; it's a licensing-exam skill and a shop-floor skill in one.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="card">
+    <h3><span class="icon">✅</span> Study assignments</h3>
+    <label class="task"><input type="checkbox" data-task="m1-1"><span class="task-text">Read the helicopter/rotorcraft chapter of the <strong>FAA AMT Handbook (Airframe)</strong> &mdash; drive/transmission sections &mdash; and the main rotor system chapter of the <strong>FAA Helicopter Flying Handbook</strong> for the theory refresher. Both free (Resources tab).</span><span class="hrs">2 h</span></label>
+    <label class="task"><input type="checkbox" data-task="m1-2"><span class="task-text">Open the MM for one type your school owns and skim the <strong>ATA 63 and 65 tables of contents</strong>. Write down its actual power path and RPMs.</span><span class="hrs">1 h</span></label>
+    <label class="task"><input type="checkbox" data-task="m1-3"><span class="task-text">Draw the complete power-flow diagram for that type <strong>from memory</strong>, then correct it against the MM. Redraw until clean.</span><span class="hrs">1 h</span></label>
+    <label class="task"><input type="checkbox" data-task="m1-4"><span class="task-text">Build your own version of the "real numbers" table for the types in your hangar &mdash; engine output RPM, rotor RPM, ratio, number of stages.</span><span class="hrs">0.5 h</span></label>
+    <label class="task"><input type="checkbox" data-task="m1-5"><span class="task-text">Watch two or three animated videos of helicopter transmissions / power paths (search "helicopter main gearbox animation", "how a helicopter transmission works"). Note which one you'd show in class.</span><span class="hrs">1 h</span></label>
+  </div>
+
+  <div class="card">
+    <h3><span class="icon">🛠️</span> Teach-back deliverable (file it in the binder)</h3>
+    <p><strong>Lecture visual #1:</strong> a one-page power-flow diagram of your school's primary type, clean enough to redraw on a whiteboard in under three minutes. On the back, write your ten-sentence "why transmissions exist" explanation &mdash; tip speed, torque, and the freewheeling logic. This is the opening of your first lecture.</p>
+  </div>
+
+  <div class="card">
+    <h3><span class="icon">📝</span> Self-check quiz</h3>
+    <div class="quiz-box" data-quiz="m1"></div>
+  </div>
+</section>
+<script>
+QUIZ.m1 = [
+  { q: "Why can't a helicopter main rotor simply turn at engine speed?", a: [
+      "The advancing blade tip would exceed acceptable Mach numbers, causing severe drag and vibration",
+      "Rotor bearings cannot be lubricated above about 1,000 RPM",
+      "Certification rules set one universal rotor RPM for all helicopters",
+      "Higher rotor RPM would produce too little lift"
+    ], c: 0, x: "Tip speed = radius × rotational speed. A large rotor at engine RPM would push its advancing tip well past Mach limits, so speed must be reduced — typically to a few hundred RPM." },
+  { q: "Power = torque × rotational speed. If a gearbox reduces speed 15:1 at constant power, the output torque is roughly…", a: [
+      "15 times the input torque",
+      "1/15th of the input torque",
+      "The same as the input torque",
+      "225 times the input torque"
+    ], c: 0, x: "P = τω: cut ω by 15 and τ must rise by 15. That's why final-stage gears, masts, and mounts are the heaviest parts of the system." },
+  { q: "During autorotation after an engine failure, the tail rotor…", a: [
+      "Keeps turning, because it is driven from the main gearbox downstream of the freewheeling unit",
+      "Stops, because the engine is no longer driving it",
+      "Keeps turning only if the pilot engages a backup clutch",
+      "Windmills freely, disconnected from everything"
+    ], c: 0, x: "The tail rotor takeoff is on the MGB, which the autorotating main rotor keeps driving once the freewheel opens. Yaw control survives the engine failure — by design." },
+  { q: "Why does a free-turbine helicopter not need a clutch for engine start?", a: [
+      "The power turbine is driven by gas flow only, so the gas producer can spool up while the rotor sits still",
+      "Turbine engines produce no torque at low RPM",
+      "The freewheeling unit acts as a clutch during start",
+      "Turbine helicopters start with the rotor brake applied instead"
+    ], c: 0, x: "Gas producer and power turbine are aerodynamically coupled, mechanically separate — the engine starts unloaded by nature. Pistons are shaft-connected, so they need a belt or centrifugal clutch." },
+  { q: "In a type maintenance manual, the main gearbox, mast, and engine-to-transmission shafting live in…", a: [
+      "ATA 63 — Main rotor drive",
+      "ATA 62 — Main rotor",
+      "ATA 65 — Tail rotor drive",
+      "ATA 71 — Powerplant"
+    ], c: 0, x: "ATA 63 is main rotor drive; ATA 65 is tail rotor drive; 62 and 64 are the rotors themselves (usually a separate course)." },
+  { q: "In the hover, the tail rotor of a typical single-rotor helicopter consumes about…", a: [
+      "10% of total power",
+      "1% of total power",
+      "40% of total power",
+      "None — it freewheels in the hover"
+    ], c: 0, x: "Roughly 5–15%, with ~10% the classic planning figure. It's pure overhead — power spent making zero lift — which is why designers flirt with Fenestrons, NOTAR, and twin-rotor layouts." },
+  { q: "Why do tandem-rotor helicopters like the CH-47 have synchronizing shafts between the rotor gearboxes?", a: [
+      "The intermeshing blade arcs must stay exactly phased, and both rotors must stay driven if an engine fails",
+      "To let the pilot vary the speed of each rotor independently",
+      "To drive the tail rotor from either engine",
+      "Only to carry electrical wiring between gearboxes"
+    ], c: 0, x: "The blade arcs overlap — lose sync and the blades meet. The shafts rigidly tie both rotors together so phasing and drive continuity survive any engine failure." },
+  { q: "A Bell 206's engine output turns at 6,016 RPM and its main rotor at about 394 RPM. The overall reduction is roughly…", a: [
+      "15:1",
+      "5:1",
+      "50:1",
+      "1.5:1"
+    ], c: 0, x: "6,016 ÷ 394 ≈ 15.3. One spiral-bevel stage plus one planetary stage gets there. Being able to sanity-check ratios like this is a good student exercise." },
+  { q: "Which of these is normally driven directly by the MAIN GEARBOX rather than the engine?", a: [
+      "Rotor tachometer generator, hydraulic pump, and tail rotor drive",
+      "Starter-generator",
+      "Fuel control unit",
+      "Engine oil pump"
+    ], c: 0, x: "Anything that must keep working in autorotation is driven from the MGB, downstream of the freewheel: tail rotor, rotor tach, hydraulics, MGB oil pump. Engine accessories stay on the engine." }
+];
+</script>
+
+<!-- ============================================================ MODULE 2 -->
+<section class="view" id="view-m2">
+  <span class="week-chip">Week 2 &middot; Aug 3 &ndash; 9</span>
+  <h2 class="view-title">Module 2 — Clutches, Freewheeling Units &amp; Couplings</h2>
+  <p class="view-sub">The hardware that connects and disconnects — engine start, power delivery, and the autorotation guarantee.</p>
+
+  <div class="card">
+    <h3><span class="icon">🎓</span> Why students love (and fail) this module</h3>
+    <p>This is the "aha" week &mdash; sprag clutches are genuinely clever and every student wants to hold one. It's also where exams get failed, because the logic of <em>what drives what, in which direction, in which flight condition</em> takes real thought. Get fluent enough to answer the trick questions cold.</p>
+    <p><strong>By the end of this module you can:</strong></p>
+    <ul>
+      <li>Explain why piston helicopters need a clutch and turbines don't &mdash; and why <em>every</em> helicopter needs a freewheeling unit.</li>
+      <li>Describe belt drive and centrifugal clutch systems, their engagement sequences, and their inspection points.</li>
+      <li>Explain sprag and roller-ramp freewheeling units at the level of a cutaway drawing.</li>
+      <li>List the failure modes of a FWU (slip under power / fail to overrun) and their consequences.</li>
+      <li>Identify spline, flexible-disc (Thomas), and elastomeric couplings, what each tolerates, and what rejects them.</li>
+    </ul>
+    <div class="q-actions"><button class="btn ghost small" data-expand>Expand all topics</button></div>
+  </div>
+
+  <div class="card">
+    <h3><span class="icon">📖</span> Core knowledge refresher</h3>
+
+    <details class="topic">
+      <summary>2.1 &nbsp;Two different jobs: engaging vs. overrunning</summary>
+      <div class="topic-body">
+        <p>Keep these separate in your head and your students':</p>
+        <ul>
+          <li><strong>Clutch</strong> &mdash; lets the engine start <em>unloaded</em>, then picks up the rotor system gradually. Needed only when the engine is mechanically shaft-connected to the drive (piston engines; rare direct-drive turbines).</li>
+          <li><strong>Freewheeling unit</strong> &mdash; a one-way device that transmits torque from engine to rotor but automatically releases the moment the rotor tries to turn faster than the engine. Needed on <em>every</em> helicopter, because a failed engine that stayed connected would be a giant brake on the rotor &mdash; the end of autorotation.</li>
+        </ul>
+        <p>A Robinson has both (belts + sprag). A Bell 206 has only the freewheel, because its free turbine needs no clutch. That one comparison carries the whole concept.</p>
+      </div>
+    </details>
+
+    <details class="topic">
+      <summary>2.2 &nbsp;Belt drive systems (Robinson R22/R44)</summary>
+      <div class="topic-body">
+        <p>The engine drives a lower sheave; multiple V-belts carry power up to an upper sheave on the gearbox input. At start the belts are <strong>slack</strong> &mdash; the engine spins freely. After start, the pilot flips the clutch switch and an <strong>electric clutch actuator</strong> slowly increases sheave separation, tensioning the belts and easing the rotor into motion over a number of seconds. The clutch caution light stays on while the actuator runs; pilots are trained on exactly when that light is and isn't acceptable.</p>
+        <p>Why belts? Soft engagement, cheap overhaul, and superb isolation of piston power pulses from the gearbox. What you inspect and teach:</p>
+        <ul>
+          <li>Belt condition (cracking, fraying, glazing) and matched sets &mdash; belts are replaced as a set.</li>
+          <li>Sheave alignment and condition &mdash; misalignment eats belts.</li>
+          <li>Actuator operation, rigging, and travel limits per the MM.</li>
+          <li>Manufacturer service documents &mdash; Robinson issues plenty on this system; finding them is a good student exercise.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details class="topic">
+      <summary>2.3 &nbsp;Centrifugal clutches</summary>
+      <div class="topic-body">
+        <p>Used on types like the Schweizer/Hughes 300 lineage: friction shoes on the engine-driven member fly outward with RPM and grip a drum on the driven side. Below engagement RPM the engine idles free; advance the throttle and engagement happens automatically and progressively. Inspection points are what you'd expect from any friction device: <strong>lining wear and glazing, drum scoring and cracks, engagement RPM within limits, no oil contamination</strong> on the friction surfaces. Slipping past the engagement band shows up as RPM without rotor response and as heat.</p>
+      </div>
+    </details>
+
+    <details class="topic">
+      <summary>2.4 &nbsp;Freewheeling units: sprag and roller-ramp</summary>
+      <div class="topic-body">
+        <p>The dominant design is the <strong>sprag clutch</strong>: a full circle of hourglass-shaped steel elements ("sprags") between a smooth inner race and smooth outer race, lightly loaded by energizing springs so they always touch both races. The sprag's genius is its geometry &mdash; its diagonal dimension is slightly greater than the race gap:</p>
+        <ul>
+          <li><strong>Drive direction:</strong> relative rotation tips each sprag so it wedges between the races &mdash; the harder you drive, the harder it grips. Torque passes through with no slip.</li>
+          <li><strong>Overrun:</strong> the moment the driven race (rotor side) runs faster than the driving race (engine side), the sprags tip the other way, un-wedge, and the races slip freely with only light spring drag.</li>
+        </ul>
+        <p>The <strong>roller-and-ramp</strong> type does the same job with rollers riding ramps: rolled up the ramp = jammed = drive; rolled down = free. Either way the action is automatic, instant, and purely mechanical &mdash; no pilot input, ever.</p>
+        <p><strong>Where it sits</strong> varies by type &mdash; at the engine output (Bell 206), or built into the gearbox input &mdash; but it is <em>always</em> between the engine and the point where the tail rotor drive and accessories tap off. Check the type MM and make your students find it in the IPC.</p>
+        <div class="callout teach">
+          <span class="co-label">Five-minute demo that lands every time</span>
+          A bicycle rear wheel is a roller/pawl freewheel: pedal = drive, coast = overrun, and the clicking is the elements skipping. Bring one, or pass a real sprag unit around. Once they've coasted a bicycle, they understand autorotation drive continuity forever.
+        </div>
+      </div>
+    </details>
+
+    <details class="topic">
+      <summary>2.5 &nbsp;FWU failure modes, checks, and why we care</summary>
+      <div class="topic-body">
+        <p>Two ways it can fail, both taught as consequences:</p>
+        <ul>
+          <li><strong>Slips in the drive direction</strong> (worn/rounded sprags, wrong or contaminated lube, brinelled races): engine RPM rises but rotor RPM droops under load &mdash; power isn't arriving. Shows up as unexplained needle split under power, heat, and metal in the lube.</li>
+          <li><strong>Fails to overrun</strong> (jammed, corroded, damaged): the rotor stays chained to a dead or seized engine. In an engine failure this steals the autorotation; on shutdown it shows up as the rotor dragging the dead engine around. This is why <strong>overrun checks are built into normal ops</strong> &mdash; e.g., watching the needles split cleanly (rotor RPM above engine RPM) at throttle chop / shutdown.</li>
+        </ul>
+        <p>Maintenance items: correct lubrication (many FWUs are fed engine or gearbox oil &mdash; type-specific), smooth overrun by hand where the MM allows, conditional inspection after any overspeed or sudden stoppage, and scrupulous cleanliness during assembly &mdash; a sprag cage assembled dry or dirty is a time bomb.</p>
+      </div>
+    </details>
+
+    <details class="topic">
+      <summary>2.6 &nbsp;Driveshafts and couplings, engine to gearbox</summary>
+      <div class="topic-body">
+        <p>Engine and gearbox are mounted on different structure that flexes, grows with heat, and vibrates &mdash; so the short shaft between them must transmit full torque while forgiving small angular and axial misalignment. Three families:</p>
+        <ul>
+          <li><strong>Splined couplings</strong> &mdash; simple and compact; need the right grease, wear limits on the splines, and honest alignment. Fretting and spline wear are the enemies.</li>
+          <li><strong>Flexible-disc packs ("Thomas couplings")</strong> &mdash; stacks of thin stainless discs bolted alternately to driving and driven flanges; they transmit torque in tension and flex to absorb misalignment. Inspect for <strong>cracks radiating from bolt holes, fretting between discs, and correct bolt torque/orientation</strong> &mdash; and treat them as precision parts: a dropped or bent disc pack is rejected, not straightened.</li>
+          <li><strong>Elastomeric/flexible-frame couplings</strong> (e.g., KAflex-style shafts) &mdash; flex elements do the same job with no lubrication; inspect per the MM and respect handling limits (they hate being used as a step or pry point).</li>
+        </ul>
+        <p>Teach the pattern once and it covers Module 5 too, because the tail rotor driveline uses the same coupling families end to end.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="card">
+    <h3><span class="icon">✅</span> Study assignments</h3>
+    <label class="task"><input type="checkbox" data-task="m2-1"><span class="task-text">Read the clutch / freewheeling unit sections in your textbook and the <strong>ATA 63 FWU description</strong> in your shop type's MM. Note exactly where the FWU is on that type.</span><span class="hrs">2 h</span></label>
+    <label class="task"><input type="checkbox" data-task="m2-2"><span class="task-text">If the school has Robinsons: read the <strong>belt drive and clutch actuator</strong> sections of the R22/R44 MM, including the belt inspection criteria.</span><span class="hrs">1 h</span></label>
+    <label class="task"><input type="checkbox" data-task="m2-3"><span class="task-text">Watch a sprag-clutch animation until you can draw the wedge/release geometry from memory (search "sprag clutch animation").</span><span class="hrs">0.5 h</span></label>
+    <label class="task"><input type="checkbox" data-task="m2-4"><span class="task-text">Handle the hardware: find a FWU, disc coupling, or spline coupling in the shop (or a bicycle freewheel) and work the mechanism while narrating it aloud &mdash; the narration is lecture rehearsal.</span><span class="hrs">1 h</span></label>
+    <label class="task"><input type="checkbox" data-task="m2-5"><span class="task-text">Write out the answers to: "What happens if the FWU slips under power?" and "What happens if it fails to overrun during an engine failure?" &mdash; one paragraph each, exam-marking quality.</span><span class="hrs">0.5 h</span></label>
+  </div>
+
+  <div class="card">
+    <h3><span class="icon">🛠️</span> Teach-back deliverable</h3>
+    <p><strong>The autorotation drive-continuity board diagram</strong>: power path with the FWU drawn open and closed, showing what keeps turning in autorotation and why. Plus a <strong>5-minute demo script</strong> (bicycle wheel or real sprag unit) and <strong>five exam questions</strong> with model answers. File all three.</p>
+  </div>
+
+  <div class="card">
+    <h3><span class="icon">📝</span> Self-check quiz</h3>
+    <div class="quiz-box" data-quiz="m2"></div>
+  </div>
+</section>
+<script>
+QUIZ.m2 = [
+  { q: "The fundamental difference between a clutch and a freewheeling unit is:", a: [
+      "A clutch engages the engine to the rotor for start-up; a freewheeling unit automatically releases the rotor from a failing engine",
+      "They are two names for the same device",
+      "A clutch works only on turbine engines; a freewheeling unit only on pistons",
+      "A freewheeling unit is pilot-operated; a clutch is automatic"
+    ], c: 0, x: "Clutch = deliberate, gradual engagement (needed when the engine is shaft-connected). FWU = automatic one-way overrun protection — fitted to every helicopter." },
+  { q: "Why must a piston helicopter engine be started with the drive disengaged?", a: [
+      "The engine cannot crank and accelerate against the inertia and drag of the entire rotor system",
+      "Piston engines produce no power below rotor operating RPM",
+      "The magnetos will not fire under load",
+      "To let the tail rotor spin up first"
+    ], c: 0, x: "Starters can barely turn the engine itself; the rotor system's inertia would stall the start. Belts stay slack (Robinson) or a centrifugal clutch stays released until the engine runs." },
+  { q: "In a Robinson R22/R44, what tensions the drive belts after engine start?", a: [
+      "An electric clutch actuator that slowly increases the distance between the sheaves",
+      "Centrifugal weights inside the lower sheave",
+      "Manual lever tension applied by the pilot",
+      "Engine oil pressure acting on a belt tensioner piston"
+    ], c: 0, x: "The pilot flips the clutch switch; the actuator gradually tensions the slack belts, easing the rotor into motion. The clutch light shows while it runs." },
+  { q: "A sprag clutch transmits drive because each sprag…", a: [
+      "Wedges between the inner and outer races when driven in one direction, and tips free in the other",
+      "Is bolted rigidly to both races",
+      "Expands with centrifugal force to grip the outer race",
+      "Uses friction lining like a brake shoe"
+    ], c: 0, x: "The sprag's diagonal is slightly bigger than the race gap. Drive direction tips it into a wedge (grip rises with torque); overrun tips it free. Purely mechanical and instant." },
+  { q: "During autorotation entry, the freewheeling unit opens because…", a: [
+      "The rotor-side race tries to turn faster than the engine-side race",
+      "The pilot pulls the clutch release handle",
+      "Oil pressure to the sprags is lost with the engine",
+      "Negative G unloads the sprag springs"
+    ], c: 0, x: "Overrun is triggered purely by relative speed: rotor faster than engine = sprags un-wedge. No system, no pilot, no power required — which is exactly why it's trusted with everyone's life." },
+  { q: "A freewheeling unit that SLIPS in the drive direction shows up as:", a: [
+      "Engine RPM rising while rotor RPM droops under power",
+      "The rotor continuing to turn after engine shutdown",
+      "Inability to start the engine",
+      "High tail rotor pedal forces"
+    ], c: 0, x: "Slip means torque isn't crossing the unit: needles split the wrong way under load, with heat and often metal in the lube. Worn sprags, brinelled races, or wrong lubricant are classic causes." },
+  { q: "A freewheeling unit that FAILS TO OVERRUN during an engine failure would:", a: [
+      "Keep the rotor connected to the dead engine, dragging rotor RPM down and compromising autorotation",
+      "Have no effect — autorotation doesn't involve the freewheel",
+      "Overspeed the tail rotor",
+      "Only affect ground operation"
+    ], c: 0, x: "The autorotating rotor would have to motor a dead engine — enormous drag, decaying rotor RPM, possibly unrecoverable. This is THE reason the FWU exists and why overrun checks are routine." },
+  { q: "Why must the freewheeling unit be located between the engine and the tail rotor drive takeoff?", a: [
+      "So the main rotor keeps driving the tail rotor and accessories after the engine fails",
+      "To reduce vibration at the tail rotor",
+      "Because the FWU needs gearbox oil to work",
+      "To let the tail rotor be disconnected for ground runs"
+    ], c: 0, x: "If the tail drive tapped off upstream of the FWU, an engine failure would take the tail rotor with it. Downstream placement keeps yaw control alive in autorotation." },
+  { q: "During inspection you find hairline cracks radiating from the bolt holes of a flexible-disc (Thomas) coupling. You should:", a: [
+      "Reject the disc pack — cracked discs are unairworthy and can progress to coupling failure",
+      "Stop-drill the cracks and return it to service",
+      "Turn the pack over so the cracks are on the compression side",
+      "Re-torque the bolts and re-inspect in 10 hours"
+    ], c: 0, x: "Disc packs carry torque in tension through thin stainless discs; cracks at bolt holes are the classic failure origin. They are precision parts — cracked, bent, or dropped means rejected." },
+  { q: "A centrifugal clutch engages when:", a: [
+      "Engine RPM rises enough for the shoes to fly outward and grip the drum",
+      "The pilot closes the clutch switch",
+      "Oil pressure reaches operating value",
+      "Rotor RPM exceeds engine RPM"
+    ], c: 0, x: "Engagement is automatic with RPM — shoes fly out against spring force and grip the drum progressively. Inspection mirrors any friction device: lining wear, glazing, drum condition, engagement RPM." }
+];
+</script>
+
+<!-- ============================================================ MODULE 3 -->
+<section class="view" id="view-m3">
+  <span class="week-chip">Week 3 &middot; Aug 10 &ndash; 16</span>
+  <h2 class="view-title">Module 3 — Main Gearbox, Mounts &amp; Mast</h2>
+  <p class="view-sub">The heart of the machine: where 6,000 RPM becomes 400, and where the whole aircraft literally hangs from the rotor.</p>
+
+  <div class="card">
+    <h3><span class="icon">🎓</span> The centre of your course</h3>
+    <p>Every other module feeds this one. If you can stand at a cutaway gearbox and narrate the path of power through each stage &mdash; and the path of <em>lift</em> down through the case into the airframe &mdash; you own the course. That second path surprises students every year: on most helicopters, the fuselage hangs off the transmission.</p>
+    <p><strong>By the end of this module you can:</strong></p>
+    <ul>
+      <li>Name the gear types used in each stage of a typical MGB and justify why each was chosen.</li>
+      <li>Compute a planetary-stage reduction ratio from tooth counts.</li>
+      <li>Explain "transmission-limited," torque indication, and what an overtorque means for maintenance.</li>
+      <li>Describe mounting arrangements &mdash; rigid, elastomeric, lift link, nodal beam &mdash; and what loads each element carries.</li>
+      <li>Contrast a conventional (live) mast with a static mast design.</li>
+      <li>Explain gear pattern and backlash checks, spline wear, and why dynamic components carry finite lives.</li>
+    </ul>
+    <div class="q-actions"><button class="btn ghost small" data-expand>Expand all topics</button></div>
+  </div>
+
+  <div class="card">
+    <h3><span class="icon">📖</span> Core knowledge refresher</h3>
+
+    <details class="topic">
+      <summary>3.1 &nbsp;What the main gearbox actually does (four jobs)</summary>
+      <div class="topic-body">
+        <ol>
+          <li><strong>Reduce speed</strong> &mdash; two or three stages taking ~6,000+ RPM down to a few hundred.</li>
+          <li><strong>Change direction</strong> &mdash; engine shafts are roughly horizontal, the mast is vertical; a bevel stage turns the corner.</li>
+          <li><strong>Distribute power</strong> &mdash; tail rotor takeoff, oil pumps, hydraulic pump, tach generator, cooler blower, rotor brake.</li>
+          <li><strong>React loads</strong> &mdash; rotor thrust (lift!), torque reaction, and gyroscopic/maneuvering loads all pass through the case and mounts into the airframe.</li>
+        </ol>
+        <p>Job 4 is the one students miss. On a typical design the lift developed by the rotor comes down the mast, into the gearbox case, and into the fuselage through the mounts and lift link &mdash; the gearbox case is <em>primary structure</em>. That's why case cracks, mount condition, and hardware torque are treated with flight-control-level seriousness.</p>
+      </div>
+    </details>
+
+    <details class="topic">
+      <summary>3.2 &nbsp;Gear stages and why each type is used</summary>
+      <div class="topic-body">
+        <ul>
+          <li><strong>Spiral bevel</strong> &mdash; first stage on most boxes: turns the drive through ~90&deg; and takes the first bite of reduction. Curved teeth give multiple teeth in contact = quiet and strong, but they generate thrust loads, so they ride on serious bearings and their mesh position is <em>adjusted by shimming</em> (see pattern checks, 3.6).</li>
+          <li><strong>Spur / helical</strong> &mdash; used for accessory drives and intermediate stages. Spur = simple, no axial thrust, noisier. Helical = smoother and stronger for the size, but makes axial thrust.</li>
+          <li><strong>Planetary (epicyclic)</strong> &mdash; the classic final stage: a central <strong>sun gear</strong> (input) drives several <strong>planet gears</strong> on a carrier inside a fixed, internally-toothed <strong>ring gear</strong>; the <strong>carrier</strong> is the output. Load splits across all the planet meshes at once, everything stays concentric with the mast, and you get a big reduction in a short, fat, light package &mdash; exactly what you want directly under a rotor.</li>
+        </ul>
+        <p><strong>The ratio formula</strong> (fixed ring, sun in, carrier out): <strong>ratio = 1 + (ring teeth &divide; sun teeth)</strong>. Example: ring 120t, sun 40t &rarr; 1 + 3 = <strong>4:1</strong>. Have students compute this from a real cutaway &mdash; counting teeth on a training aid is a lab they remember.</p>
+        <p>Big machines stack two planetary stages, or use split-torque layouts; the principle doesn't change.</p>
+      </div>
+    </details>
+
+    <details class="topic">
+      <summary>3.3 &nbsp;Torque limits and "transmission-limited"</summary>
+      <div class="topic-body">
+        <p>On many helicopters the engine can produce more power than the gearbox is rated to carry &mdash; especially at low density altitude. The aircraft is then <strong>transmission-limited</strong>: the torque gauge, not the engine gauges, is the limit the pilot flies to. The torquemeter is effectively a <em>gearbox protection instrument</em>.</p>
+        <p>Maintenance consequences you'll teach:</p>
+        <ul>
+          <li>An <strong>overtorque</strong> is an exceedance event: the MM prescribes a conditional inspection scaled to how far and how long the limit was exceeded &mdash; from a close visual and chip check up to gearbox removal and teardown. Honest reporting culture matters; an unreported overtorque flies around as hidden fatigue damage.</li>
+          <li>Torque limits can differ for single-engine vs. twin operation, takeoff vs. continuous &mdash; the MM/RFM tables rule.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details class="topic">
+      <summary>3.4 &nbsp;Cases, hardware, and the magnesium problem</summary>
+      <div class="topic-body">
+        <p>Gearbox cases are typically <strong>magnesium or aluminum castings</strong> &mdash; light, stiff, good heat paths. Magnesium buys the most weight and costs the most vigilance: it corrodes enthusiastically, especially where protective finish is chipped, under steel fasteners, and around dissimilar-metal joints. Teach students to treat <em>any</em> blistered paint or white/grey powder on a case as a finding, and to repair finish per the MM (not with whatever primer is on the shelf).</p>
+        <ul>
+          <li>Threads live in <strong>steel inserts/studs</strong> &mdash; the casting itself never takes wrench loads directly. Pulled studs and insert condition are inspection items.</li>
+          <li>Cases carry <strong>sight glasses, chip detector bosses, filler and drain points, and mounting pads</strong> &mdash; all leak-path and crack-inspection territory.</li>
+          <li>Lifting and handling per the MM only &mdash; a gearbox slung from the wrong point can be damaged invisibly.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details class="topic">
+      <summary>3.5 &nbsp;Mounting systems: how the aircraft hangs on</summary>
+      <div class="topic-body">
+        <p>The mounts must carry lift and torque reaction into the airframe while keeping rotor vibration out of the cabin. Designs you should be able to sketch:</p>
+        <ul>
+          <li><strong>Rigid pad mounts</strong> &mdash; simple, all loads straight into structure; vibration comes along too.</li>
+          <li><strong>Elastomeric isolation mounts</strong> &mdash; rubber/metal sandwich mounts tuned to absorb the rotor's dominant frequencies. Inspect for separation, cracking, set (sag), and contamination by oil.</li>
+          <li><strong>Lift link / lift beam</strong> &mdash; a dedicated tension member carrying the main thrust load from the transmission to a strong fuselage frame; the surrounding mounts then mostly handle torque and shear. A cracked or worn lift link is a grounding find &mdash; make students say why.</li>
+          <li><strong>Nodal beam suspension</strong> (Bell's "Noda-Matic") &mdash; the transmission sits on a beam engineered to flex so its <em>node points</em> (points of minimum motion) are where the fuselage attaches: the beam vibrates, the cabin doesn't. Beautiful physics teaching moment.</li>
+          <li><strong>Torque restraints / stops</strong> &mdash; limit transmission rotation under drive torque, and often limit motion if an elastomeric element fails.</li>
+        </ul>
+        <p>Inspection themes: hardware torque and safetying, elastomer condition, fretting at fittings, cracks at the transmission deck, and correct free play (some designs deliberately have motion &mdash; "pylon rock" &mdash; with limits).</p>
+      </div>
+    </details>
+
+    <details class="topic">
+      <summary>3.6 &nbsp;Masts, bearings, and the checks that verify a healthy box</summary>
+      <div class="topic-body">
+        <p><strong>Conventional (live) mast:</strong> the rotating mast carries drive torque up to the head <em>and</em> rotor thrust down into the gearbox &mdash; the mast bearing set feeds lift into the case. Mast, mast nut, and mast bearings are critical parts with finite lives; the mast nut on many types is a torque-and-witness-mark item students must learn to respect.</p>
+        <p><strong>Static mast (MD 500 family and others):</strong> a stationary structural tube carries all the flight loads to the airframe, while a drive shaft inside it carries <em>only torque</em> to the head. Elegant separation of jobs &mdash; the drive shaft can be light because it never sees lift. Use the contrast as an exam question: "What loads does the drive shaft carry in a static-mast design?"</p>
+        <p><strong>Verifying gear health without opening the box:</strong></p>
+        <ul>
+          <li><strong>Backlash</strong> &mdash; measured free play between meshing teeth; outside limits means wear or wrong shimming.</li>
+          <li><strong>Tooth contact pattern</strong> &mdash; marking compound on the teeth, roll the mesh, read where the contact footprint sits; shims move the pattern. Set at build/overhaul, checked when the MM demands.</li>
+          <li><strong>Spline wear</strong> &mdash; measured against limits; fretting powder (red/black dust) at a spline is an early confession.</li>
+          <li><strong>Chip detectors, oil analysis, HUMS</strong> &mdash; the everyday windows into the box; all of Module 4.</li>
+        </ul>
+        <p><strong>Lives:</strong> gears, masts, and couplings are typically <em>retirement-lifed</em> (fatigue) and/or given <strong>TBOs</strong>; records make the part airworthy as much as its condition does. That thought carries straight into Module 7.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="card">
+    <h3><span class="icon">✅</span> Study assignments</h3>
+    <label class="task"><input type="checkbox" data-task="m3-1"><span class="task-text">Read the <strong>ATA 63 main gearbox description and operation</strong> section for your shop type end to end, drawing the stages as you go: gear type, ratio, bearing locations, accessory takeoffs.</span><span class="hrs">2 h</span></label>
+    <label class="task"><input type="checkbox" data-task="m3-2"><span class="task-text">Work three planetary ratio examples with different tooth counts until the formula is automatic. Make one of them your worked example for class.</span><span class="hrs">0.5 h</span></label>
+    <label class="task"><input type="checkbox" data-task="m3-3"><span class="task-text">Find the <strong>overtorque conditional inspection</strong> in the MM. Note how the required action escalates with severity &mdash; that table is a ready-made class handout.</span><span class="hrs">0.5 h</span></label>
+    <label class="task"><input type="checkbox" data-task="m3-4"><span class="task-text">Stand at the school's gearbox/cutaway (or a good sectioned diagram) and narrate the power path and the lift path out loud, twice, without notes.</span><span class="hrs">1 h</span></label>
+    <label class="task"><input type="checkbox" data-task="m3-5"><span class="task-text">Read the mount/pylon inspection section for your type; list every elastomeric element and its rejection criteria.</span><span class="hrs">1 h</span></label>
+  </div>
+
+  <div class="card">
+    <h3><span class="icon">🛠️</span> Teach-back deliverable</h3>
+    <p><strong>A labeled-diagram worksheet</strong>: your type's MGB in section with 12&ndash;15 blank labels (stages, bearings, chip plug, oil jets, mounts, mast) &mdash; students fill it in during the lab. Plus your <strong>planetary ratio worked-example sheet</strong> with two practice problems and answers. File both.</p>
+  </div>
+
+  <div class="card">
+    <h3><span class="icon">📝</span> Self-check quiz</h3>
+    <div class="quiz-box" data-quiz="m3"></div>
+  </div>
+</section>
+<script>
+QUIZ.m3 = [
+  { q: "A planetary final stage has a fixed ring gear of 120 teeth and a sun gear of 40 teeth, with the carrier as output. The reduction ratio is:", a: [
+      "4:1",
+      "3:1",
+      "120:40",
+      "1.33:1"
+    ], c: 0, x: "Fixed ring, sun in, carrier out: ratio = 1 + ring/sun = 1 + 120/40 = 4:1. The '+1' trips students up every year — the carrier itself revolves." },
+  { q: "Why is a planetary stage the classic choice for the FINAL reduction under the rotor?", a: [
+      "Load is shared across several planet meshes at once, in a compact package concentric with the mast",
+      "Planetary gears never wear out",
+      "It is the only gear type that can change the direction of drive",
+      "It allows the rotor to freewheel in autorotation"
+    ], c: 0, x: "Splitting torque across multiple planets keeps individual tooth loads sane at huge output torque, and the concentric layout puts the output right on the mast axis. Freewheeling is the FWU's job, not the gears'." },
+  { q: "The spiral bevel stage in a main gearbox exists primarily to:", a: [
+      "Turn the drive through roughly 90° while taking the first stage of reduction",
+      "Provide the freewheeling function",
+      "Drive the rotor brake",
+      "Eliminate all axial thrust loads"
+    ], c: 0, x: "Engine shafts are roughly horizontal, masts are vertical — the spiral bevel set turns the corner quietly and strongly. It generates thrust loads, which is why its mesh is shimmed and pattern-checked." },
+  { q: "\"Transmission-limited\" means:", a: [
+      "The engine can deliver more power than the gearbox is rated for, so the pilot flies to the torque gauge",
+      "The gearbox can absorb more power than the engine can produce",
+      "The transmission limits rotor RPM in autorotation",
+      "Only one engine may drive the transmission at a time"
+    ], c: 0, x: "Common on turbine singles at low altitude: the torquemeter is effectively a gearbox-protection instrument, and exceeding it is a maintenance event, not just a pilot note." },
+  { q: "After a confirmed overtorque event, the correct maintenance response is:", a: [
+      "The MM's conditional inspection, scaled to the magnitude and duration of the exceedance",
+      "Nothing, if no noise was heard",
+      "An oil change only",
+      "Automatic gearbox replacement in all cases"
+    ], c: 0, x: "MMs grade the response — from close visual + chip checks to teardown — by how far and how long the limit was exceeded. The teaching point is honest reporting: unrecorded overtorques fly on as hidden fatigue." },
+  { q: "White or grey powder and blistered paint on a magnesium gearbox case most likely indicate:", a: [
+      "Corrosion attacking the casting — a finding requiring MM-specified rework",
+      "Normal oxidation that can be wiped off and ignored",
+      "Oil residue from the vent",
+      "Paint incompatibility of no structural concern"
+    ], c: 0, x: "Magnesium corrodes aggressively wherever finish is broken, especially at steel fasteners and dissimilar joints. Case corrosion is treated seriously because the case is primary structure." },
+  { q: "On most single-rotor helicopters, the lift produced by the main rotor reaches the fuselage through:", a: [
+      "The mast, the gearbox case, and the transmission mounts / lift link",
+      "The engine mounts",
+      "The tail rotor driveshaft",
+      "The main rotor blades' aerodynamic attachment to the fuselage"
+    ], c: 0, x: "The airframe hangs from the rotor via mast → gearbox → mounts/lift link. That load path is why gearbox case cracks and mount condition get flight-control-level attention." },
+  { q: "The purpose of Bell's nodal beam ('Noda-Matic') suspension is to:", a: [
+      "Attach the fuselage at the beam's node points so rotor-induced vibration largely stays out of the cabin",
+      "Increase the stiffness of the transmission mounting to the maximum possible",
+      "Carry lift loads directly through the tailboom",
+      "Allow the transmission to be removed without tools"
+    ], c: 0, x: "The beam is tuned to flex at rotor frequency with points of minimum motion — nodes — where the cabin attaches. The beam shakes; the passengers don't." },
+  { q: "In a static-mast design (e.g., MD 500 family), the inner drive shaft carries:", a: [
+      "Torque only — the stationary mast carries the lift and bending loads",
+      "All flight loads including lift",
+      "Lift only — torque goes through the static mast",
+      "No loads; it is a spare"
+    ], c: 0, x: "The static (non-rotating) mast is the structure; the drive shaft inside spins the head carrying torque alone, so it can be light. A favourite exam discriminator." },
+  { q: "A tooth contact pattern check with marking compound verifies:", a: [
+      "That the gear mesh is correctly positioned (shimmed) so the contact footprint sits where the manufacturer requires",
+      "The hardness of the gear teeth",
+      "The oil film thickness in operation",
+      "Gearbox output RPM"
+    ], c: 0, x: "Roll the mesh with compound on the teeth and read where contact falls; shims move the pattern. Wrong pattern = concentrated loading = early failure. Paired with backlash measurement." }
+];
+</script>
+
+<!-- ============================================================ MODULE 4 -->
+<section class="view" id="view-m4">
+  <span class="week-chip">Week 4 &middot; Aug 17 &ndash; 23</span>
+  <h2 class="view-title">Module 4 — Lubrication &amp; Health Monitoring</h2>
+  <p class="view-sub">Gearboxes rarely fail without whispering first. This module is about hearing the whisper: oil, chips, analysis, and HUMS.</p>
+
+  <div class="card">
+    <h3><span class="icon">🎓</span> The AME's daily reality</h3>
+    <p>Of everything in this course, this is what your graduates will do most often: service gearboxes, pull and read chip detectors, take oil samples, and decide &mdash; or escalate &mdash; what a finding means. It's also where your own fixed-wing experience transfers most directly; what's new is how much trust rotorcraft place in these systems, because a main gearbox has no redundancy.</p>
+    <p><strong>By the end of this module you can:</strong></p>
+    <ul>
+      <li>Explain what gearbox oil must do and why oil types are never interchangeable.</li>
+      <li>Draw a typical pressure lubrication system: pump, relief, filter with bypass, jets, cooler with thermostatic bypass, indications.</li>
+      <li>Describe loss-of-lubrication certification logic and what "run-dry" capability means.</li>
+      <li>Run the chip-light decision process and interpret debris like a tradesperson.</li>
+      <li>Read an oil analysis (SOAP) trend and say which metals point where.</li>
+      <li>Explain what HUMS measures, what it catches, and what it has missed.</li>
+    </ul>
+    <div class="q-actions"><button class="btn ghost small" data-expand>Expand all topics</button></div>
+  </div>
+
+  <div class="card">
+    <h3><span class="icon">📖</span> Core knowledge refresher</h3>
+
+    <details class="topic">
+      <summary>4.1 &nbsp;What the oil must do — and why types never mix</summary>
+      <div class="topic-body">
+        <p>Gearbox oil has four jobs: maintain a load-carrying film at extreme tooth contact pressures, <strong>cool</strong> (a big MGB turns real kilowatts into heat), <strong>carry debris</strong> to the filter and chip detectors, and <strong>protect</strong> against corrosion. Depending on the type, the approved fluid may be a turbine-type synthetic or a dedicated EP (extreme-pressure) gear oil &mdash; and the additive chemistries are <em>not compatible</em>. Servicing with the wrong fluid, or topping up one family with the other, can strip film strength exactly where tooth pressures peak.</p>
+        <ul>
+          <li>Only the fluids listed in the MM/type certificate data &mdash; no "equivalents" from the shelf.</li>
+          <li>Cleanliness discipline: dedicated containers, no open cans, wipe fill areas. A gearbox swallows whatever the funnel brings.</li>
+          <li>Levels read per the MM (attitude, temperature, settle time). Overfilling causes churning, foaming, heat, and leaks that get misdiagnosed.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details class="topic">
+      <summary>4.2 &nbsp;System architectures: splash to full pressure</summary>
+      <div class="topic-body">
+        <p><strong>Splash/wet sump:</strong> small boxes &mdash; tail rotor and intermediate gearboxes, some light-helicopter MGBs &mdash; where the gears fling oil where it's needed. Servicing is a sight glass and a level plug; monitoring is a chip plug and your eyes.</p>
+        <p><strong>Pressure systems</strong> (most turbine MGBs) &mdash; be able to draw this chain:</p>
+        <ul>
+          <li><strong>Pump</strong> (gearbox-driven &mdash; so it works in autorotation too) &rarr; <strong>relief valve</strong> setting system pressure.</li>
+          <li><strong>Filter</strong> with a <strong>bypass valve</strong> &mdash; a blocking filter must never starve the box, so the bypass opens and unfiltered oil flows; an <strong>impending-bypass indicator</strong> (pop-out button or light) confesses before that happens. Checking it is a daily-inspection classic.</li>
+          <li><strong>Oil jets</strong> aimed precisely at gear meshes and bearings &mdash; a blocked jet is a local failure nobody sees until the chips arrive.</li>
+          <li><strong>External cooler</strong> (with its gearbox-driven blower) and a <strong>thermostatic bypass</strong> so cold oil warms up quickly instead of being forced through the cooler.</li>
+          <li><strong>Indications:</strong> pressure and temperature gauges plus low-pressure / high-temperature warnings, with RFM limits attached to each.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details class="topic">
+      <summary>4.3 &nbsp;Loss of lubrication and "run-dry" capability</summary>
+      <div class="topic-body">
+        <p>A main gearbox has no backup gearbox. Certification (e.g., FAR/CS 29.927 for transport rotorcraft) therefore requires demonstrating <strong>continued safe operation for a stated period after loss of primary lubrication</strong> &mdash; the widely-quoted figure is on the order of 30 minutes at reduced power for Category A machines: enough to fly to a landing, not enough to finish the sector. Design answers include emergency lube sprays, oil-retaining sump geometry, and generous thermal mass.</p>
+        <p>Teach it as a decision lesson: a gearbox oil pressure warning over inhospitable terrain is a <em>land-now</em> conversation, and the maintenance side of that promise is everything in this module done right. (The H225 North Sea history &mdash; Module 7 &mdash; is the sobering case-study anchor.)</p>
+      </div>
+    </details>
+
+    <details class="topic">
+      <summary>4.4 &nbsp;Chip detectors and the chip-light decision</summary>
+      <div class="topic-body">
+        <p>Ferrous debris is the gearbox's confession, and magnetic chip detectors are the microphone. Know the family tree:</p>
+        <ul>
+          <li><strong>Plain magnetic plugs</strong> &mdash; pulled and read on inspection; usually seated in <strong>self-closing valves</strong> so you can remove the plug without draining the box (and yes, students will forget that valve exists &mdash; brief them before the lab, or budget for a mop).</li>
+          <li><strong>Indicating detectors</strong> &mdash; debris bridges a gap, closes a circuit, lights the caution.</li>
+          <li><strong>Pulsed / "fuzz-burn" systems</strong> &mdash; automatically zap away non-significant fine fuzz; if the debris survives the pulse, it's big enough to mean it, and the light stays on. Cuts nuisance landings without hiding real events.</li>
+        </ul>
+        <p><strong>Reading debris</strong> (with the MM's criteria, not folklore):</p>
+        <ul>
+          <li><strong>Fine fuzz / hair-like whiskers</strong> &mdash; normal wear products, assessed by quantity and trend.</li>
+          <li><strong>Flat, shiny platelets</strong> &mdash; classic <strong>bearing spall</strong> flakes: a rolling surface is shedding its skin.</li>
+          <li><strong>Chunks, slivers, gear-tooth fragments</strong> &mdash; active failure; the box comes off.</li>
+        </ul>
+        <p><strong>The chip-light process</strong>: in flight it's an RFM matter (typically land as soon as practicable, or worse); on the ground the MM's conditional inspection governs &mdash; capture the debris, identify it, inspect per the flowchart, and document. The culture point to hammer in class: <em>"wiped it off and sent it" is how accident reports start.</em> Every chip event gets the MM process.</p>
+      </div>
+    </details>
+
+    <details class="topic">
+      <summary>4.5 &nbsp;Oil analysis and filter debris analysis</summary>
+      <div class="topic-body">
+        <p><strong>Spectrometric oil analysis (SOAP)</strong> measures wear metals in parts per million. Single values mean little; <strong>trends</strong> mean everything &mdash; a step change in slope is the alarm. The decoder ring you'll teach:</p>
+        <div class="table-scroll">
+        <table class="data">
+          <thead><tr><th>Element rising</th><th>Usual source in a gearbox</th></tr></thead>
+          <tbody>
+            <tr><td>Iron (Fe)</td><td>Steel gears, bearings, shafts — general wear or spalling</td></tr>
+            <tr><td>Copper (Cu)</td><td>Bronze bearing cages, bushings, thrust washers</td></tr>
+            <tr><td>Silver (Ag)</td><td>Silver-plated cages/components (where used)</td></tr>
+            <tr><td>Magnesium / Aluminum</td><td>Case metal — something is wearing against the housing, or corrosion</td></tr>
+            <tr><td>Chromium / Nickel</td><td>Plated or alloyed steel components</td></tr>
+          </tbody>
+        </table>
+        </div>
+        <p>Pair SOAP with <strong>filter debris analysis</strong> &mdash; cutting open or patch-checking filters catches particles too big for spectrometry (spectrometers see dissolved/fine metal best). The two methods bracket the particle-size spectrum; chip detectors catch the biggest pieces. That "three overlapping nets" idea is a tidy whiteboard diagram.</p>
+      </div>
+    </details>
+
+    <details class="topic">
+      <summary>4.6 &nbsp;HUMS: listening to the gears</summary>
+      <div class="topic-body">
+        <p><strong>Health and Usage Monitoring Systems</strong> mount accelerometers on gearbox cases and bearings supports, record vibration continuously, and reduce it to <strong>condition indicators</strong> (CIs) per component. The physics: every gear mesh produces a tone at <strong>tooth-meshing frequency</strong> (teeth &times; shaft speed); damage &mdash; a cracked or pitted tooth &mdash; modulates that tone once per revolution, creating <strong>sidebands</strong> and rising CI values long before chips appear. Ground stations trend the data; maintenance reacts to threshold crossings and slope changes.</p>
+        <p>Widely fitted to medium/heavy offshore fleets (and mandated in that world) after hard-won North Sea experience. Be honest with students about the limits: HUMS has caught many failures early &mdash; and famously did <em>not</em> give usable warning of the planet-gear failures behind the 2009 and 2016 Super Puma accidents (Module 7). Monitoring narrows risk; it doesn't repeal it. Chip detectors, oil analysis, HUMS, and disciplined inspection are <em>layers</em>, not alternatives.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="card">
+    <h3><span class="icon">✅</span> Study assignments</h3>
+    <label class="task"><input type="checkbox" data-task="m4-1"><span class="task-text">Trace the <strong>lubrication schematic in your type's MM (ATA 63)</strong> and redraw it simplified: pump &rarr; relief &rarr; filter/bypass &rarr; jets &rarr; cooler/bypass &rarr; indications.</span><span class="hrs">1.5 h</span></label>
+    <label class="task"><input type="checkbox" data-task="m4-2"><span class="task-text">Find the <strong>chip detector locations</strong> on your type (MGB, IGB, TGB, FWU area) and the conditional inspection the MM requires after a chip event. Sketch the decision flow.</span><span class="hrs">1 h</span></label>
+    <label class="task"><input type="checkbox" data-task="m4-3"><span class="task-text">Pull, inspect, and reinstall a chip detector on shop hardware (or rehearse with a spare plug): self-closing valve behaviour, seal handling, torque, leak check.</span><span class="hrs">1 h</span></label>
+    <label class="task"><input type="checkbox" data-task="m4-4"><span class="task-text">Get a real or sample <strong>SOAP report</strong> and practice reading the trend, not the numbers. Note what would trigger action.</span><span class="hrs">0.5 h</span></label>
+    <label class="task"><input type="checkbox" data-task="m4-5"><span class="task-text">Read a plain-language overview of <strong>HUMS</strong> (manufacturer or safety-agency material) and write five sentences on what it detects and what it can miss.</span><span class="hrs">1 h</span></label>
+  </div>
+
+  <div class="card">
+    <h3><span class="icon">🛠️</span> Teach-back deliverable</h3>
+    <p><strong>The chip-light decision tree</strong>: one page, from "light on" to "return to service," matching your type's MM logic. Plus the <strong>simplified lube schematic handout</strong> and a <strong>demo plan</strong>: a jar of clean oil, a magnet, and three debris samples (fuzz, platelets, chunk — cut from scrap steel) for students to classify. File all three.</p>
+  </div>
+
+  <div class="card">
+    <h3><span class="icon">📝</span> Self-check quiz</h3>
+    <div class="quiz-box" data-quiz="m4"></div>
+  </div>
+</section>
+<script>
+QUIZ.m4 = [
+  { q: "Why must you never top up a gearbox with a different oil family than it contains (e.g., EP gear oil into turbine synthetic)?", a: [
+      "The additive chemistries are incompatible and can degrade the load-carrying film at gear tooth contacts",
+      "The mixture becomes too viscous to pump",
+      "It voids the warranty but is otherwise harmless",
+      "Different colours make the sight glass unreadable"
+    ], c: 0, x: "EP additives and synthetic turbine-oil chemistries don't cooperate; the mixture can lose film strength exactly where tooth pressures peak. Only MM-listed fluids, never mixed." },
+  { q: "The purpose of the filter BYPASS valve in a gearbox pressure system is to:", a: [
+      "Keep oil flowing (unfiltered) if the filter blocks, because starving the gearbox is worse than dirty oil",
+      "Increase pressure at high RPM",
+      "Return excess oil to the sump during cold starts",
+      "Let maintenance drain the system through the filter bowl"
+    ], c: 0, x: "A blocked filter must never mean no oil. The bypass opens as a last resort — which is why the impending-bypass indicator matters: it confesses before that day comes." },
+  { q: "On the morning inspection you find the filter's impending-bypass button popped. This means:", a: [
+      "The filter is loading up and was close to bypassing — investigate contamination per the MM before flight",
+      "The filter has failed open and must simply be reset",
+      "Normal cold-weather indication; reset and go",
+      "The oil level is low"
+    ], c: 0, x: "The indicator trips on differential pressure across a clogging element. Something is making debris or the oil is contaminated — resetting it without investigation defeats its entire purpose." },
+  { q: "Oil jets inside a main gearbox are aimed at:", a: [
+      "Specific gear meshes and bearings",
+      "The case walls, to cool the casting",
+      "The chip detectors, to wash debris onto them",
+      "The input seal only"
+    ], c: 0, x: "Targeted jets feed the exact contact points that generate heat and need film. One blocked jet can starve one mesh while pressure still reads normal — a classic 'chips with no warning' story." },
+  { q: "Flat, shiny platelet-shaped particles on a chip detector most likely came from:", a: [
+      "A spalling bearing surface shedding flakes",
+      "Normal break-in fuzz",
+      "The magnesium case corroding",
+      "O-ring wear"
+    ], c: 0, x: "Spalling rolling surfaces shed their hardened skin as flat shiny flakes. Fuzz is hair-like normal wear; chunks and tooth fragments mean active failure. Quantity, shape, and trend — per the MM." },
+  { q: "The point of a pulsed ('fuzz-burn') chip detector system is to:", a: [
+      "Electrically clear insignificant fine fuzz so the crew is only alerted by debris big enough to matter",
+      "Incinerate all debris so the gearbox stays clean",
+      "Test the warning bulb on each start",
+      "Demagnetize the plug for easier cleaning"
+    ], c: 0, x: "Fine fuzz causes nuisance warnings; the pulse burns it off. Debris that survives the pulse is significant, so the light means business — fewer false landings without hiding real events." },
+  { q: "A chip light illuminates in flight. The correct crew/maintenance philosophy is:", a: [
+      "Follow the RFM in flight, then complete the MM's conditional inspection and debris assessment before further flight",
+      "Land, wipe the plug, and continue if the light goes out",
+      "Ignore it unless accompanied by high oil temperature",
+      "Reset the breaker to verify it isn't a false alarm"
+    ], c: 0, x: "The RFM governs the flight decision; on the ground the MM's chip-event process governs return to service. 'Wiped and sent' with no assessment is how accident reports begin." },
+  { q: "In a SOAP trend, iron rising together with copper most classically points at:", a: [
+      "Bearing distress — steel rolling elements/races plus bronze cage material wearing together",
+      "Case corrosion",
+      "Seal wear",
+      "Wrong oil type"
+    ], c: 0, x: "Fe = steel gears/bearings; Cu = bronze cages and bushings. Rising together, they tell a bearing story. The slope change matters more than any single number." },
+  { q: "\"Run-dry\" capability demonstrated for certification means:", a: [
+      "The gearbox has shown continued safe operation for a defined period (order of 30 minutes) after loss of primary lubrication",
+      "The gearbox operates indefinitely without oil",
+      "The gearbox can be shipped without preservation oil",
+      "The oil pump can run without priming"
+    ], c: 0, x: "FAR/CS 29.927-style requirements: enough demonstrated time at reduced power to reach a landing after a lube failure — a design promise that maintenance quality keeps honest." },
+  { q: "HUMS detects developing gear damage primarily by:", a: [
+      "Changes and sidebands in gear-mesh vibration recorded by accelerometers, trended as condition indicators",
+      "Measuring oil pressure more accurately than gauges",
+      "Counting ferrous particles with a magnet",
+      "X-raying the gearbox in flight"
+    ], c: 0, x: "Every mesh has a tooth-meshing tone; damage modulates it once per rev, creating sidebands and rising CIs. Powerful — but not infallible, as the Super Puma planet-gear accidents proved. Layers, not alternatives." },
+  { q: "Why do chip detectors usually sit in self-closing valves?", a: [
+      "So the plug can be removed for inspection without draining the gearbox oil",
+      "To seal the gearbox if oil pressure is lost",
+      "To prevent over-torquing the plug",
+      "To keep the magnet from touching the oil"
+    ], c: 0, x: "The spring-loaded valve closes as the plug withdraws, so routine debris checks don't cost an oil change. Brief students before the lab — everyone forgets the valve exactly once." }
+];
+</script>
+
+<!-- ============================================================ MODULE 5 -->
+<section class="view" id="view-m5">
+  <span class="week-chip">Week 5 &middot; Aug 24 &ndash; 30</span>
+  <h2 class="view-title">Module 5 — Tail Rotor Drive &amp; Rotor Brake</h2>
+  <p class="view-sub">Forty feet of high-speed shafting, two little gearboxes, and zero redundancy — the driveline that keeps the nose pointed forward.</p>
+
+  <div class="card">
+    <h3><span class="icon">🎓</span> Long, thin, and unforgiving</h3>
+    <p>The tail rotor drive is mechanically simple and completely intolerant of neglect: thin-wall shafts spinning thousands of RPM, small grease-lubed bearings, couplings flexing with every gust of boom bending &mdash; and if any link breaks, the aircraft yaws violently with no backup. Students should leave this module a little bit paranoid, in the professional sense.</p>
+    <p><strong>By the end of this module you can:</strong></p>
+    <ul>
+      <li>Trace a complete tail rotor drive from MGB takeoff to tail rotor hub, naming every element.</li>
+      <li>Explain hanger bearings, flexible couplings, and splined slip joints &mdash; what each accommodates and how each fails.</li>
+      <li>Describe intermediate and tail rotor gearbox construction, lubrication, and inspection.</li>
+      <li>State why shaft dents, nicks, and unbalanced reassembly are serious, and outline shaft balancing.</li>
+      <li>Explain rotor brake operation, location logic, application limits, and inspection.</li>
+    </ul>
+    <div class="q-actions"><button class="btn ghost small" data-expand>Expand all topics</button></div>
+  </div>
+
+  <div class="card">
+    <h3><span class="icon">📖</span> Core knowledge refresher</h3>
+
+    <details class="topic">
+      <summary>5.1 &nbsp;The drive path down the boom</summary>
+      <div class="topic-body">
+        <p>From the <strong>tail rotor takeoff on the main gearbox</strong> (downstream of the freewheel &mdash; Module 2's point, now made concrete), a series of <strong>driveshaft segments</strong> runs aft along the tailboom spine: typically thin-wall aluminum tubes with bonded or riveted end fittings, turning at high speed &mdash; order of <strong>2,000&ndash;4,000+ RPM</strong> depending on type &mdash; because transmitting power through a slender shaft is far easier at high speed / low torque (P = &tau;&omega; again: same lesson, opposite direction).</p>
+        <p>Why segments instead of one long shaft? A long slender shaft would whip ("shaft whirl") at operating speed, and the boom flexes in flight. Short segments supported by bearings, joined by flexible couplings, ride through all of it. Some types instead run one long supercritical shaft with dampers &mdash; if yours does, the MM's damper inspections become the teaching point.</p>
+      </div>
+    </details>
+
+    <details class="topic">
+      <summary>5.2 &nbsp;Hanger bearings, couplings, and slip joints</summary>
+      <div class="topic-body">
+        <ul>
+          <li><strong>Hanger bearings</strong> &mdash; grease-packed ball bearings in brackets along the boom, holding the shaft line straight. Failure modes: loss of grease, contamination, brinelling, overheat. Inspection: roughness and play by hand, evidence of grease loss, and <strong>overheat indications</strong> &mdash; discoloration or heat-indicating paint/stickers where fitted; several types call for a careful post-run temperature check by feel. A hanger bearing running dry announces itself with heat and a howl before it seizes &mdash; teach crews and students to take both seriously.</li>
+          <li><strong>Flexible couplings</strong> between segments &mdash; the same disc-pack and flex-frame families as Module 2, taking the small angular misalignments as the boom breathes. Inspect discs for cracks from bolt holes, fretting dust (red/black powder = a confession), correct hardware and torque.</li>
+          <li><strong>Splined slip joints</strong> &mdash; at least one, somewhere: the boom lengthens and shortens with load and temperature, so the shaft line must change length too. Lubed splines, wear limits, correct engagement depth.</li>
+        </ul>
+        <div class="callout">
+          <span class="co-label">Shop habit worth teaching</span>
+          "Walk the boom" after any tail work: run a hand along every coupling and bearing bracket, look for fretting dust, missing hardware, tools left on the shelf brackets. Two minutes; catches careers' worth of trouble.
+        </div>
+      </div>
+    </details>
+
+    <details class="topic">
+      <summary>5.3 &nbsp;Intermediate and tail rotor gearboxes</summary>
+      <div class="topic-body">
+        <p><strong>Intermediate gearbox (IGB)</strong> &mdash; fitted where the drive must climb the vertical fin at an angle (the classic UH-1 42&deg; box at the fin base). Small spiral-bevel set, usually splash-lubed, with sight glass, vent, chip plug, and seals. Not every type has one &mdash; a straight run to a fin-top gearbox may not need it; your shop type's MM settles it.</p>
+        <p><strong>Tail rotor gearbox (TGB)</strong> &mdash; the ~90&deg; spiral-bevel box at the tail rotor, usually with the final reduction for the tail rotor's own RPM. Two details students must see:</p>
+        <ul>
+          <li>The <strong>pitch-change mechanism passes through it</strong> &mdash; on most types a control shaft runs through the hollow TGB output shaft to work the tail rotor pitch. Drive and control cohabit; maintenance on one risks the other, which is why rigging checks follow TGB work.</li>
+          <li>It's a <strong>sealed splash-lubed world of its own</strong>: level, leaks, chip plug, mounting hardware, and seal condition are the whole inspection story &mdash; small box, short list, zero tolerance.</li>
+        </ul>
+        <p><strong>Fenestron</strong> variants drive a many-bladed fan at higher RPM inside a duct &mdash; same drive logic, higher speeds, tighter balance. <strong>NOTAR</strong> replaces the tail rotor with a gearbox-driven variable-pitch fan in the boom root &mdash; the "tail rotor drive" course content becomes fan drive content, same inspections in different clothes.</p>
+      </div>
+    </details>
+
+    <details class="topic">
+      <summary>5.4 &nbsp;Shaft care and balance — why a dent is a big deal</summary>
+      <div class="topic-body">
+        <p>A thin-wall tube at thousands of RPM lives on the edge of fatigue. A <strong>dent, nick, gouge, or corrosion pit is a stress riser</strong> in a part seeing fully-reversed bending every revolution &mdash; tens of millions of cycles per hundred flight hours. Hence the MM's blunt damage limits, often effectively "polish out within barely-visible limits or reject." Chafing from clamps and wiring, and paint stripper attack on bonded fittings, are the classic silent killers.</p>
+        <p><strong>Balance:</strong> shaft assemblies are balanced &mdash; as segments, sometimes as an installed set, with balance weights or hardware position marked. Swap segments between positions, mix hardware, or install a coupling half rotated from its match-marks, and you've built a vibrator. Teach: <em>match marks are engineering, not decoration</em>. Rebalancing after component replacement follows the MM (and Module 6 shows the how).</p>
+      </div>
+    </details>
+
+    <details class="topic">
+      <summary>5.5 &nbsp;The rotor brake</summary>
+      <div class="topic-body">
+        <p>A disc-and-caliper (occasionally band) brake, almost always acting on a <strong>main gearbox shaft &mdash; on the rotor side of the freewheeling unit</strong>. Location logic makes a lovely exam question: on the rotor side of the FWU the brake can hold the <em>entire rotor and tail rotor drive system</em>; if it gripped the engine side, the freewheel would simply overrun and the rotors would keep turning, unbraked.</p>
+        <ul>
+          <li><strong>Why fitted:</strong> stop the rotor quickly after shutdown (passengers, deck operations, wind), hold it stopped in gusts. On many types, applying it above a low rotor RPM limit &mdash; or with the engine driving &mdash; is prohibited and is itself a conditional-inspection event: it can glaze the disc, overheat the caliper area, or torque the drivetrain backwards against everything's design direction.</li>
+          <li><strong>Interlocks:</strong> many designs inhibit engine start with the brake on, or warn when it's applied &mdash; type-specific, check the MM.</li>
+          <li><strong>Inspection:</strong> pad wear, disc scoring/heat discoloration, hydraulic leaks at the hand pump or master cylinder, full release verified (a dragging rotor brake is a heat source riding on your gearbox), and security of everything near it.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details class="topic">
+      <summary>5.6 &nbsp;When the tail stops suddenly — strikes and sudden stoppage</summary>
+      <div class="topic-body">
+        <p>A tail rotor blade touching anything &mdash; ground, snow bank, wire, hangar door &mdash; sends a torque spike back up the entire driveline in milliseconds. The MM's <strong>sudden stoppage / sudden acceleration conditional inspection</strong> exists for exactly this: expect it to require inspection (often replacement) of couplings and shafts, hanger bearings, TGB/IGB internals or the boxes outright, the MGB tail takeoff, and sometimes mounts &mdash; <em>regardless of visible damage</em>, because torsional overload hides inside splines and gear roots.</p>
+        <p>This is Module 7's conditional-inspection theme wearing its most common face: strikes happen, and the write-up "checked, no damage found, returned to service" without the MM inspection is indefensible. Build a scenario question around it &mdash; it may be the most job-relevant exam item you write.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="card">
+    <h3><span class="icon">✅</span> Study assignments</h3>
+    <label class="task"><input type="checkbox" data-task="m5-1"><span class="task-text">Read your type's <strong>ATA 65 chapter</strong> end to end &mdash; it's short &mdash; and draw its exact driveline: number of segments, bearings, couplings, slip joint location, gearboxes.</span><span class="hrs">1.5 h</span></label>
+    <label class="task"><input type="checkbox" data-task="m5-2"><span class="task-text">Find the <strong>shaft damage limits</strong> (dents/nicks/corrosion) and the <strong>hanger bearing inspection</strong> in the MM. Note the numbers you'd quote in class.</span><span class="hrs">1 h</span></label>
+    <label class="task"><input type="checkbox" data-task="m5-3"><span class="task-text">Inspect a real flexible coupling and hanger bearing (shop hardware or scrap) with a 10&times; loupe. Practice describing findings in report language.</span><span class="hrs">1 h</span></label>
+    <label class="task"><input type="checkbox" data-task="m5-4"><span class="task-text">Read the <strong>sudden stoppage inspection</strong> for your type. List which components are inspect-vs-replace. This becomes a class handout.</span><span class="hrs">0.5 h</span></label>
+    <label class="task"><input type="checkbox" data-task="m5-5"><span class="task-text">Read the <strong>rotor brake</strong> section (if fitted on your type): application limits, interlocks, inspection items.</span><span class="hrs">0.5 h</span></label>
+  </div>
+
+  <div class="card">
+    <h3><span class="icon">🛠️</span> Teach-back deliverable</h3>
+    <p><strong>The "walk the boom" inspection card</strong>: a pocket-sized checklist from MGB takeoff to tail rotor, in inspection order, with the top failure sign for each element. Plus a <strong>lab plan</strong> for coupling/bearing inspection stations (hardware, loupes, defect photos, findings sheet). File both.</p>
+  </div>
+
+  <div class="card">
+    <h3><span class="icon">📝</span> Self-check quiz</h3>
+    <div class="quiz-box" data-quiz="m5"></div>
+  </div>
+</section>
+<script>
+QUIZ.m5 = [
+  { q: "Tail rotor driveshafts run at high RPM (thousands) rather than tail rotor RPM because:", a: [
+      "At higher speed the same power flows at much lower torque, so a light thin-wall shaft can carry it",
+      "High RPM keeps the hanger bearing grease circulating",
+      "The tail rotor needs the extra speed for authority",
+      "Certification requires all shafts to exceed 2,000 RPM"
+    ], c: 0, x: "P = τω: spin the shaft fast and torque drops, so the tube can be slender and light. The TGB makes the final reduction right at the tail rotor." },
+  { q: "The purpose of hanger bearings along the tailboom is to:", a: [
+      "Support the shaft line and keep the segments running straight and true",
+      "Provide the final gear reduction",
+      "Allow the shaft to change length",
+      "Disconnect the tail rotor in autorotation"
+    ], c: 0, x: "They're the shaft's guideposts — grease-packed bearings in brackets. Length change is the slip joint's job; nothing ever disconnects the tail rotor." },
+  { q: "A hanger bearing that is failing typically announces itself by:", a: [
+      "Running hot, sounding rough/howling, and showing overheat discoloration or tripped heat indicators",
+      "Dropping oil pressure on the gearbox gauge",
+      "A chip light on the main gearbox detector",
+      "Increased tail rotor pedal force"
+    ], c: 0, x: "Grease-lubed bearings die of heat: roughness and play by hand, grease loss, discoloration, heat-tab evidence. MGB instruments know nothing about the boom — your hands and eyes are the monitoring system." },
+  { q: "The splined slip joint in a tail rotor driveline exists because:", a: [
+      "The tailboom flexes and changes length in flight and with temperature, so the shaft line must too",
+      "It allows the tail rotor to be removed without tools",
+      "It acts as a backup freewheeling unit",
+      "It reduces shaft RPM slightly under load"
+    ], c: 0, x: "Boom bending and thermal growth would fight a fixed-length shaft. The lubricated spline lets the line breathe; wear limits and engagement depth are the inspection points." },
+  { q: "An intermediate gearbox (like the UH-1's 42° box) exists to:", a: [
+      "Change the drive direction where the shaft line must climb the vertical fin",
+      "Provide the freewheeling function for the tail rotor",
+      "Reverse tail rotor direction for left-turning rotors",
+      "Cool the tail rotor drive oil"
+    ], c: 0, x: "It's a small direction-change bevel box at the fin base — splash-lubed, sight glass, chip plug. Types with straight runs to the fin top may not need one." },
+  { q: "On most tail rotor gearboxes, the pitch-change control:", a: [
+      "Passes through the hollow TGB output shaft to reach the tail rotor",
+      "Is fully separate from the gearbox in every design",
+      "Uses the same oil as the gearbox for actuation",
+      "Is driven by the intermediate gearbox"
+    ], c: 0, x: "Drive and control cohabit: a control shaft typically runs through the hollow output. That's why rigging/function checks follow TGB maintenance — you can't disturb one without risking the other." },
+  { q: "You find a small, sharp dent in a thin-wall aluminum tail rotor driveshaft, outside the MM's damage limits. Correct action:", a: [
+      "Reject/replace per the MM — it is a stress riser on a shaft seeing reversed bending every revolution",
+      "Fill it with epoxy and blend smooth",
+      "Drill a stop hole at each end of the dent",
+      "Accept it if the shaft balances within limits"
+    ], c: 0, x: "Millions of bending cycles per hundred hours make any stress riser a fatigue origin. Damage limits on these shafts are deliberately brutal; balance says nothing about crack initiation." },
+  { q: "After replacing a driveshaft segment, ignoring match marks or mixing hardware positions most likely causes:", a: [
+      "A new vibration at shaft rotational frequency from lost balance",
+      "Loss of drive to the tail rotor",
+      "Overtorque of the main gearbox",
+      "No effect if the bolts are torqued correctly"
+    ], c: 0, x: "Shaft assemblies are balanced with weights and hardware in specific positions. Match marks are engineering, not decoration — break them and you've built a 1×-shaft-speed vibrator." },
+  { q: "The rotor brake acts on the rotor side of the freewheeling unit because:", a: [
+      "Only there can it hold the rotor system — on the engine side the freewheel would simply overrun and the rotors would keep turning",
+      "The engine side spins too fast for any brake",
+      "It must share hydraulics with the wheel brakes",
+      "Certification requires all brakes aft of the firewall"
+    ], c: 0, x: "Brake the engine side and the FWU does its job — disconnects — leaving the rotor free. Rotor-side placement holds the entire rotor and tail drive. A perfect logic-check exam question." },
+  { q: "Applying the rotor brake above its RPM limit (or with the engine driving) is treated as:", a: [
+      "A conditional-inspection event — overheat, glazing, and reverse drivetrain loading must be assessed per the MM",
+      "Normal practice for a fast turnaround",
+      "Acceptable if pad wear is within limits",
+      "A pilot technique issue with no maintenance consequence"
+    ], c: 0, x: "Energy that stops a spinning rotor system has to go somewhere: disc heat, pad glazing, and torque backwards through components designed to be driven the other way. RFM limits + MM inspection." }
+];
+</script>
+
+<!-- ============================================================ MODULE 6 -->
+<section class="view" id="view-m6">
+  <span class="week-chip">Week 6 &middot; Aug 31 &ndash; Sep 6</span>
+  <h2 class="view-title">Module 6 — Vibration &amp; Drivetrain Diagnostics</h2>
+  <p class="view-sub">Frequency is the fingerprint. Learn to name a vibration's source from its speed, and troubleshooting becomes arithmetic plus discipline.</p>
+
+  <div class="card">
+    <h3><span class="icon">🎓</span> The diagnostic superpower</h3>
+    <p>Helicopters shake &mdash; the question is <em>what kind</em> of shake. The single most valuable idea you'll teach this week: <strong>every rotating part signs its work at its own frequency.</strong> Match the felt/measured frequency to a shaft speed or gear mesh, and the suspect list collapses from "the helicopter" to two or three parts. Your fixed-wing prop balancing instincts transfer here almost unchanged.</p>
+    <p><strong>By the end of this module you can:</strong></p>
+    <ul>
+      <li>Describe vibration by frequency, amplitude (ips), and phase, and sort helicopter vibration into low / medium / high bands.</li>
+      <li>Compute expected frequencies: 1&times; shaft, 2&times; shaft, blade-passing, gear mesh.</li>
+      <li>Attribute signatures: imbalance, misalignment, gear damage, bearing distress.</li>
+      <li>Outline a shaft-balancing job with strobe/phototach equipment and a balance chart.</li>
+      <li>Run a disciplined troubleshooting sequence on three classic scenarios.</li>
+      <li>Draw the boundary with main rotor track &amp; balance (the rotors course) and say what ground resonance is when asked.</li>
+    </ul>
+    <div class="q-actions"><button class="btn ghost small" data-expand>Expand all topics</button></div>
+  </div>
+
+  <div class="card">
+    <h3><span class="icon">📖</span> Core knowledge refresher</h3>
+
+    <details class="topic">
+      <summary>6.1 &nbsp;The language: frequency, amplitude, phase — and the three bands</summary>
+      <div class="topic-body">
+        <p>Any vibration is described by <strong>frequency</strong> (events per second, Hz &mdash; <em>who</em> is shaking), <strong>amplitude</strong> (how hard &mdash; aviation balance work usually uses velocity in <strong>inches per second, ips</strong>), and <strong>phase</strong> (<em>where</em> in the rotation the heavy point passes the reference &mdash; which tells you where to put the fix).</p>
+        <p>Helicopter people sort by feel into three bands, and the sort itself is diagnostic:</p>
+        <ul>
+          <li><strong>Low frequency</strong> &mdash; main rotor territory: 1/rev (a lane-change lurch or vertical bounce, once per blade revolution &mdash; track/balance) and n/rev (blade-passing). A ~400 RPM rotor's 1/rev is under 7 Hz &mdash; you feel it as motion, not buzz.</li>
+          <li><strong>Medium frequency</strong> &mdash; typically tail rotor 1/rev and its multiples: a buzz in the pedals is the classic tell.</li>
+          <li><strong>High frequency</strong> &mdash; drivetrain: engine and driveshaft speeds (tens of Hz) up to gear-mesh tones (hundreds to thousands of Hz &mdash; heard as whine as much as felt). <strong>New high-frequency noise = drive system until proven otherwise.</strong></li>
+        </ul>
+        <p>Rules of thumb worth teaching with their limits: for main rotor, <em>vertical</em> tends to track/aerodynamics, <em>lateral</em> tends to balance &mdash; a starting hypothesis, not a verdict.</p>
+      </div>
+    </details>
+
+    <details class="topic">
+      <summary>6.2 &nbsp;Drivetrain signatures and the arithmetic</summary>
+      <div class="topic-body">
+        <p>The frequency bestiary, in the order students should check it:</p>
+        <ul>
+          <li><strong>Imbalance &rarr; 1&times; shaft speed.</strong> A tail rotor driveshaft at 3,000 RPM shakes at 3,000 &divide; 60 = <strong>50 Hz</strong>. Amplitude grows with RPM².</li>
+          <li><strong>Misalignment / bent shaft &rarr; strong 2&times;</strong> (often with some 1&times;): the shaft gets bent twice per revolution crossing a misaligned joint.</li>
+          <li><strong>Gear damage &rarr; gear-mesh frequency</strong> = tooth count &times; shaft revs/sec, and its sidebands. A 40-tooth gear at 3,000 RPM (50 rev/s) meshes at <strong>2,000 Hz</strong> &mdash; a whine, not a shake. Damage on one tooth modulates the whine once per rev (HUMS lives on this &mdash; Module 4 handshake).</li>
+          <li><strong>Bearing distress &rarr; non-synchronous tones</strong> &mdash; frequencies that are not clean multiples of any shaft speed (they follow rolling-element geometry). Often heard as growl/howl; on the boom, felt as a hot hanger bearing (Module 5 handshake).</li>
+        </ul>
+        <p>Type MMs carry a <strong>vibration troubleshooting chart</strong> listing each component's frequency at operating RPM. Find yours, photocopy it, and teach students to reach for it first &mdash; it turns folklore into lookup.</p>
+      </div>
+    </details>
+
+    <details class="topic">
+      <summary>6.3 &nbsp;Tools and the shaft-balancing workflow</summary>
+      <div class="topic-body">
+        <p>Classic kit (Chadwick-Helmuth 8500/Vibrex lineage, MicroVib II, and modern equivalents): an <strong>accelerometer/velocity pickup</strong> mounted per the MM, a <strong>once-per-rev reference</strong> (magnetic pickup, or strobe/phototach flashing on reflective tape), and a readout giving <strong>ips and phase (clock angle)</strong>.</p>
+        <p>The loop, which is identical in spirit to prop balancing:</p>
+        <ol>
+          <li>Run at the specified RPM; record amplitude and phase.</li>
+          <li>Enter them on the type's <strong>balance chart</strong> (polar "move line") &mdash; it converts your reading into where to add/remove weight or washers.</li>
+          <li>Make the change <em>exactly</em> as the MM allows (specified hardware at specified stations &mdash; never improvised washers).</li>
+          <li>Run again; iterate to the limit (typically a few tenths of an ips or better, per the MM).</li>
+        </ol>
+        <p>Emphasize the professional habits: same run conditions each time, one change at a time, log every move &mdash; a balance job without notes is a random walk.</p>
+      </div>
+    </details>
+
+    <details class="topic">
+      <summary>6.4 &nbsp;Boundaries: track &amp; balance, and ground resonance</summary>
+      <div class="topic-body">
+        <p><strong>Main rotor track &amp; balance</strong> belongs to the rotors course (confirmed in Week 0) &mdash; but your students won't respect that boundary, so hold one slide in reserve: same instruments, same logic (amplitude + phase &rarr; chart &rarr; adjustment), applied to blade tracking, pitch links, and hub weights. Then hand it to your colleague.</p>
+        <p><strong>Ground resonance</strong> will come up the first time you say "vibration": it's a self-amplifying interaction between rotor blade lead-lag motion and the airframe rocking on its landing gear &mdash; a rotors/dampers/gear-servicing topic, not a drivetrain fault. Know the two-sentence answer, teach that dampers and strut/tire servicing are the defence, and point to where it's taught in full. Knowing what's <em>not</em> yours is part of owning a course.</p>
+      </div>
+    </details>
+
+    <details class="topic">
+      <summary>6.5 &nbsp;The troubleshooting discipline — three worked scenarios</summary>
+      <div class="topic-body">
+        <p>Method first: <strong>(1)</strong> characterize &mdash; when did it start, what changed, which band, where felt? <strong>(2)</strong> convert band + location to a suspect list with the MM chart; <strong>(3)</strong> inspect/measure the suspects; <strong>(4)</strong> change ONE thing; <strong>(5)</strong> verify by re-run. Now the scenarios &mdash; run them in class exactly like this, reveal by stages:</p>
+        <ul>
+          <li><strong>"New buzz in the pedals after a coupling replacement last week."</strong> Medium/high frequency, tail region, started after maintenance &rarr; prime suspects: that coupling's installation (match marks? hardware stack? torque?) and shaft balance. Finding: coupling installed 180&deg; off its match marks. Lesson: the last person to touch it is suspect #1 &mdash; and that person might be you.</li>
+          <li><strong>"High-frequency whine getting louder over two weeks, now a chip light and rising TGB temp."</strong> Gear-mesh tone + chips + heat = a gearbox eating itself. Actions: stop operating, debris assessment per MM, likely box removal. Lesson: trend + multiple independent symptoms = believe them; three whispers make a shout.</li>
+          <li><strong>"4&ndash;5 Hz vertical bounce, worse in translation; drivetrain just inspected clean."</strong> Frequency says main rotor 1/rev, vertical suggests track/aerodynamic &rarr; not a drive fault at all; refer to track &amp; balance. Lesson: the frequency fingerprint keeps you from tearing apart a healthy drivetrain &mdash; diagnosis by arithmetic, not by anxiety.</li>
+        </ul>
+      </div>
+    </details>
+  </div>
+
+  <div class="card">
+    <h3><span class="icon">✅</span> Study assignments</h3>
+    <label class="task"><input type="checkbox" data-task="m6-1"><span class="task-text">Find the <strong>vibration troubleshooting chart</strong> in your type's MM. Recalculate three of its frequencies yourself from RPM and tooth counts to prove the method.</span><span class="hrs">1 h</span></label>
+    <label class="task"><input type="checkbox" data-task="m6-2"><span class="task-text">Read the <strong>tail rotor driveshaft balancing procedure</strong> in the MM (or a Vibrex/MicroVib guide): equipment hookup, run conditions, chart use, limits.</span><span class="hrs">1.5 h</span></label>
+    <label class="task"><input type="checkbox" data-task="m6-3"><span class="task-text">If the school owns balance equipment: get hands-on with the pickup, phototach, and chart, even on a bench motor. If not, watch a full balance-job video and storyboard it.</span><span class="hrs">1.5 h</span></label>
+    <label class="task"><input type="checkbox" data-task="m6-4"><span class="task-text">Write your own fourth troubleshooting scenario (symptom &rarr; band &rarr; suspects &rarr; finding) based on something you've actually seen in your career. Real stories teach best.</span><span class="hrs">0.5 h</span></label>
+  </div>
+
+  <div class="card">
+    <h3><span class="icon">🛠️</span> Teach-back deliverable</h3>
+    <p><strong>The frequency-matching worksheet</strong>: one column of symptoms ("50 Hz lateral at the boom," "2 kHz whine," "5 Hz vertical bounce"...), one column of sources, students draw the lines &mdash; with an answer key. Plus your <strong>three scenario cards</strong> (and your personal fourth) formatted for staged reveal in class. File them.</p>
+  </div>
+
+  <div class="card">
+    <h3><span class="icon">📝</span> Self-check quiz</h3>
+    <div class="quiz-box" data-quiz="m6"></div>
+  </div>
+</section>
+<script>
+QUIZ.m6 = [
+  { q: "A tail rotor driveshaft turns at 3,000 RPM. Simple imbalance in that shaft produces vibration at:", a: [
+      "50 Hz (3,000 ÷ 60) — once per shaft revolution",
+      "3,000 Hz",
+      "25 Hz — half shaft speed",
+      "100 Hz — twice shaft speed"
+    ], c: 0, x: "Imbalance signs its work at 1× shaft speed: 3,000 RPM = 50 rev/s = 50 Hz. Convert RPM to Hz by dividing by 60 — the most-used equation of the week." },
+  { q: "A strong vibration at TWICE a shaft's rotational frequency classically suggests:", a: [
+      "Misalignment (or a bent shaft) at a coupling",
+      "Simple imbalance",
+      "Gear tooth damage",
+      "Normal operation"
+    ], c: 0, x: "Crossing a misaligned joint flexes the shaft twice per revolution — a strong 2× signature, often with some 1×. Imbalance is 1×; gear damage lives up at mesh frequency." },
+  { q: "A gear with 40 teeth on a shaft turning 50 revolutions per second produces a gear-mesh tone at:", a: [
+      "2,000 Hz — heard as a whine more than felt as a shake",
+      "50 Hz",
+      "90 Hz",
+      "40 Hz"
+    ], c: 0, x: "Mesh frequency = teeth × rev/s = 40 × 50 = 2,000 Hz. Damage on one tooth modulates that whine once per rev — the sidebands HUMS watches for." },
+  { q: "A brand-new high-frequency buzz or whine appears in cruise. Until proven otherwise, the suspect is:", a: [
+      "The drive system — shafts, couplings, bearings, or gear meshes",
+      "Main rotor track",
+      "Landing gear servicing",
+      "Static electricity"
+    ], c: 0, x: "High frequency = high-speed parts. Main rotor faults live down near 4–7 Hz; the drivetrain owns the buzz-and-whine range. Band-sorting is the first diagnostic act." },
+  { q: "In balance work, 'ips' is:", a: [
+      "Inches per second — a velocity measure of vibration amplitude",
+      "Impulses per second — a frequency measure",
+      "A phase angle unit",
+      "Inches per shaft-revolution"
+    ], c: 0, x: "Amplitude in velocity terms. Typical serviceable limits are a few tenths of an ips per the MM; the balance chart needs amplitude AND phase to point at the fix." },
+  { q: "The once-per-rev reference (phototach on reflective tape, or magnetic pickup) exists to measure:", a: [
+      "Phase — where in the rotation the heavy spot passes, hence where to place the correction",
+      "Oil temperature during the run",
+      "Average RPM only",
+      "Blade track height"
+    ], c: 0, x: "Amplitude says how bad; phase says where. Without the reference you know you have imbalance but not where to put the weight — the chart is unusable." },
+  { q: "Bearing defects tend to reveal themselves as:", a: [
+      "Non-synchronous tones — frequencies that aren't clean multiples of shaft speed — plus heat and growl",
+      "Exactly 1× shaft speed always",
+      "Exactly gear-mesh frequency",
+      "DC offset on the accelerometer"
+    ], c: 0, x: "Rolling-element geometry sets defect frequencies that don't line up with shaft multiples — that 'doesn't match anything' tone IS the clue. On the boom it pairs with a hot hanger bearing." },
+  { q: "After replacing a tail rotor drive coupling, a new medium-frequency vibration appears. Your FIRST suspects are:", a: [
+      "The work just done — match marks, hardware stack, torque — then shaft balance",
+      "The main rotor blades",
+      "The engine mounts",
+      "Fuel contamination"
+    ], c: 0, x: "'What changed?' outranks every other question in troubleshooting. Post-maintenance vibration points at the maintenance: verify the installation, then rebalance per the MM." },
+  { q: "Ground resonance is best described as:", a: [
+      "A self-amplifying interaction between rotor lead-lag motion and the airframe on its landing gear — a rotors/dampers topic, not a drivetrain fault",
+      "Gear-mesh vibration transmitted to the ground",
+      "Driveshaft whirl at critical speed",
+      "Normal 1/rev felt only during run-up"
+    ], c: 0, x: "Know the two-sentence answer and the boundary: dampers and gear servicing are the defence, and the full treatment belongs to the rotors course. Owning a course includes knowing what isn't in it." },
+  { q: "The disciplined troubleshooting sequence is:", a: [
+      "Characterize the vibration → match frequency to suspects with the MM chart → inspect → change ONE thing → re-run and verify",
+      "Replace the cheapest part first and fly it",
+      "Change several parts at once to save ground runs",
+      "Always start by rebalancing the main rotor"
+    ], c: 0, x: "One change at a time with a verification run — otherwise a fix teaches you nothing and a non-fix costs double. The frequency fingerprint keeps you from dismantling healthy systems." }
+];
+</script>
+
+<!-- ============================================================ MODULE 7 -->
+<section class="view" id="view-m7">
+  <span class="week-chip">Week 6&ndash;7 &middot; Aug 31 &ndash; Sep 6</span>
+  <h2 class="view-title">Module 7 — Inspections, Airworthiness &amp; Case Studies</h2>
+  <p class="view-sub">Mostly ground you already own as a working AME — re-pointed at dynamic components, plus two accidents every drivetrain course should be built around.</p>
+
+  <div class="card">
+    <h3><span class="icon">🎓</span> Your home turf, new terrain</h3>
+    <p>You've lived inspection programs, ADs, and records for years &mdash; that experience is the most valuable thing you bring to this classroom, so this module is deliberately lighter on new theory. What changes with dynamic components is the <em>stakes profile</em>: single load paths, fatigue-driven lives, and failure modes that give little external warning. Anchor everything in stories &mdash; yours, and the two documented ones below.</p>
+    <p><strong>By the end of this module you can:</strong></p>
+    <ul>
+      <li>Lay out the inspection landscape for dynamic components from daily checks to overhaul and retirement.</li>
+      <li>List the conditional-inspection triggers and what each is protecting against.</li>
+      <li>Explain life limits, TBO, and why paperwork makes a part airworthy &mdash; in the Canadian regulatory frame.</li>
+      <li>Teach the human-factors angles specific to drivetrain work.</li>
+      <li>Run a 20-minute case-study discussion on each of the two Super Puma gearbox accidents.</li>
+    </ul>
+    <div class="q-actions"><button class="btn ghost small" data-expand>Expand all topics</button></div>
+  </div>
+
+  <div class="card">
+    <h3><span class="icon">📖</span> Core knowledge refresher</h3>
+
+    <details class="topic">
+      <summary>7.1 &nbsp;The inspection landscape for dynamic components</summary>
+      <div class="topic-body">
+        <ul>
+          <li><strong>Daily / pre-flight:</strong> leaks and levels (sight glasses), chip indications, belt condition (pistons), obvious coupling/bearing distress, rotor brake released, filter bypass buttons. Cheap, fast, catches the loud failures.</li>
+          <li><strong>Scheduled inspections</strong> (100-hour/annual equivalents and progressive systems): the detailed looks &mdash; coupling disc inspections, hanger bearing checks, mount and elastomer condition, spline lube, pattern/backlash where called, torque checks.</li>
+          <li><strong>Overhaul (TBO):</strong> gearboxes and FWUs go to shop at fixed intervals for teardown, inspection, re-shim, and re-life of what's allowed; <strong>on-condition</strong> programs (supported by monitoring &mdash; Module 4) extend or replace some of this on some fleets.</li>
+          <li><strong>Retirement (life limits):</strong> masts, gears, couplings and similar parts leave service at their fatigue life <em>regardless of apparent condition</em> &mdash; the crack that kills initiates below the surface, where no field inspection reliably sees it. This is the concept students most need to internalize: <em>"it looks perfect" is not an airworthiness argument for a lifed part.</em></li>
+        </ul>
+      </div>
+    </details>
+
+    <details class="topic">
+      <summary>7.2 &nbsp;Conditional inspections — the "something happened" list</summary>
+      <div class="topic-body">
+        <p>Collect these into one table for your students; each trigger exists because torsional or shock overload hides inside splines, gear roots, and races:</p>
+        <ul>
+          <li><strong>Sudden stoppage / sudden acceleration</strong> &mdash; rotor strike, tail strike, seized engine (Module 5's deep dive).</li>
+          <li><strong>Overtorque</strong> &mdash; graded response per magnitude/duration (Module 3).</li>
+          <li><strong>Overspeed</strong> &mdash; rotor or drivetrain beyond limits; centrifugal and mesh loading exceedances.</li>
+          <li><strong>Chip event</strong> &mdash; debris assessment and the MM flowchart (Module 4).</li>
+          <li><strong>Rotor brake misuse</strong> &mdash; applied above limits or against power (Module 5).</li>
+          <li><strong>Lightning strike</strong> &mdash; current exiting through the drivetrain can arc across bearing contacts, leaving micro-pitting that fails later; MMs direct specific bearing/gearbox checks.</li>
+          <li><strong>Hard landing</strong> &mdash; mounts, cases, and shaft alignment join the structural inspection.</li>
+        </ul>
+        <p>The teaching thread: none of these depend on visible damage. The event, honestly reported, <em>is</em> the finding &mdash; which makes reporting culture an airworthiness system.</p>
+      </div>
+    </details>
+
+    <details class="topic">
+      <summary>7.3 &nbsp;Lives, records, and the Canadian frame</summary>
+      <div class="topic-body">
+        <p>Map your existing knowledge onto this course in one lecture:</p>
+        <ul>
+          <li><strong>CAR 571</strong> (maintenance performance rules, ICAs) and <strong>CAR 605 / Standard 625</strong> (maintenance schedules, technical records) apply exactly as you know them &mdash; illustrate each with a drivetrain example: recording a chip event, tracking a mast's life, complying with a coupling AD.</li>
+          <li><strong>ADs and service bulletins:</strong> drivetrain ADs are common across fleets (couplings, sprag units, gearbox components). A great student exercise: pull the current AD list for the school's type and find every ATA 63/65 entry.</li>
+          <li><strong>Component records:</strong> a life-limited dynamic part is airworthy only with its history &mdash; hours, cycles, event exposure. No traceability = no life status = <strong>unairworthy, whatever it looks like</strong>. Tie in bogus/suspect parts: dynamic components are exactly where counterfeit history kills.</li>
+          <li><strong>ICAs:</strong> the type's maintenance manual, airworthiness limitations section, and overhaul manuals are the legal backbone of everything in Modules 1&ndash;6.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details class="topic">
+      <summary>7.4 &nbsp;Human factors, drivetrain edition</summary>
+      <div class="topic-body">
+        <p>Generic HF training is easy to nod through; land it with drivetrain-specific failure paths:</p>
+        <ul>
+          <li><strong>Torque and safetying discipline</strong> &mdash; coupling bolts and gearbox hardware live under reversed loads; "close enough" migrates.</li>
+          <li><strong>FOD in open cases</strong> &mdash; an open gearbox is a mouth; tool control and covers are non-negotiable.</li>
+          <li><strong>Servicing errors</strong> &mdash; wrong oil family (Module 4), wrong grease on splines, overfill.</li>
+          <li><strong>Match marks and orientation</strong> &mdash; balance and phase live in the marks (Module 5).</li>
+          <li><strong>Verification culture</strong> &mdash; disturbed critical assemblies deserve a second set of eyes and honest duplicate/independent checks where required; interruptions are where steps vanish.</li>
+        </ul>
+        <p>Teach with near-miss stories from your own career where you can &mdash; nothing you say all term will be remembered better.</p>
+      </div>
+    </details>
+
+    <details class="topic">
+      <summary>7.5 &nbsp;Case study 1: G-REDL — Aberdeen, 1 April 2009</summary>
+      <div class="topic-body">
+        <p>An AS332L2 Super Puma returning from a North Sea platform lost its main rotor in flight; all 16 aboard died. The AAIB traced the failure to a <strong>second-stage planet gear in the MGB epicyclic module</strong>, which fractured from a fatigue crack most likely originating at <strong>spalling damage</strong>. Days earlier a <strong>magnetic particle had been found</strong> during maintenance &mdash; and, through a chain of communication and procedure gaps, its significance was missed and the box stayed in service.</p>
+        <p><strong>Why it belongs in your course:</strong> it connects Module 3 (epicyclic gears), Module 4 (what a particle means and what happens when the process around it fails), and this module (culture and process ARE airworthiness). Read the AAIB report's summary and conclusions (AAIB 2/2011 &mdash; free online) and build your discussion around one question: <em>"At which points could this chain have been broken &mdash; and by whom?"</em></p>
+      </div>
+    </details>
+
+    <details class="topic">
+      <summary>7.6 &nbsp;Case study 2: LN-OJF — Turøy, 29 April 2016 — and how to run a case class</summary>
+      <div class="topic-body">
+        <p>Seven years later, an H225 Super Puma near Bergen, Norway, also lost its main rotor: 13 dead. Investigation (AIBN/NSIA) again found a <strong>second-stage planet gear fatigue failure</strong> &mdash; the crack initiating <strong>below the surface from spalling-type damage</strong>, propagating with <strong>little detectable warning</strong>: the debris shed was limited and HUMS gave no actionable alert. The aftermath reshaped European rules on gearbox monitoring, debris analysis, and design assumptions.</p>
+        <p><strong>The paired lesson</strong> of the two accidents is honest and uncomfortable: chip detection, oil analysis, and HUMS are overlapping nets with real holes; that's exactly why conservative lives, conditional inspections, honest reporting, and process discipline carry so much of the load. Students who understand this stop seeing paperwork as bureaucracy.</p>
+        <p><strong>Running a 20-minute case discussion:</strong> (1) five minutes of facts &mdash; no blame language; (2) small groups map the failure chain onto the systems they've learned (which module would have touched it?); (3) collect "break points" on the whiteboard; (4) close with what changed after &mdash; and what a technician on the floor controls personally. Never run it as "look how they screwed up" &mdash; run it as "this is why your signature matters."</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="card">
+    <h3><span class="icon">✅</span> Study assignments</h3>
+    <label class="task"><input type="checkbox" data-task="m7-1"><span class="task-text">Download the <strong>AAIB report on G-REDL</strong> (report 2/2011) and read the synopsis, gearbox findings, and conclusions.</span><span class="hrs">1.5 h</span></label>
+    <label class="task"><input type="checkbox" data-task="m7-2"><span class="task-text">Download the <strong>Norwegian report on LN-OJF</strong> and read the same sections. Note the differences in warning available to each crew/operator.</span><span class="hrs">1.5 h</span></label>
+    <label class="task"><input type="checkbox" data-task="m7-3"><span class="task-text">Pull the <strong>AD list for your school's type</strong> and identify every ATA 63/65 item. Pick one to use as a worked example in class.</span><span class="hrs">1 h</span></label>
+    <label class="task"><input type="checkbox" data-task="m7-4"><span class="task-text">Build the <strong>conditional-inspection trigger table</strong> (event &rarr; what it protects against &rarr; where the MM sends you) for your type.</span><span class="hrs">1 h</span></label>
+    <label class="task"><input type="checkbox" data-task="m7-5"><span class="task-text">Write down <strong>two stories from your own career</strong> (anonymized) that illustrate reporting culture or verification discipline. These are teaching assets — treat them as such.</span><span class="hrs">0.5 h</span></label>
+  </div>
+
+  <div class="card">
+    <h3><span class="icon">🛠️</span> Teach-back deliverable</h3>
+    <p><strong>The case-study lesson plan</strong>: facts summary (5 slides max), the four-step discussion structure with your prepared questions, and the closing "what you control personally" list. Plus the <strong>conditional-inspection table handout</strong>. File both.</p>
+  </div>
+
+  <div class="card">
+    <h3><span class="icon">📝</span> Self-check quiz</h3>
+    <div class="quiz-box" data-quiz="m7"></div>
+  </div>
+</section>
+<script>
+QUIZ.m7 = [
+  { q: "A main rotor mast reaches its published retirement life but measures and inspects perfectly. It must be:", a: [
+      "Removed from service — life limits apply regardless of apparent condition",
+      "Re-inspected and continued for 10% of its life",
+      "Continued in service until the next overhaul",
+      "Downgraded to training use on flying aircraft"
+    ], c: 0, x: "Fatigue cracks initiate below the surface where field inspection can't reliably see them; the life limit IS the inspection. 'It looks perfect' is not an airworthiness argument for a lifed part." },
+  { q: "Why are dynamic drive components life-limited at all?", a: [
+      "They accumulate fatigue damage under cyclic loads, and crack initiation cannot be reliably detected before failure",
+      "Manufacturers profit from spare parts",
+      "Their materials corrode at a fixed calendar rate",
+      "Regulation requires every rotorcraft part to have a life"
+    ], c: 0, x: "Single load path + cyclic loading + hidden initiation = retire by the math, not by the look. Many non-critical parts are on-condition; the critical single-path ones are not." },
+  { q: "A life-limited gearbox arrives with no traceable service history. Its status is:", a: [
+      "Unairworthy — without records its life status is unknown, whatever its condition",
+      "Airworthy after a good visual inspection",
+      "Airworthy if it passes a test run",
+      "Usable for 100 hours pending paperwork"
+    ], c: 0, x: "The paperwork carries the life. No hours/cycles/event history = no life status = scrap value only. This is also exactly where bogus-parts risk concentrates." },
+  { q: "Which list correctly names CONDITIONAL inspection triggers for the drivetrain?", a: [
+      "Sudden stoppage, overtorque, overspeed, chip event, rotor brake misuse, lightning strike",
+      "Scheduled 100-hour, annual, progressive",
+      "Pre-flight, post-flight, daily",
+      "Overhaul, retirement, storage"
+    ], c: 0, x: "Conditional = 'something happened.' Each trigger protects against hidden overload or damage — and none of them wait for visible evidence. The event, honestly reported, is the finding." },
+  { q: "After a lightning strike, the drivetrain concern is:", a: [
+      "Current arcing across bearing and gear contacts, leaving micro-damage that fails later",
+      "Demagnetized chip detectors only",
+      "Fuel contamination",
+      "Nothing — composite blades take all the current"
+    ], c: 0, x: "Exit current jumps the tiny film gaps in bearings and meshes, micro-pitting the surfaces. The MM directs specific drivetrain checks precisely because the damage is invisible now and fatal later." },
+  { q: "Both the 2009 (G-REDL) and 2016 (LN-OJF) Super Puma accidents were caused by:", a: [
+      "Fatigue failure of a second-stage planet gear in the main gearbox epicyclic module",
+      "Tail rotor driveshaft failure",
+      "Engine turbine burst",
+      "Main rotor blade delamination"
+    ], c: 0, x: "Same component family, seven years apart — and in the 2016 event the monitoring layers gave no actionable warning. Together they justify conservative lives, conditional inspections, and process discipline." },
+  { q: "The deepest maintenance lesson of the G-REDL investigation was:", a: [
+      "A metal particle finding lost its significance in a chain of communication and procedure gaps — process and culture are part of airworthiness",
+      "Chip detectors are useless",
+      "HUMS should be removed as a distraction",
+      "The gearbox was overdue for overhaul"
+    ], c: 0, x: "The hardware whispered; the system around it didn't hear. Teach it as 'at which points could this chain have been broken?' — not as individual blame." },
+  { q: "The best classroom use of accident case studies is to:", a: [
+      "Have students map the failure chain onto the systems they've learned and identify where it could have been broken",
+      "Show that older aircraft are dangerous",
+      "Fill time entertainingly before exams",
+      "Memorize dates and registration letters"
+    ], c: 0, x: "Facts first, blame never, then 'which module would have touched this?' and 'what does a floor technician control personally?' That's when paperwork stops being bureaucracy in their heads." }
+];
+</script>
+
+<!-- ============================================================ MODULE 8 -->
+<section class="view" id="view-m8">
+  <span class="week-chip">Week 7 &middot; Sep 7 &ndash; 13</span>
+  <h2 class="view-title">Module 8 — Build Your Course</h2>
+  <p class="view-sub">Assembly week: the binder becomes a course. No new helicopter content — just turning seven weeks of deliverables into a teachable term.</p>
+
+  <div class="card">
+    <h3><span class="icon">🎓</span> You already did most of this</h3>
+    <p>If you filed each week's teach-back deliverable, you're holding: a power-flow lecture opener, a sprag demo script, gearbox worksheets, a chip-light decision tree, an inspection card, scenario cards, a case-study lesson, and ~75 quiz questions. This week you wire them together with a spine of lesson plans and an assessment plan &mdash; using the official outline from Week 0 as the skeleton.</p>
+    <div class="q-actions"><button class="btn ghost small" data-expand>Expand all topics</button></div>
+  </div>
+
+  <div class="card">
+    <h3><span class="icon">📖</span> The assembly method</h3>
+
+    <details class="topic">
+      <summary>8.1 &nbsp;Backward design in one paragraph</summary>
+      <div class="topic-body">
+        <p>Work in this order: <strong>(1) Outcomes</strong> &mdash; what must a student be able to DO (verbs: trace, compute, inspect, interpret, decide &mdash; not "understand")? Take them from the approved outline, sharpened with what you now know. <strong>(2) Assessment</strong> &mdash; how will you SEE each outcome (exam question, practical task, worksheet)? <strong>(3) Lessons</strong> &mdash; only now decide what to say and show, and only what serves 1 and 2. Content you can't tie to an outcome is trivia; cut it or make it a story.</p>
+        <p>Quick verb ladder for writing outcomes: <em>list/identify &rarr; explain/describe &rarr; compute/trace &rarr; inspect/perform &rarr; troubleshoot/evaluate</em>. Aim most of the course at the middle and right of that ladder &mdash; that's where AMEs live.</p>
+      </div>
+    </details>
+
+    <details class="topic">
+      <summary>8.2 &nbsp;A lesson sequence that works (adapt to your hours)</summary>
+      <div class="topic-body">
+        <p>A proven shape for roughly 12 classroom sessions plus shop periods &mdash; stretch or compress to your timetable:</p>
+        <ol>
+          <li>Why drivetrains exist; the power path (Module 1 opener + diagram)</li>
+          <li>Configurations; ATA map; type numbers (M1)</li>
+          <li>Clutches and belt drives (M2 + demo)</li>
+          <li>Freewheeling units; autorotation continuity (M2 + sprag demo) &mdash; <em>quiz 1</em></li>
+          <li>Main gearbox stages; planetary math (M3 + worksheet)</li>
+          <li>Mounts, mast, torque limits (M3)</li>
+          <li>Lubrication systems (M4 + schematic handout)</li>
+          <li>Chip detectors, oil analysis, HUMS (M4 + debris demo) &mdash; <em>quiz 2</em></li>
+          <li>Tail rotor drive end to end (M5 + inspection card)</li>
+          <li>Rotor brake; sudden stoppage (M5)</li>
+          <li>Vibration and diagnostics (M6 + scenario cards) &mdash; <em>quiz 3</em></li>
+          <li>Airworthiness, lives, case studies (M7) &mdash; then review + final</li>
+        </ol>
+        <p>Shop periods slot naturally after sessions 4, 8, 9, and 11 (FWU/coupling stations, chip/lube lab, boom walk, balance demo).</p>
+      </div>
+    </details>
+
+    <details class="topic">
+      <summary>8.3 &nbsp;The 50-minute lesson plan template</summary>
+      <div class="topic-body">
+        <p>One page per session, six lines &mdash; write these and you will never stand in front of a class wondering what's next:</p>
+        <ul>
+          <li><strong>Hook (5 min):</strong> a question, story, or object. ("Who votes we bolt the rotor straight to the engine?")</li>
+          <li><strong>Outcome stated (1 min):</strong> "By the end you'll be able to&hellip;" &mdash; say it out loud; students aim better when they can see the target.</li>
+          <li><strong>Present (15&ndash;20 min):</strong> the content, with the visual you built. Max 20 minutes before they do something.</li>
+          <li><strong>Guided practice (15 min):</strong> worksheet, calculation, hardware handling, scenario &mdash; the deliverables you've filed.</li>
+          <li><strong>Check (5 min):</strong> 3&ndash;5 rapid questions (your quiz bank), cold-called kindly.</li>
+          <li><strong>Summarize + bridge (3 min):</strong> one-sentence recap; one-sentence teaser for next session.</li>
+        </ul>
+        <p>Write the Module 2 sprag lesson first as your worked example &mdash; it has the best hook, demo, and questions. Then batch the rest; after three they take 20 minutes each.</p>
+      </div>
+    </details>
+
+    <details class="topic">
+      <summary>8.4 &nbsp;Assessment without misery</summary>
+      <div class="topic-body">
+        <ul>
+          <li><strong>Blueprint before writing:</strong> decide marks per module proportional to teaching hours and importance (e.g., FWU and MGB heavy; configurations light). It keeps the exam honest and defensible.</li>
+          <li><strong>Question craft:</strong> stems that pose a complete problem; one defensibly correct answer; distractors built from real student misconceptions ("the tail rotor stops in autorotation") &mdash; you've been collecting them all summer in these quizzes.</li>
+          <li><strong>Practical assessment:</strong> a simple observed-task sheet per lab (task, steps observed, pass criteria, retry policy). Inspecting a coupling to MM limits IS an exam.</li>
+          <li><strong>Early diagnostic:</strong> a no-stakes 10-question quiz in week one tells you what the class already knows and buys you calibration time.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details class="topic">
+      <summary>8.5 &nbsp;First day, and surviving the first month</summary>
+      <div class="topic-body">
+        <ul>
+          <li><strong>First day:</strong> the power-path hook, the course map ("seven systems, one promise: power gets to the rotors every single flight"), expectations and marking scheme, then teach real content for at least 20 minutes &mdash; day one sets the tone that class time means learning.</li>
+          <li><strong>The parking lot:</strong> a whiteboard corner for questions you can't answer on the spot. Say "I'll find out" without shame, come back next session with the answer <em>and the reference</em>. Students trust an instructor who models looking things up over one who bluffs &mdash; and it demonstrates the exact skill their licence depends on.</li>
+          <li><strong>Stay one week ahead, not one term:</strong> before each week, re-skim the matching module here and your filed deliverables. Your prep is done; trust it.</li>
+          <li><strong>Backup plans:</strong> for every lab, know what you'll do if the hardware/aircraft is unavailable (photos, video, worksheet version). For every lecture, know your board-only version if the projector dies.</li>
+        </ul>
+      </div>
+    </details>
+  </div>
+
+  <div class="card">
+    <h3><span class="icon">✅</span> Assembly checklist — done means ready</h3>
+    <label class="task"><input type="checkbox" data-task="m8-1"><span class="task-text"><strong>Course outline</strong> mapped: official syllabus topics &rarr; your session sequence &rarr; hours, with quiz and lab dates marked.</span><span class="hrs">2 h</span></label>
+    <label class="task"><input type="checkbox" data-task="m8-2"><span class="task-text"><strong>Lesson plans</strong> written for at least the first four sessions (template above), with the rest skeletoned.</span><span class="hrs">3 h</span></label>
+    <label class="task"><input type="checkbox" data-task="m8-3"><span class="task-text"><strong>Lab/practical sheets</strong> finalized for your first two shop periods, with observed-task assessment sheets.</span><span class="hrs">1.5 h</span></label>
+    <label class="task"><input type="checkbox" data-task="m8-4"><span class="task-text"><strong>Exam blueprint + question bank</strong>: marks allocated per module; your weekly questions (plus this program's bank) sorted into quiz 1&ndash;3 and final pools.</span><span class="hrs">1.5 h</span></label>
+    <label class="task"><input type="checkbox" data-task="m8-5"><span class="task-text"><strong>First-day plan</strong> written: hook, course map, expectations, diagnostic quiz, first content block.</span><span class="hrs">1 h</span></label>
+    <label class="task"><input type="checkbox" data-task="m8-6"><span class="task-text"><strong>Backup plans</strong> noted for each early lab and lecture (no-hardware and no-projector versions).</span><span class="hrs">0.5 h</span></label>
+    <label class="task"><input type="checkbox" data-task="m8-7"><span class="task-text"><strong>Final mastery exam passed</strong> on the Question Bank tab (25 random questions, 80%+) — your own bar, cleared.</span><span class="hrs">0.5 h</span></label>
+  </div>
+
+  <div class="card">
+    <h3><span class="icon">🏁</span> The finish line</h3>
+    <p>When the checklist above is green, you are not "someone who has never taught this course." You are an instructor with a tested knowledge base, a filed set of teaching assets, a session-by-session plan, and an assessment scheme &mdash; six weeks before most first-time instructors write their first lesson plan. Walk in and enjoy it: you're about to teach people how helicopters stay in the air. That's a good job.</p>
+  </div>
+</section>
+
+<!-- ============================================================ QUESTION BANK -->
+<section class="view" id="view-bank">
+  <h2 class="view-title">Question Bank</h2>
+  <p class="view-sub">Every question in the program in one place — your seed bank for class quizzes and exams, plus your own final.</p>
+
+  <div class="card">
+    <h3><span class="icon">🏆</span> Final mastery exam</h3>
+    <p>25 questions drawn at random from all modules. Pass at 80% and you've cleared the bar you'll set for your students. Take it in Week 7 — and again the weekend before classes start.</p>
+    <div class="quiz-box" data-quiz="final"></div>
+  </div>
+
+  <div class="card">
+    <h3><span class="icon">🗃️</span> Browse all questions</h3>
+    <p>Study mode: read the question, commit to an answer, then reveal. These are deliberately written with distractors built from real student misconceptions — reuse and adapt them freely for your course (and your quiz app).</p>
+    <div id="bank-list"></div>
+  </div>
+</section>
+<script>
+(function buildBank() {
+  const titles = { m1: 'Module 1 — Powertrain Big Picture', m2: 'Module 2 — Clutches, Freewheels & Couplings',
+    m3: 'Module 3 — Main Gearbox, Mounts & Mast', m4: 'Module 4 — Lubrication & Monitoring',
+    m5: 'Module 5 — Tail Rotor Drive & Rotor Brake', m6: 'Module 6 — Vibration & Diagnostics',
+    m7: 'Module 7 — Inspections, Airworthiness & Cases' };
+  const list = document.getElementById('bank-list');
+  Object.keys(titles).forEach(id => {
+    const qs = (window.QUIZ && QUIZ[id]) || [];
+    if (!qs.length) return;
+    const h = document.createElement('div');
+    h.className = 'bank-mod-title';
+    h.textContent = titles[id] + ' (' + qs.length + ')';
+    list.appendChild(h);
+    qs.forEach((q, i) => {
+      const d = document.createElement('div');
+      d.className = 'bank-q';
+      d.innerHTML = '<div class="bq-text">' + (i + 1) + '. ' + q.q + '</div>' +
+        '<button class="bq-toggle">Show answer</button>' +
+        '<div class="bq-ans"><strong>' + q.a[q.c] + '</strong><br>' + q.x + '</div>';
+      list.appendChild(d);
+    });
+  });
+})();
+</script>
+
+<!-- ============================================================ GLOSSARY -->
+<section class="view" id="view-glossary">
+  <h2 class="view-title">Glossary</h2>
+  <p class="view-sub">The working vocabulary of the course. If you can define these cold, you can survive any student question sprung mid-sentence.</p>
+
+  <div class="card">
+    <input type="text" id="glossary-search" class="glossary-search" placeholder="Type to filter terms…">
+    <dl class="glossary" id="glossary-list">
+      <dt>Autorotation</dt><dd>Power-off flight in which upflow through the rotor keeps it turning. The drivetrain's job: the freewheeling unit releases the engine while the main rotor keeps driving the gearbox, tail rotor, and accessories.</dd>
+      <dt>ATA 63 / ATA 65</dt><dd>The maintenance-manual chapters for main rotor drive (63) and tail rotor drive (65) — where this whole course lives. ATA 62/64 are the rotors themselves.</dd>
+      <dt>Backlash</dt><dd>Measured free play between meshing gear teeth. Outside limits it indicates wear or incorrect shimming; checked with the tooth contact pattern.</dd>
+      <dt>Chip detector</dt><dd>Magnetic plug (plain, indicating, or pulsed/fuzz-burning) that captures ferrous debris from gearbox oil — the everyday early-warning window into a gearbox.</dd>
+      <dt>Centrifugal clutch</dt><dd>RPM-operated friction clutch: shoes fly outward with engine speed and grip a drum, engaging the rotor progressively and automatically.</dd>
+      <dt>Combining gearbox</dt><dd>Gearbox joining the power of two or more engines into a common drive — each input protected by its own freewheeling unit.</dd>
+      <dt>Condition indicator (CI)</dt><dd>A HUMS-computed metric trending the vibration health of one component (a gear mesh, a bearing). Threshold crossings and slope changes drive maintenance action.</dd>
+      <dt>Conditional inspection</dt><dd>An inspection triggered by an event — sudden stoppage, overtorque, overspeed, chip light, lightning, rotor brake misuse — required regardless of visible damage.</dd>
+      <dt>Duplex / stacked bearings</dt><dd>Paired bearings sharing thrust loads, common at mast and bevel-gear positions where lift and gear thrust concentrate.</dd>
+      <dt>Epicyclic (planetary) stage</dt><dd>Sun gear driving planet gears on a carrier inside a fixed ring gear. Shares load across several meshes; the classic compact final reduction under the rotor. Ratio (fixed ring) = 1 + ring/sun teeth.</dd>
+      <dt>Flexible disc coupling (Thomas coupling)</dt><dd>Stacked thin stainless discs bolted alternately to driving and driven flanges; transmits torque in tension while flexing for misalignment. Rejected for cracks at bolt holes, fretting, or handling damage.</dd>
+      <dt>Freewheeling unit (FWU)</dt><dd>One-way clutch (sprag or roller-ramp) between engine and gearbox: drives normally, overruns instantly when the rotor outruns the engine. The hardware that makes autorotation possible.</dd>
+      <dt>Fretting</dt><dd>Micro-motion wear between clamped surfaces (splines, coupling discs, fittings), confessing as fine red/black oxide dust — an early sign of looseness or wear.</dd>
+      <dt>Fuzz burner (pulsed chip detector)</dt><dd>Chip detector that electrically clears insignificant fine fuzz; debris that survives the pulse is significant, so the warning means business.</dd>
+      <dt>Gear mesh frequency</dt><dd>Tooth count × shaft revolutions per second — the tone every gear pair sings at. Damage modulates it, creating sidebands.</dd>
+      <dt>Ground resonance</dt><dd>Self-amplifying interaction between rotor lead-lag motion and the airframe on its landing gear. A rotors/dampers topic — know the boundary answer.</dd>
+      <dt>Hanger bearing</dt><dd>Grease-packed support bearing holding tail rotor driveshaft segments in line along the boom. Fails hot, rough, and loud — checked by hand, eye, and heat indication.</dd>
+      <dt>HUMS</dt><dd>Health and Usage Monitoring System: accelerometers plus recorders trending drivetrain vibration into condition indicators. Powerful early warning; not infallible.</dd>
+      <dt>Impending-bypass indicator</dt><dd>Pop-out button or light warning that the oil filter is loading toward bypass — a confession to investigate, never just reset.</dd>
+      <dt>Intermediate gearbox (IGB)</dt><dd>Small bevel gearbox changing driveline direction where the shaft climbs the fin (e.g., the UH-1's 42° box). Splash-lubed, sight glass, chip plug.</dd>
+      <dt>ips</dt><dd>Inches per second — velocity amplitude of vibration; the working unit of balance jobs.</dd>
+      <dt>KAflex shaft</dt><dd>A flexible-frame driveshaft design using flexing elements instead of discs or splines — no lubrication, strict handling rules.</dd>
+      <dt>Life-limited (retirement-lifed) part</dt><dd>Component retired at a set fatigue life regardless of condition — masts, gears, couplings. The records carry the life; no traceability, no airworthiness.</dd>
+      <dt>Lift link / lift beam</dt><dd>Dedicated structural member carrying main rotor thrust from the transmission into a fuselage frame. A cracked lift link is a grounding find.</dd>
+      <dt>Match marks</dt><dd>Alignment marks preserving the balanced/phased relationship of shaft and coupling components. Engineering, not decoration.</dd>
+      <dt>Mast (live)</dt><dd>Rotating shaft carrying drive torque up to the rotor head and (in conventional designs) rotor thrust down into the gearbox.</dd>
+      <dt>Static mast</dt><dd>Non-rotating structural tube carrying flight loads to the airframe while an internal shaft carries torque only (MD 500 family).</dd>
+      <dt>Nodal beam (Noda-Matic)</dt><dd>Bell transmission suspension tuned so the fuselage attaches at the beam's vibration nodes — the beam shakes, the cabin doesn't.</dd>
+      <dt>Overrunning</dt><dd>The freewheeling unit's released state: rotor-side race turning faster than engine-side race, sprags un-wedged, no torque transfer.</dd>
+      <dt>Overtorque</dt><dd>Exceedance of a drive-system torque limit — a maintenance event with a conditional inspection graded by magnitude and duration.</dd>
+      <dt>Phase (balance)</dt><dd>The angular position where the heavy spot passes the once-per-rev reference — tells you where the correction goes.</dd>
+      <dt>Pylon</dt><dd>The transmission support structure/area; "pylon rock" describes designed motion of an isolated transmission, with limits.</dd>
+      <dt>Rotor brake</dt><dd>Disc/caliper brake on the rotor side of the freewheel that stops and holds the rotor system after shutdown. RPM application limits; misuse is a conditional-inspection event.</dd>
+      <dt>Run-dry capability</dt><dd>Demonstrated continued gearbox operation for a certification period (order of 30 minutes) after loss of primary lubrication.</dd>
+      <dt>Sidebands</dt><dd>Frequencies flanking a gear-mesh tone created when damage modulates the mesh once per revolution — HUMS's favourite clue.</dd>
+      <dt>Sight glass</dt><dd>Window for oil level/condition on gearboxes — first item of every daily inspection.</dd>
+      <dt>Slip joint (splined)</dt><dd>Axially sliding splined joint letting the tail driveline change length as the boom flexes and breathes with temperature.</dd>
+      <dt>SOAP</dt><dd>Spectrometric Oil Analysis Program: wear metals in ppm, read as trends. Fe = steel, Cu = bronze cages/bushings, Mg/Al = case.</dd>
+      <dt>Spalling</dt><dd>Fatigue of a loaded rolling/gear surface shedding its hardened skin as flakes — the classic origin story of bearing and gear failures (and of both Super Puma accidents).</dd>
+      <dt>Spiral bevel gears</dt><dd>Curved-tooth bevel set turning drive ~90° quietly and strongly; generates thrust loads and is positioned by shimming, verified by pattern checks.</dd>
+      <dt>Sprag clutch</dt><dd>Freewheeling unit using hourglass-shaped elements that wedge between races in the drive direction and tip free in overrun.</dd>
+      <dt>Sudden stoppage</dt><dd>Abrupt arrest/shock of the drive system (blade strike, seizure). Triggers a deep conditional inspection of the whole driveline regardless of visible damage.</dd>
+      <dt>Tail rotor gearbox (TGB)</dt><dd>The ~90° bevel box at the tail rotor with the final reduction; typically splash-lubed with the pitch-change shaft passing through its hollow output.</dd>
+      <dt>TBO</dt><dd>Time Between Overhauls — the scheduled teardown/refurbishment interval for gearboxes and dynamic components.</dd>
+      <dt>Tooth contact pattern</dt><dd>Marking-compound footprint showing where gear teeth actually touch; moved by shimming, it verifies correct mesh position.</dd>
+      <dt>Torquemeter / transmission-limited</dt><dd>The torque indication protecting the gearbox where the engine can out-deliver it — the limit the pilot actually flies to.</dd>
+      <dt>Wet sump (splash) lubrication</dt><dd>Gears flinging oil from an internal sump — the lubrication scheme of small gearboxes (TGB/IGB and some light MGBs).</dd>
+    </dl>
+  </div>
+</section>
+
+<!-- ============================================================ RESOURCES -->
+<section class="view" id="view-resources">
+  <h2 class="view-title">Resources</h2>
+  <p class="view-sub">The library for the eight weeks. Free and official first; books worth buying second; type documents from your school always.</p>
+
+  <div class="card">
+    <h3><span class="icon">🆓</span> Free and official</h3>
+    <ul>
+      <li><strong>FAA Aviation Maintenance Technician Handbooks</strong> (General, Airframe, Powerplant) — the Airframe volume's rotorcraft chapter covers transmissions, FWUs, and tail drives at exactly course depth. Free PDFs: faa.gov &rarr; Handbooks &amp; Manuals &rarr; Aviation.</li>
+      <li><strong>FAA Helicopter Flying Handbook (FAA-H-8083-21)</strong> — chapters on rotor systems, autorotation, and helicopter systems give you the operational "why" behind every component you'll teach. Same FAA handbooks page.</li>
+      <li><strong>Type-certificate holders' public safety pages</strong> — Robinson's published safety notices and service documents are teaching gold for belt drives and sprag clutches (robinsonheli.com); Bell and Airbus publish service/safety information portals your school likely has access to.</li>
+      <li><strong>AAIB report 2/2011 (G-REDL)</strong> — search "AAIB G-REDL" at gov.uk. Read synopsis, gearbox findings, conclusions.</li>
+      <li><strong>NSIA (formerly AIBN) report on LN-OJF</strong> — search "LN-OJF report" at nsia.no. Same sections.</li>
+      <li><strong>Transport Canada CARs</strong> — CAR 571, 605, Standard 625, and Standard 566 for the licensing/training frame: tc.canada.ca &rarr; Canadian Aviation Regulations.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3><span class="icon">📕</span> Worth buying (or borrowing from the program)</h3>
+    <ul>
+      <li><strong>“Helicopter Maintenance” — Joseph Schafer</strong> (Jeppesen). The classic AMT-school helicopter text; its powertrain, transmission, and tail rotor drive chapters map almost one-to-one onto Modules 1–6. If you buy one book, buy this.</li>
+      <li><strong>“Principles of Helicopter Flight” — W.J. Wagtendonk</strong>. For the aerodynamic side (autorotation, tip speed, power required) — keeps your "why" explanations honest.</li>
+      <li>Your school's library may already hold both, plus older gems (e.g., military rotorcraft maintenance manuals) that make excellent lab handout material.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3><span class="icon">📘</span> Type documents (from the school)</h3>
+    <ul>
+      <li><strong>Maintenance manuals, ATA 63 and 65</strong>, for every type in the training fleet — your primary source all summer. Descriptions first, then inspection sections, then conditional inspections.</li>
+      <li><strong>Illustrated parts catalogs</strong> — the cutaway views are ready-made worksheet art, and IPC navigation is itself a course skill.</li>
+      <li><strong>Rotorcraft flight manuals</strong> — limits sections (torque, rotor brake RPM, chip light procedures) connect your systems teaching to what pilots are told.</li>
+      <li><strong>The AD list for each training type</strong> — filter for ATA 63/65 items for Module 7's exercise.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3><span class="icon">🎬</span> Video (search these — pick your class favourites)</h3>
+    <ul>
+      <li>"sprag clutch animation" · "freewheeling unit helicopter"</li>
+      <li>"helicopter main gearbox animation" · "planetary gear animation"</li>
+      <li>"Robinson R22 clutch actuator" · "helicopter belt drive system"</li>
+      <li>"tail rotor driveshaft inspection" · "hanger bearing"</li>
+      <li>"helicopter vibration analysis" · "driveshaft balancing Chadwick"</li>
+      <li>Vet before class: right type, right terminology, under 6 minutes or cue a segment.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3><span class="icon">🧑‍🏫</span> People</h3>
+    <ul>
+      <li><strong>The previous instructor</strong> — one coffee is worth ten hours of guessing: which topics students struggle with, which labs work, where the exam bodies are buried.</li>
+      <li><strong>A helicopter AME you trust</strong> — line up someone you can text mid-term with type-specific questions.</li>
+      <li><strong>Your program chair</strong> — for the approved curriculum, assessment standards, and what "done" looks like administratively.</li>
+    </ul>
+  </div>
+</section>
+
+</main>
+
+<footer>Helicopter Dynamic Drives &mdash; Instructor Prep Program &middot; Progress is saved locally in your browser</footer>
+
+<script>
+window.QUIZ = window.QUIZ || {};
+
+const MODULES = [
+  { id: 'overview', tab: 'Overview', title: 'Program Overview', week: '', dates: '', dash: false },
+  { id: 'w0', tab: 'Week 0', title: 'Orientation & Recon', week: 'Week 0', dates: 'Now – Jul 26', dash: true, note: 'Get the syllabus, the aids, and the boundaries' },
+  { id: 'm1', tab: 'M1 Power Path', title: 'The Powertrain Big Picture', week: 'Week 1', dates: 'Jul 27 – Aug 2', dash: true, note: 'Power flow, reduction, configurations' },
+  { id: 'm2', tab: 'M2 Clutches', title: 'Clutches, Freewheeling Units & Couplings', week: 'Week 2', dates: 'Aug 3 – 9', dash: true, note: 'Engagement, autorotation hardware, driveshaft couplings' },
+  { id: 'm3', tab: 'M3 Main Gearbox', title: 'Main Gearbox, Mounts & Mast', week: 'Week 3', dates: 'Aug 10 – 16', dash: true, note: 'Gear stages, torque limits, mounting, masts' },
+  { id: 'm4', tab: 'M4 Lube & Monitoring', title: 'Lubrication & Health Monitoring', week: 'Week 4', dates: 'Aug 17 – 23', dash: true, note: 'Oil systems, chip detectors, SOAP, HUMS' },
+  { id: 'm5', tab: 'M5 Tail Drive', title: 'Tail Rotor Drive & Rotor Brake', week: 'Week 5', dates: 'Aug 24 – 30', dash: true, note: 'Shafts, hanger bearings, IGB/TGB, rotor brake' },
+  { id: 'm6', tab: 'M6 Vibration', title: 'Vibration & Drivetrain Diagnostics', week: 'Week 6', dates: 'Aug 31 – Sep 6', dash: true, note: 'Frequency analysis, shaft balance, troubleshooting' },
+  { id: 'm7', tab: 'M7 Airworthiness', title: 'Inspections, Airworthiness & Case Studies', week: 'Week 6–7', dates: 'Aug 31 – Sep 6', dash: true, note: 'Conditional inspections, life limits, two accidents to teach from' },
+  { id: 'm8', tab: 'M8 Build Course', title: 'Build Your Course', week: 'Week 7', dates: 'Sep 7 – 13', dash: true, note: 'Outline, lesson plans, labs, exam bank — assembly week' },
+  { id: 'bank', tab: 'Question Bank', title: 'Question Bank', week: '', dates: '', dash: false },
+  { id: 'glossary', tab: 'Glossary', title: 'Glossary', week: '', dates: '', dash: false },
+  { id: 'resources', tab: 'Resources', title: 'Resources', week: '', dates: '', dash: false },
+];
+
+const STORE_KEY = 'hdd-training-v1';
+let state = { tasks: {}, quizBest: {}, view: 'overview' };
+try {
+  const saved = JSON.parse(localStorage.getItem(STORE_KEY));
+  if (saved && typeof saved === 'object') state = Object.assign(state, saved);
+} catch (e) { /* fresh start */ }
+
+function save() { localStorage.setItem(STORE_KEY, JSON.stringify(state)); }
+
+/* ---------- navigation ---------- */
+const tabsEl = document.getElementById('tabs');
+function buildTabs() {
+  tabsEl.innerHTML = '';
+  MODULES.forEach(m => {
+    if (!document.getElementById('view-' + m.id)) return;
+    const b = document.createElement('button');
+    b.id = 'tab-' + m.id;
+    b.innerHTML = m.tab + (m.dash && moduleComplete(m.id) ? '<span class="done-dot"></span>' : '');
+    b.onclick = () => showView(m.id);
+    tabsEl.appendChild(b);
+  });
+}
+function showView(id) {
+  document.querySelectorAll('section.view').forEach(s => s.classList.remove('active'));
+  const sec = document.getElementById('view-' + id);
+  if (sec) sec.classList.add('active');
+  document.querySelectorAll('nav.tabs button').forEach(b => b.classList.remove('active'));
+  const tab = document.getElementById('tab-' + id);
+  if (tab) { tab.classList.add('active'); tab.scrollIntoView({ inline: 'nearest', block: 'nearest' }); }
+  state.view = id; save();
+  window.scrollTo({ top: 0 });
+}
+
+/* ---------- tasks ---------- */
+function initTasks() {
+  document.querySelectorAll('input[data-task]').forEach(cb => {
+    const key = cb.getAttribute('data-task');
+    cb.checked = !!state.tasks[key];
+    syncTaskLabel(cb);
+    cb.addEventListener('change', () => {
+      state.tasks[key] = cb.checked;
+      save(); syncTaskLabel(cb); refreshProgress();
+    });
+  });
+}
+function syncTaskLabel(cb) {
+  const label = cb.closest('label.task');
+  if (label) label.classList.toggle('done', cb.checked);
+}
+
+/* ---------- quiz engine ---------- */
+const PASS_MARK = 80;
+function quizPassed(id) {
+  const best = state.quizBest[id];
+  return best != null && best >= PASS_MARK;
+}
+function renderQuizzes() {
+  document.querySelectorAll('[data-quiz]').forEach(box => {
+    const id = box.getAttribute('data-quiz');
+    const pool = id === 'final' ? allQuestions() : (QUIZ[id] || []);
+    if (!pool.length) { box.innerHTML = '<p class="quiz-status">No questions loaded.</p>'; return; }
+    quizIntro(box, id, pool);
+  });
+}
+function allQuestions() {
+  const out = [];
+  Object.keys(QUIZ).forEach(k => QUIZ[k].forEach(q => out.push(q)));
+  return out;
+}
+function quizIntro(box, id, pool) {
+  const n = id === 'final' ? Math.min(25, pool.length) : pool.length;
+  const best = state.quizBest[id];
+  let status = 'Not attempted yet.';
+  if (best != null) {
+    status = 'Best score: <span class="' + (best >= PASS_MARK ? 'best-pass' : 'best-fail') + '">' + best + '%</span>' +
+             (best >= PASS_MARK ? ' — passed.' : ' — keep working, target is ' + PASS_MARK + '%.');
+  }
+  box.innerHTML = '<p class="quiz-status">' + n + ' questions · pass mark ' + PASS_MARK + '% · instant feedback with explanations. ' + status + '</p>';
+  const btn = document.createElement('button');
+  btn.className = 'btn primary';
+  btn.textContent = best != null ? 'Retake quiz' : 'Start quiz';
+  btn.onclick = () => runQuiz(box, id, pool, n);
+  box.appendChild(btn);
+}
+function runQuiz(box, id, pool, n) {
+  let qs = pool.slice();
+  if (id === 'final') { qs = shuffle(qs).slice(0, n); } else { qs = shuffle(qs); }
+  let idx = 0, score = 0;
+  next();
+  function next() {
+    if (idx >= qs.length) return finish();
+    const q = qs[idx];
+    const opts = q.a.map((t, i) => ({ t, i }));
+    shuffle(opts);
+    box.innerHTML = '';
+    const card = document.createElement('div');
+    card.className = 'q-card';
+    card.innerHTML = '<div class="q-num">Question ' + (idx + 1) + ' of ' + qs.length + ' · score ' + score + '</div>' +
+                     '<div class="q-text">' + q.q + '</div>';
+    const optWrap = document.createElement('div');
+    optWrap.className = 'q-opts';
+    const expl = document.createElement('div');
+    expl.className = 'q-expl';
+    expl.innerHTML = '<strong>Why:</strong> ' + q.x;
+    opts.forEach(o => {
+      const b = document.createElement('button');
+      b.innerHTML = o.t;
+      b.onclick = () => {
+        optWrap.querySelectorAll('button').forEach(x => x.disabled = true);
+        if (o.i === q.c) { b.classList.add('correct'); score++; }
+        else {
+          b.classList.add('wrong');
+          optWrap.querySelectorAll('button').forEach((x, xi) => { if (opts[xi].i === q.c) x.classList.add('correct'); });
+        }
+        expl.classList.add('show');
+        actions.style.display = 'flex';
+        card.querySelector('.q-num').textContent = 'Question ' + (idx + 1) + ' of ' + qs.length + ' · score ' + score;
+      };
+      optWrap.appendChild(b);
+    });
+    const actions = document.createElement('div');
+    actions.className = 'q-actions';
+    actions.style.display = 'none';
+    const nb = document.createElement('button');
+    nb.className = 'btn primary';
+    nb.textContent = (idx + 1 >= qs.length) ? 'See result' : 'Next question';
+    nb.onclick = () => { idx++; next(); };
+    actions.appendChild(nb);
+    card.appendChild(optWrap);
+    card.appendChild(expl);
+    card.appendChild(actions);
+    box.appendChild(card);
+  }
+  function finish() {
+    const pct = Math.round((score / qs.length) * 100);
+    const prev = state.quizBest[id];
+    if (prev == null || pct > prev) { state.quizBest[id] = pct; save(); }
+    box.innerHTML = '';
+    const r = document.createElement('div');
+    r.className = 'quiz-result';
+    r.innerHTML = '<div class="score-big">' + score + ' / ' + qs.length + ' — ' + pct + '%</div>' +
+      '<div class="verdict ' + (pct >= PASS_MARK ? 'pass' : 'fail') + '">' +
+      (pct >= PASS_MARK ? 'Passed — you can field questions on this module.' : 'Below ' + PASS_MARK + '% — review the topics you missed and retake.') + '</div>';
+    const again = document.createElement('button');
+    again.className = 'btn ghost';
+    again.textContent = 'Back to quiz summary';
+    again.onclick = () => { quizIntro(box, id, pool); refreshProgress(); };
+    r.appendChild(again);
+    box.appendChild(r);
+    refreshProgress();
+  }
+}
+function shuffle(a) {
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+/* ---------- progress ---------- */
+function moduleTaskKeys(id) {
+  return Array.from(document.querySelectorAll('#view-' + id + ' input[data-task]')).map(cb => cb.getAttribute('data-task'));
+}
+function moduleProgress(id) {
+  const keys = moduleTaskKeys(id);
+  const hasQuiz = !!(QUIZ[id] && QUIZ[id].length) && !!document.querySelector('#view-' + id + ' [data-quiz]');
+  const total = keys.length + (hasQuiz ? 1 : 0);
+  if (!total) return { pct: 0, total: 0 };
+  let done = keys.filter(k => state.tasks[k]).length;
+  if (hasQuiz && quizPassed(id)) done++;
+  return { pct: Math.round((done / total) * 100), total };
+}
+function moduleComplete(id) {
+  const p = moduleProgress(id);
+  return p.total > 0 && p.pct === 100;
+}
+function refreshProgress() {
+  const dashMods = MODULES.filter(m => m.dash);
+  let sum = 0, doneCount = 0;
+  dashMods.forEach(m => {
+    const p = moduleProgress(m.id);
+    sum += p.pct;
+    if (moduleComplete(m.id)) doneCount++;
+  });
+  const overall = dashMods.length ? Math.round(sum / dashMods.length) : 0;
+  document.getElementById('overall-pct').textContent = overall + '%';
+  document.getElementById('overall-bar').style.width = overall + '%';
+  document.getElementById('modules-done').textContent = doneCount + ' / ' + dashMods.length;
+  buildDash();
+  buildTabs();
+  const active = document.querySelector('section.view.active');
+  if (active) {
+    const id = active.id.replace('view-', '');
+    const tab = document.getElementById('tab-' + id);
+    if (tab) tab.classList.add('active');
+  }
+}
+function buildDash() {
+  const body = document.getElementById('dash-body');
+  if (!body) return;
+  body.innerHTML = '';
+  MODULES.filter(m => m.dash).forEach(m => {
+    const p = moduleProgress(m.id);
+    let cls = 's-none', label = 'Not started';
+    if (moduleComplete(m.id)) { cls = 's-done'; label = 'Complete'; }
+    else if (p.pct > 0) { cls = 's-part'; label = p.pct + '%'; }
+    const tr = document.createElement('tr');
+    tr.innerHTML = '<td>' + (m.week || '') + '</td><td>' + m.dates + '</td>' +
+      '<td><span class="dash-link" onclick="showView(\'' + m.id + '\')">' + m.title + '</span>' +
+      (m.note ? '<span class="mini-note">' + m.note + '</span>' : '') + '</td>' +
+      '<td><span class="dash-status ' + cls + '">' + label + '</span></td>';
+    body.appendChild(tr);
+  });
+}
+
+/* ---------- misc ---------- */
+function initMisc() {
+  const reset = document.getElementById('reset-all');
+  if (reset) reset.onclick = () => {
+    if (confirm('Reset all checklists and quiz scores?')) {
+      state = { tasks: {}, quizBest: {}, view: 'overview' };
+      save(); location.reload();
+    }
+  };
+  document.querySelectorAll('[data-expand]').forEach(btn => {
+    btn.onclick = () => {
+      const sec = btn.closest('section.view');
+      const all = sec.querySelectorAll('details.topic');
+      const anyClosed = Array.from(all).some(d => !d.open);
+      all.forEach(d => d.open = anyClosed);
+      btn.textContent = anyClosed ? 'Collapse all topics' : 'Expand all topics';
+    };
+  });
+  const gs = document.getElementById('glossary-search');
+  if (gs) gs.addEventListener('input', () => {
+    const term = gs.value.trim().toLowerCase();
+    document.querySelectorAll('#glossary-list dt').forEach(dt => {
+      const dd = dt.nextElementSibling;
+      const hit = !term || dt.textContent.toLowerCase().includes(term) || dd.textContent.toLowerCase().includes(term);
+      dt.style.display = hit ? '' : 'none';
+      dd.style.display = hit ? '' : 'none';
+    });
+  });
+  document.querySelectorAll('.bank-q .bq-toggle').forEach(t => {
+    t.onclick = () => {
+      const q = t.closest('.bank-q');
+      q.classList.toggle('open');
+      t.textContent = q.classList.contains('open') ? 'Hide answer' : 'Show answer';
+    };
+  });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  buildTabs();
+  initTasks();
+  renderQuizzes();
+  initMisc();
+  refreshProgress();
+  showView(document.getElementById('view-' + state.view) ? state.view : 'overview');
+});
+</script>
+
+</body>
+</html>
